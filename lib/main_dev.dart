@@ -100,7 +100,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         darkTheme: SchemaData.darkThemeData,
         theme: SchemaData.lightThemeData,
         initialRoute: AppPage.FIRST,
-        // home: const WelcomeScreen(),
+        // home: const MainScreen(),
       );
     });
   }

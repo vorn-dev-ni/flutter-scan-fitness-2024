@@ -1,8 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:demo/common/model/user_model.dart';
 import 'package:demo/core/riverpod/app_provider.dart';
 import 'package:demo/data/service/firebase_service.dart';
-import 'package:demo/data/service/firestore_service.dart';
 import 'package:demo/features/authentication/controller/login_controller.dart';
 import 'package:demo/features/authentication/controller/register_controller.dart';
 import 'package:demo/utils/constant/app_page.dart';
@@ -56,6 +54,8 @@ class AuthController {
 
   Future<void> createUser() async {
     try {
+      ref.read(appLoadingStateProvider.notifier).setState(true);
+
       final userInfo = ref.read(registerControllerProvider);
       final UserCredential? userCredential = await firebaseAuthService
           .createUser(email: userInfo.email, password: userInfo.password);
@@ -63,7 +63,7 @@ class AuthController {
         await _updateUserProfile(userCredential!.user!, userInfo.fullName);
         await userCredential?.user?.sendEmailVerification();
         await navigateToScreenSuccess(userInfo.fullName, userInfo.email);
-
+        ref.read(appLoadingStateProvider.notifier).setState(false);
         print("User has successfully completed the setup");
       }
     } catch (e) {
@@ -74,6 +74,7 @@ class AuthController {
         HelpersUtils.showErrorSnackbar(ref.context, "Server Error",
             "Something  went wrong", StatusSnackbar.failed);
       }
+      ref.read(appLoadingStateProvider.notifier).setState(false);
     }
   }
 

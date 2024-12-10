@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'login_controller.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class LoginController extends _$LoginController {
   @override
   LoginState build() {

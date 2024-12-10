@@ -60,13 +60,6 @@ class GlobalConfig {
         settings: settings,
       );
     }
-    // if (settings.name == 'NAV_HOME' && currentUser?.emailVerified != true ||
-    //     currentUser == null) {
-    //   return MaterialPageRoute(
-    //     builder: (context) => const NotFoundScreen(),
-    //     settings: settings,
-    //   );
-    // }
 
     return MaterialPageRoute(
       builder: (context) => matchingRoute.builder(context),

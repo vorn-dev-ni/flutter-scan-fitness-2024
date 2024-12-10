@@ -13,7 +13,10 @@ Widget foodDetail(FoodModelResult food) {
     children: [
       foodHeaderBox(food),
       similarFoodBuilder(
-          header: 'Similar Foods', similars: food.similarRecommendations ?? [])
+          header: 'Similar Foods', similars: food.similarRecommendations ?? []),
+      const SizedBox(
+        height: Sizes.xxl,
+      )
     ],
   );
 }

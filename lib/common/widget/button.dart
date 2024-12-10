@@ -9,6 +9,7 @@ class ButtonApp extends StatelessWidget {
   final Color textColor;
   final double elevation;
   final double radius;
+  final Widget? centerLabel;
   final TextStyle textStyle;
   final double? height;
   final Widget iconButton;
@@ -16,6 +17,7 @@ class ButtonApp extends StatelessWidget {
   const ButtonApp({
     Key? key,
     required this.label,
+    this.centerLabel,
     this.height = 0,
     required this.textStyle,
     required this.splashColor,
@@ -53,10 +55,11 @@ class ButtonApp extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               iconButton,
-              Text(
-                label,
-                style: textStyle,
-              ),
+              centerLabel ??
+                  Text(
+                    label,
+                    style: textStyle,
+                  ),
             ],
           ),
         ),

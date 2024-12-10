@@ -1,7 +1,7 @@
 class ScreenText {
   ScreenText._();
 
-  static Map<String, dynamic> welcomeScreen = {
+  static Map<String, dynamic> MainScreen = {
     'letGetStarted': 'Let\'s get started Now Gym Bro',
     'startingDetail': "Everything gym lover come here and start",
   };

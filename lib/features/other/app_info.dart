@@ -16,11 +16,21 @@ class AppInfo extends StatefulWidget {
 
 class _AppInfoState extends State<AppInfo> {
   late Future<PackageInfo> _result;
+  String deviceName = "";
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    getDevicename();
     _result = _checkAppinfo();
+  }
+
+  Future<void> getDevicename() async {
+    final resultName = await DeviceUtils.getDeviceName();
+    setState(() {
+      deviceName = resultName;
+    });
   }
 
   @override
@@ -39,7 +49,7 @@ class _AppInfoState extends State<AppInfo> {
                   const SizedBox(
                     height: Sizes.lg,
                   ),
-                  Text('App Version ${appInfo?.version}')
+                  Text('App Version Code ${appInfo?.version}'),
                 ],
               ),
             );

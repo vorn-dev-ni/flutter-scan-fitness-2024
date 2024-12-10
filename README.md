@@ -166,3 +166,5 @@ This custom script will handle the correct flavor setup based on the arguments p
 
 
 
+# flutter-boilerplate-2024
+# flutter-boilerplate-2024

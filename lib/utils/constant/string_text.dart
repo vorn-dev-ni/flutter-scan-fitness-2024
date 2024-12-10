@@ -1,7 +1,7 @@
 class StringAsset {
   StringAsset._();
 
-  static const welcomeScreen = "Welcome Home";
+  static const MainScreen = "Welcome Home";
   static const scanBtnTop = 'Gym and Equipment';
   static const bodyGym = 'Look up for machine tools at the gym';
 

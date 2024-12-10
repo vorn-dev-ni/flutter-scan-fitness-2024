@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/data/service/gemini_service.dart';
 import 'package:demo/features/result/controller/scan_result_controller.dart';
+import 'package:demo/features/result/model/gym_model.dart';
+import 'package:demo/features/result/model/scan_result_model.dart';
 import 'package:demo/features/result/widget/gyms/food_screen.dart';
 import 'package:demo/features/result/widget/gyms/gym_screen.dart';
 import 'package:demo/features/scan/controller/image_controller.dart';
@@ -72,50 +74,58 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       builder: (context) => Container(
         padding: const EdgeInsets.all(16.0),
         width: double.maxFinite,
-        height: 28.h,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Choose",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: Sizes.sm),
-              onTap: () {
-                // ref.read()(ImageSource.camera, type);
-                _selectionBottomSheet(ImageSource.camera, type);
+        height: 25.h,
+        // height: 28.h,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Choose",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(
+                height: Sizes.xl,
+              ),
+              ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: Sizes.sm),
+                onTap: () {
+                  // ref.read()(ImageSource.camera, type);
+                  _selectionBottomSheet(ImageSource.camera, type);
 
-                HelpersUtils.navigatorState(context).pop();
-              },
-              title: Text(
-                "Camera",
-                style: AppTextTheme.lightTextTheme.labelLarge,
+                  HelpersUtils.navigatorState(context).pop();
+                },
+                title: Text(
+                  "Camera",
+                  style: AppTextTheme.lightTextTheme.labelLarge,
+                ),
+                leading: SvgPicture.string(
+                  SvgAsset.cameraSvg,
+                  width: 18,
+                  height: 18,
+                ),
               ),
-              leading: SvgPicture.string(
-                SvgAsset.cameraSvg,
-                width: 18,
-                height: 18,
-              ),
-            ),
-            ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: Sizes.sm),
-              onTap: () {
-                _selectionBottomSheet(ImageSource.gallery, type);
+              ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: Sizes.sm),
+                onTap: () {
+                  _selectionBottomSheet(ImageSource.gallery, type);
 
-                HelpersUtils.navigatorState(context).pop();
-              },
-              title: Text(
-                "Gallery",
-                style: AppTextTheme.lightTextTheme.labelLarge,
-              ),
-              leading: SvgPicture.string(
-                SvgAsset.gallerySvg,
-                width: 18,
-                height: 18,
-              ),
-            )
-          ],
+                  HelpersUtils.navigatorState(context).pop();
+                },
+                title: Text(
+                  "Gallery",
+                  style: AppTextTheme.lightTextTheme.labelLarge,
+                ),
+                leading: SvgPicture.string(
+                  SvgAsset.gallerySvg,
+                  width: 18,
+                  height: 18,
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -128,10 +138,6 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       if (image == null) return;
       final imageTemp = File(image.path);
       ref.read(imageControllerProvider.notifier).updateFile(imageTemp);
-      // WidgetsBinding.instance.addPostFrameCallback((_) {
-      //   HelpersUtils.navigatorState(context)
-      //       .pushNamed(AppPage.RESULT, arguments: {'type': type});
-      // });
     } on PlatformException catch (e) {
       print('Failed to pick image: $e');
       HelpersUtils.showErrorSnackbar(
@@ -155,57 +161,12 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final scanResult =
-        ref.watch(scanResultControllerProvider(_activityTag, _geminiService));
-
     return Scaffold(
-      appBar: scanResult.when(
-        data: (data) => AppBarCustom(
-            bgColor: AppColors.backgroundLight,
-            text: _activityTag == ActivityTag.food ? "Foods" : "Gym",
-            showheader: false,
-            isCenter: false,
-            leading: IconButton.filled(
-                color: AppColors.neutralBlack,
-                onPressed: () {
-                  _showBottomSheet(context, this._activityTag);
-                },
-                icon: SvgPicture.string(
-                  SvgAsset.cameraSvg,
-                  width: 20,
-                  height: 20,
-                  colorFilter: const ColorFilter.mode(
-                      AppColors.backgroundLight, BlendMode.srcIn),
-                ))),
-        error: (error, stackTrace) {
-          late AppException _appError =
-              AppException(title: 'Oops', message: '');
-          if (error is AppException) {
-            _appError =
-                AppException(title: error.title, message: error.message);
-          }
-
-          if (error is ValidationException) {
-            _appError =
-                ValidationException(title: error.title, message: error.message);
-          }
-
-          if (error is FormatException) {
-            _appError = AppException(title: 'Oops', message: error.message);
-          }
-          return AppBarCustom(
-            bgColor: AppColors.backgroundLight,
-            text: _activityTag == ActivityTag.food ? "Foods" : "Gym",
-            showheader: false,
-            isCenter: false,
-          );
-        },
-        loading: () => AppBarCustom(
-          bgColor: AppColors.backgroundLight,
-          text: _activityTag == ActivityTag.food ? "Foods" : "Gym",
-          showheader: false,
-          isCenter: false,
-        ),
+      appBar: AppBarCustom(
+        bgColor: AppColors.backgroundLight,
+        text: _activityTag == ActivityTag.food ? "Foods" : "Gym",
+        showheader: false,
+        isCenter: false,
       ),
       backgroundColor: AppColors.backgroundLight,
       body: SafeArea(

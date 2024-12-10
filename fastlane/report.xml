@@ -5,7 +5,7 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="0: cd android &amp;&amp; ./gradlew clean &amp;&amp; cd .." time="63.520163">
+      <testcase classname="fastlane.lanes" name="0: flutter pub run build_runner watch --delete-conflicting-outputs" time="146.411613">
         
       </testcase>
     

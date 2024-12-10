@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:demo/common/widget/app_loading.dart';
 import 'package:demo/common/widget/error_fallback.dart';
 import 'package:demo/data/service/gemini_service.dart';
@@ -9,6 +8,7 @@ import 'package:demo/features/result/model/scan_result_model.dart';
 import 'package:demo/features/result/widget/foods/food_detail.dart';
 import 'package:demo/features/result/widget/foods/food_score.dart';
 import 'package:demo/utils/constant/enums.dart';
+import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/exception/app_exception.dart';
 import 'package:flutter/material.dart';
 import 'package:demo/features/result/widget/food_point.dart';
@@ -33,13 +33,11 @@ class FoodComponent extends ConsumerStatefulWidget {
 class _FoodComponentState extends ConsumerState<FoodComponent> {
   late GeminiService _geminiService;
   void _retry() {
-    // _showBottomSheet(context, widget.tag);
     widget.onAction(context, widget.tag);
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _geminiService = GeminiService(
         model: GenerativeModel(
@@ -55,27 +53,28 @@ class _FoodComponentState extends ConsumerState<FoodComponent> {
         ref.watch(scanResultControllerProvider(activityTag, _geminiService));
     return scanResult.when(
       data: (data) {
-        if (data is ScanModelResult) {
-          if (data.modelResult is FoodModelResult) {
-            final result = data.modelResult;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                foodPointBuilder(result.nutritionFacts?.take(3).toList()),
-                foodPointBuilder(result.nutritionFacts
-                    ?.sublist(3, result.nutritionFacts?.length)
-                    .toList()),
-                foodScore(food: result, file: data.imageFile),
-                foodDetail(
-                  result,
-                ),
-              ],
-            );
-          }
+        if (data is ScanModelResult && data.modelResult is FoodModelResult) {
+          final result = data.modelResult;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              foodPointBuilder(result.nutritionFacts?.take(3).toList()),
+              foodPointBuilder(result.nutritionFacts
+                  ?.sublist(3, result.nutritionFacts?.length)
+                  .toList()),
+              foodScore(food: result, file: data.imageFile),
+              foodDetail(
+                result,
+              ),
+            ],
+          );
         }
-        return errorFallback(
-            AppException(title: 'Oops', message: "Something went wrong"),
-            cb: _retry);
+        return Padding(
+          padding: const EdgeInsets.all(Sizes.lg),
+          child: errorFallback(
+              AppException(title: 'Oops', message: "Something went wrong"),
+              cb: _retry),
+        );
       },
       error: (error, stackTrace) {
         // HelpersUtils.showErrorSnackbar(context, title, message, status);

@@ -72,8 +72,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   height: Sizes.lg,
                   splashColor:
                       const Color.fromARGB(255, 75, 100, 240).withOpacity(0.1),
-                  label: appStateloading == true ? 'Loading...' : 'Login',
+                  label: 'Login',
                   onPressed: appStateloading == false ? _handleLogin : null,
+                  centerLabel: appStateloading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                          ),
+                        )
+                      : null,
                   radius: Sizes.lg,
                   textStyle: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
@@ -138,6 +147,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         height: 2.5.h,
                       ),
                     ),
+                    centerLabel: appStateloading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                            ),
+                          )
+                        : null,
                     splashColor: const Color.fromARGB(255, 171, 188, 255)
                         .withOpacity(0.1),
                     label: ScreenText.LoginScreen['loginGoogle'],

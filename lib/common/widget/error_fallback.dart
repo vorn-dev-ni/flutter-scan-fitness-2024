@@ -1,9 +1,11 @@
 import 'package:demo/common/widget/button.dart';
 import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/sizes.dart';
+import 'package:demo/utils/constant/svg_asset.dart';
 import 'package:demo/utils/exception/app_exception.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:sizer/sizer.dart';
 
 Widget errorFallback(AppException appError, {required void cb()}) {
@@ -14,6 +16,15 @@ Widget errorFallback(AppException appError, {required void cb()}) {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          SvgPicture.asset(
+            SvgAsset.oops_svg,
+            fit: BoxFit.cover,
+            width: 50.w,
+            height: 25.h,
+          ),
+          const SizedBox(
+            height: Sizes.xxxl,
+          ),
           Text(
             appError.title,
             style: AppTextTheme.lightTextTheme.titleLarge?.copyWith(

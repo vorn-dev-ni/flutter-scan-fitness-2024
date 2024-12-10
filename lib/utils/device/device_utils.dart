@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class DeviceUtils {
   DeviceUtils._();
@@ -18,6 +19,19 @@ class DeviceUtils {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: color,
     ));
+  }
+
+  static Future getDeviceName() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    if (isAndroid()) {
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+
+      return 'Device name: ${androidInfo.model}';
+    } else {
+      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+
+      return 'Device name: ${iosInfo.name}';
+    }
   }
 
   static Future<void> setToPortraitModeOnly() async {

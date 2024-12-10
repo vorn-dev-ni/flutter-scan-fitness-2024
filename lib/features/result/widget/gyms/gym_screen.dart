@@ -59,21 +59,22 @@ class _GymComponentState extends ConsumerState<GymComponent> {
     return SingleChildScrollView(
         child: scanResult.when(
       data: (data) {
-        if (data is ScanModelResult) {
-          if (data.modelResult is GymResultModel) {
-            final result = data.modelResult as GymResultModel;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                equipmentHeader(context, result, data.imageFile),
-                overviewGym(result),
-                workoutSections(result.instructions ?? []),
-                ResourceWorkout(
-                  title: result.name ?? "N/A",
-                ),
-              ],
-            );
-          }
+        if (data is ScanModelResult && data.modelResult is GymResultModel) {
+          final result = data.modelResult as GymResultModel;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              equipmentHeader(context, result, data.imageFile),
+              overviewGym(result),
+              workoutSections(result.instructions ?? []),
+              ResourceWorkout(
+                title: result.name ?? "N/A",
+              ),
+              const SizedBox(
+                height: Sizes.xxl,
+              )
+            ],
+          );
         }
         return Padding(
           padding: const EdgeInsets.all(18.0),
@@ -91,7 +92,12 @@ class _GymComponentState extends ConsumerState<GymComponent> {
 
   Widget? _handleError(error, stackTrace) {
     // HelpersUtils.showErrorSnackbar(context, title, message, status);
-    late AppException _appError = AppException(title: 'Oops', message: '');
+
+    print('Error calling api ${error}');
+
+    late AppException _appError =
+        AppException(title: 'Oops', message: error.toString());
+
     if (error is AppException) {
       _appError = AppException(title: error.title, message: error.message);
     }
@@ -104,6 +110,7 @@ class _GymComponentState extends ConsumerState<GymComponent> {
     if (error is FormatException) {
       _appError = AppException(title: 'Oops', message: error.message);
     }
+
     return Padding(
       padding: const EdgeInsets.all(18.0),
       child: errorFallback(
@@ -122,7 +129,7 @@ Column equipmentHeader(BuildContext context, GymResultModel gyms, File file) {
           child: Image.file(
             file!,
             width: DeviceUtils.getDeviceWidth(context),
-            height: 30.h,
+            height: 40.h,
             fit: BoxFit.cover,
           )),
       const SizedBox(height: Sizes.md),
@@ -172,9 +179,8 @@ Widget workoutSections(List<String> instructions) {
                 title: Text(
                   maxLines: 4,
                   overflow: TextOverflow.ellipsis,
-                  instructions[index] ??
-                      'Adjust the seat height and handle position to fit your body."',
-                  style: AppTextTheme.lightTextTheme.labelMedium?.copyWith(
+                  instructions[index],
+                  style: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
                       color: AppColors.primaryColor,
                       fontWeight: FontWeight.bold),
                 ),

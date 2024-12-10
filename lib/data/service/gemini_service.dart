@@ -6,12 +6,12 @@ import 'package:demo/utils/formatters/formatter_utils.dart';
 class GeminiService {
   late final GenerativeModel model;
   GeminiService({required this.model});
-  Future analyseContent(Iterable<Content> prompt) async {
+  Future<Map<String, dynamic>> analyseContent(Iterable<Content> prompt) async {
     final response = await model.generateContent(prompt);
     final responseString = FormatterUtils.removeJsonString(response!.text!);
-    print('Map response ${responseString}');
-    Map<String, dynamic> mapResponse = json.decode(responseString);
 
+    Map<String, dynamic> mapResponse = json.decode(responseString);
+    // print('Map response ${mapResponse}');
     if (mapResponse.isNotEmpty) {
       if (mapResponse.containsKey('code')) {
         throw ValidationException(

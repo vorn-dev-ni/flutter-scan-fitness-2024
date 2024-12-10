@@ -16,7 +16,8 @@ Widget foodScore({required FoodModelResult? food, required File file}) {
         ),
         Text(
           'Total Score',
-          style: AppTextTheme.lightTextTheme.headlineSmall,
+          style: AppTextTheme.lightTextTheme.headlineSmall
+              ?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(
           height: Sizes.lg,
@@ -38,12 +39,27 @@ Widget foodScore({required FoodModelResult? food, required File file}) {
           height: Sizes.lg,
         ),
         ClipRRect(
+            clipBehavior: Clip.hardEdge,
             borderRadius: BorderRadius.circular(Sizes.xl),
             child: Image.file(
               file!,
               width: 200,
               height: 200,
               fit: BoxFit.cover,
+              errorBuilder:
+                  (BuildContext context, Object error, StackTrace? stackTrace) {
+                // This widget will be displayed if the image fails to load
+                return Container(
+                  width: 200,
+                  height: 200,
+                  color: Colors.grey[300], // Fallback background color
+                  child: const Icon(
+                    Icons.image_not_supported, // Icon indicating image error
+                    color: Colors.white,
+                    size: 50,
+                  ),
+                );
+              },
             )),
       ],
     ),

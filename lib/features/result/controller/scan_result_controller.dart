@@ -39,9 +39,11 @@ class scanResultController extends _$scanResultController {
 
         Map<String, dynamic> mapResponse =
             await _geminiService.analyseContent(contents);
+
         dynamic foodModelResult = type == ActivityTag.food
             ? FoodModelResult.fromJson(mapResponse)
             : GymResultModel.fromJson(mapResponse);
+        print("Food response in result ${foodModelResult}");
         return ScanModelResult(
             modelResult: foodModelResult, imageFile: imageFile);
       }
@@ -58,8 +60,9 @@ class scanResultController extends _$scanResultController {
         mimeType = 'image/png';
         break;
       case 'jpg':
-      case 'jpeg':
         mimeType = 'image/jpg';
+      case 'jpeg':
+        mimeType = 'image/jpeg';
         break;
       default:
         throw Exception(

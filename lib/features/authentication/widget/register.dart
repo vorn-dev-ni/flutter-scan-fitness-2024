@@ -1,5 +1,6 @@
 import 'package:demo/common/widget/app_input.dart';
 import 'package:demo/common/widget/button.dart';
+import 'package:demo/core/riverpod/app_provider.dart';
 import 'package:demo/data/service/firebase_remote_config.dart';
 import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/features/authentication/controller/auth_controller.dart';
@@ -28,7 +29,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   late AuthController authController;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     authController =
@@ -38,26 +38,26 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final registerState = ref.watch(registerControllerProvider);
+    final appStateloading = ref.watch(appLoadingStateProvider);
+
     return SingleChildScrollView(
       child: Container(
           height: 80.h,
           color: AppColors.backgroundLight,
           child: Padding(
             padding: const EdgeInsets.all(Sizes.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                appHeader(),
-                inputArea(),
-                const Spacer(),
-                registerSection(registerState)
-              ],
-            ),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              appHeader(),
+              inputArea(),
+              const Spacer(),
+              registerSection(registerState, appStateloading)
+            ]),
           )),
     );
   }
 
-  Column registerSection(RegisterState register_state) {
+  Column registerSection(RegisterState register_state, bool appStateloading) {
     return Column(
       children: [
         const SizedBox(
@@ -71,14 +71,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   splashColor:
                       const Color.fromARGB(255, 75, 100, 240).withOpacity(0.1),
                   label: ScreenText.registerScreen['login'],
-                  onPressed: () {
-                    bool? isValid = ref
-                        .read(registerControllerProvider.notifier)
-                        .checkValidation(context);
-                    if (isValid == true) {
-                      authController.createUser();
-                    }
-                  },
+                  onPressed: appStateloading ? null : _handleRegister,
+                  centerLabel: appStateloading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                          ),
+                        )
+                      : null,
                   radius: Sizes.lg,
                   textStyle: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
@@ -225,5 +227,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ),
       ],
     );
+  }
+
+  void _handleRegister() {
+    bool? isValid =
+        ref.read(registerControllerProvider.notifier).checkValidation(context);
+    if (isValid == true) {
+      authController.createUser();
+    }
   }
 }

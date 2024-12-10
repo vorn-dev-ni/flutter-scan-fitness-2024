@@ -136,47 +136,54 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
       builder: (context) => Container(
         padding: const EdgeInsets.all(16.0),
         width: double.maxFinite,
-        height: 28.h,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Choose",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: Sizes.sm),
-              onTap: () {
-                _selectionBottomSheet(ImageSource.camera, type);
-                HelpersUtils.navigatorState(context).pop();
-              },
-              title: Text(
-                "Camera",
-                style: AppTextTheme.lightTextTheme.labelLarge,
+        height: 25.h,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Choose",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              leading: SvgPicture.string(
-                SvgAsset.cameraSvg,
-                width: 18,
-                height: 18,
+              const SizedBox(
+                height: Sizes.xl,
               ),
-            ),
-            ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: Sizes.sm),
-              onTap: () {
-                _selectionBottomSheet(ImageSource.gallery, type);
-                HelpersUtils.navigatorState(context).pop();
-              },
-              title: Text(
-                "Gallery",
-                style: AppTextTheme.lightTextTheme.labelLarge,
+              ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: Sizes.sm),
+                onTap: () {
+                  _selectionBottomSheet(ImageSource.camera, type);
+                  HelpersUtils.navigatorState(context).pop();
+                },
+                title: Text(
+                  "Camera",
+                  style: AppTextTheme.lightTextTheme.labelLarge,
+                ),
+                leading: SvgPicture.string(
+                  SvgAsset.cameraSvg,
+                  width: 18,
+                  height: 18,
+                ),
               ),
-              leading: SvgPicture.string(
-                SvgAsset.gallerySvg,
-                width: 18,
-                height: 18,
-              ),
-            )
-          ],
+              ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: Sizes.sm),
+                onTap: () {
+                  _selectionBottomSheet(ImageSource.gallery, type);
+                  HelpersUtils.navigatorState(context).pop();
+                },
+                title: Text(
+                  "Gallery",
+                  style: AppTextTheme.lightTextTheme.labelLarge,
+                ),
+                leading: SvgPicture.string(
+                  SvgAsset.gallerySvg,
+                  width: 18,
+                  height: 18,
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

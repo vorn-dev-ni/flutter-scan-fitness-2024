@@ -1,15 +1,9 @@
-import 'dart:async';
-
 import 'package:demo/common/widget/app_bar_custom.dart';
-import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/features/authentication/controller/tabbar_controller.dart';
 import 'package:demo/features/authentication/widget/login.dart';
 import 'package:demo/features/authentication/widget/register.dart';
 import 'package:demo/utils/constant/app_colors.dart';
-import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/sizes.dart';
-import 'package:demo/utils/helpers/helpers_utils.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

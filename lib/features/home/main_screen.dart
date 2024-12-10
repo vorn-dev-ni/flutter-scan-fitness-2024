@@ -16,14 +16,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
-class WelcomeScreen extends ConsumerStatefulWidget {
-  const WelcomeScreen({super.key});
+class MainScreen extends ConsumerStatefulWidget {
+  const MainScreen({super.key});
 
   @override
-  ConsumerState<WelcomeScreen> createState() => _WelcomeScreenState();
+  ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
+class _MainScreenState extends ConsumerState<MainScreen> {
   DateTime today = HelpersUtils.getToday();
   late List<BottomNavigationBarItem> navItems = [];
   late List<ScreenApp> renderScreen = [];

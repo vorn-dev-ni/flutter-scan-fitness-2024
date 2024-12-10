@@ -6,7 +6,7 @@ import 'package:sizer/sizer.dart';
 
 Widget appLoadingSpinner() {
   return SizedBox.fromSize(
-    size: Size(double.maxFinite, 70.h),
+    size: Size(100.w, 90.h),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -15,7 +15,7 @@ Widget appLoadingSpinner() {
           ImageAsset.lottiesloadng,
           alignment: Alignment.center,
           fit: BoxFit.cover,
-          width: 100.px,
+          width: 98.px,
           height: 100.px,
         ),
         Text(

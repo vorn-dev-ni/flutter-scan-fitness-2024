@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'register_controller.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class RegisterController extends _$RegisterController {
   @override
   RegisterState build() {

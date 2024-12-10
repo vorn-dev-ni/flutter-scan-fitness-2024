@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="fastlane.lanes">
+    
+    
+    
+      
+      <testcase classname="fastlane.lanes" name="0: cd android &amp;&amp; ./gradlew clean &amp;&amp; cd .." time="63.520163">
+        
+      </testcase>
+    
+  </testsuite>
+</testsuites>

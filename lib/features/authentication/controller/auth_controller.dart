@@ -78,6 +78,38 @@ class AuthController {
     }
   }
 
+  Future resetPassword(String email) async {
+    try {
+      ref.read(appLoadingStateProvider.notifier).setState(true);
+      await firebaseAuthService.resetPasswordWithEmail(email);
+      HelpersUtils.delay(1000, () {
+        HelpersUtils.navigatorState(ref.context)
+            .pushNamed(AppPage.SUCCESS_PASSWORD, arguments: {'email': email});
+        ref.read(appLoadingStateProvider.notifier).setState(false);
+      });
+    } catch (e) {
+      HelpersUtils.showErrorSnackbar(ref.context, "Something went wrong",
+          e.toString(), StatusSnackbar.failed);
+      ref.read(appLoadingStateProvider.notifier).setState(false);
+
+      // ref.read(appLoadingStateProvider.notifier).setState(false);
+    }
+  }
+
+  Future resendPasswordEmail(String email) async {
+    try {
+      ref.read(appLoadingStateProvider.notifier).setState(true);
+      await firebaseAuthService.resetPasswordWithEmail(email);
+      ref.read(appLoadingStateProvider.notifier).setState(false);
+    } catch (e) {
+      HelpersUtils.showErrorSnackbar(ref.context, "Something went wrong",
+          e.toString(), StatusSnackbar.failed);
+      ref.read(appLoadingStateProvider.notifier).setState(false);
+
+      // ref.read(appLoadingStateProvider.notifier).setState(false);
+    }
+  }
+
   Future<void> loginUser() async {
     try {
       ref.read(appLoadingStateProvider.notifier).setState(true);

@@ -21,6 +21,7 @@ class AppPage {
   static const FORGET = 'Forget Password';
   static const EMAIL_VERIFY = 'Email Verify';
   static const SUCESS = 'Success';
+  static const SUCCESS_PASSWORD = 'Password Reset';
 
   //Utils
   static const NOTFOUND = 'NotFound';

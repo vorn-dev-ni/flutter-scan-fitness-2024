@@ -37,6 +37,14 @@ class FirebaseAuthService {
     await _auth.currentUser?.reload();
   }
 
+  Future resetPasswordWithEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<UserCredential?> createUser({String? email, String? password}) async {
     try {
       final credential = await FirebaseAuth.instance

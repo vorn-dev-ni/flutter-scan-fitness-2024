@@ -1,55 +1,58 @@
-import 'dart:async';
-
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/button.dart';
+import 'package:demo/core/riverpod/app_provider.dart';
 import 'package:demo/data/service/firebase_service.dart';
+import 'package:demo/features/authentication/controller/auth_controller.dart';
+import 'package:demo/features/authentication/controller/tabbar_controller.dart';
 import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/image_asset.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sizer/sizer.dart';
 
-class SuccessAuth extends ConsumerStatefulWidget {
-  const SuccessAuth({super.key});
+class RevalidatePasswordSuccess extends ConsumerStatefulWidget {
+  const RevalidatePasswordSuccess({super.key});
 
   @override
-  ConsumerState<SuccessAuth> createState() => _SuccessAuthState();
+  ConsumerState<RevalidatePasswordSuccess> createState() =>
+      _RevalidatePasswordSuccessState();
 }
 
-class _SuccessAuthState extends ConsumerState<SuccessAuth> {
-  final FirebaseAuthService _firebaseService = FirebaseAuthService();
-  late StreamSubscription<User?> _authSubscription;
+class _RevalidatePasswordSuccessState
+    extends ConsumerState<RevalidatePasswordSuccess> {
+  late AuthController authController;
+  late String _email;
+
   @override
   void initState() {
-    // TODO: implement initState
-    print("Run success init");
-
     super.initState();
-    _authSubscription = _firebaseService.authStateChanges.listen((User? user) {
-      print("Home User is ${user?.email}");
-
-      _checkUserAuth(user);
-    });
+    authController =
+        AuthController(firebaseAuthService: FirebaseAuthService(), ref: ref);
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
-    _authSubscription.cancel();
     super.dispose();
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as Map;
+    _email = args['email'];
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final appLoadingState = ref.watch(appLoadingStateProvider);
     return Scaffold(
         appBar: AppBarCustom(
             bgColor: Colors.transparent,
-            text: 'Verify Email ',
+            text: 'Check Email',
             isCenter: true,
             showheader: false),
         body: SafeArea(
@@ -84,12 +87,12 @@ class _SuccessAuthState extends ConsumerState<SuccessAuth> {
                 Column(
                   children: [
                     Text(
-                      'An Email has been sent to your gmail ',
+                      '',
                       textAlign: TextAlign.center,
                       style: AppTextTheme.lightTextTheme.bodyLarge,
                     ),
                     Text(
-                      'Please verify it before you login',
+                      'Please change your new password with the following email',
                       textAlign: TextAlign.center,
                       style: AppTextTheme.lightTextTheme.bodyLarge,
                     ),
@@ -98,16 +101,46 @@ class _SuccessAuthState extends ConsumerState<SuccessAuth> {
                     ),
                     ButtonApp(
                         height: 2.h,
-                        splashColor: const Color.fromARGB(255, 255, 171, 164)
-                            .withOpacity(0.1),
-                        label: 'Resend Email',
-                        onPressed: _resendEmail,
+                        splashColor: AppColors.primaryLight,
+                        label: 'Resent Email',
+                        onPressed:
+                            appLoadingState == true ? null : _resendEmail,
+                        centerLabel: appLoadingState == true
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  color: AppColors.primaryLight,
+                                ),
+                              )
+                            : null,
                         radius: Sizes.lg,
                         textStyle: AppTextTheme.lightTextTheme.bodyMedium
                             ?.copyWith(
-                                color: AppColors.errorColor,
+                                color: AppColors.backgroundLight,
                                 fontWeight: FontWeight.w600) as dynamic,
-                        color: AppColors.errorLight,
+                        color: AppColors.primaryColor,
+                        textColor: Colors.white,
+                        elevation: 0),
+                    const SizedBox(
+                      height: Sizes.md,
+                    ),
+                    ButtonApp(
+                        height: 2.h,
+                        splashColor: AppColors.primaryColor.withOpacity(0.1),
+                        label: 'Back to login',
+                        onPressed: () {
+                          ref.invalidate(tabbarControllerProvider);
+                          HelpersUtils.navigatorState(context)
+                              .popUntil((route) => route.isFirst);
+                        },
+                        radius: Sizes.lg,
+                        textStyle: AppTextTheme.lightTextTheme.bodyMedium
+                            ?.copyWith(
+                                color: AppColors.primaryColor,
+                                fontWeight: FontWeight.w600) as dynamic,
+                        color: const Color.fromARGB(255, 220, 229, 244),
                         textColor: Colors.white,
                         elevation: 0),
                   ],
@@ -117,27 +150,6 @@ class _SuccessAuthState extends ConsumerState<SuccessAuth> {
   }
 
   Future _resendEmail() async {
-    await _firebaseService.currentUser?.sendEmailVerification();
-  }
-
-  Future _checkUserAuth(User? user) async {
-    // await _firebaseService.signOut();
-    if (user != null) {
-      if (user.emailVerified) {
-        _authSubscription.cancel();
-        // Navigate to the START screen if the user is verified
-        if (mounted) {
-          HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
-              AppPage.START, ModalRoute.withName(AppPage.START));
-        }
-      } else {
-        await user.reload();
-      }
-    }
-  }
-
-  void _sendingEmailVerify() async {
-    print("Sending email now");
-    await _firebaseService.currentUser?.sendEmailVerification();
+    await authController.resendPasswordEmail(_email);
   }
 }

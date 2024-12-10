@@ -7,10 +7,12 @@ import 'package:demo/features/authentication/controller/auth_controller.dart';
 import 'package:demo/features/authentication/controller/register_controller.dart';
 import 'package:demo/features/authentication/model/register_state.dart';
 import 'package:demo/utils/constant/app_colors.dart';
+import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/constant/svg_asset.dart';
 import 'package:demo/utils/device/device_utils.dart';
+import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:demo/utils/constant/screen_text.dart';
@@ -204,6 +206,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ),
         const SizedBox(
           height: Sizes.lg,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            InkWell(
+              onTap: () {
+                HelpersUtils.navigatorState(context).pushNamed(AppPage.FORGET);
+              },
+              child: Text(
+                textAlign: TextAlign.right,
+                ScreenText.LoginScreen['forgetPassword'],
+                style: AppTextTheme.lightTextTheme.bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
         ),
       ],
     );

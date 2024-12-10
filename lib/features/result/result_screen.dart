@@ -1,9 +1,6 @@
 import 'dart:io';
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/data/service/gemini_service.dart';
-import 'package:demo/features/result/controller/scan_result_controller.dart';
-import 'package:demo/features/result/model/gym_model.dart';
-import 'package:demo/features/result/model/scan_result_model.dart';
 import 'package:demo/features/result/widget/gyms/food_screen.dart';
 import 'package:demo/features/result/widget/gyms/gym_screen.dart';
 import 'package:demo/features/scan/controller/image_controller.dart';
@@ -11,7 +8,6 @@ import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/constant/svg_asset.dart';
-import 'package:demo/utils/exception/app_exception.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:flutter/material.dart';

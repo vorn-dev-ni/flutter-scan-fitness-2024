@@ -209,7 +209,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Text(
                 textAlign: TextAlign.right,
                 ScreenText.LoginScreen['forgetPassword'],
-                style: AppTextTheme.lightTextTheme.bodyMedium,
+                style: AppTextTheme.lightTextTheme.bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
           ],

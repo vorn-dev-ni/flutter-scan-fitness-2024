@@ -6,6 +6,7 @@ import 'package:demo/features/authentication/auth.dart';
 import 'package:demo/features/authentication/widget/forget_password.dart';
 import 'package:demo/features/authentication/widget/login.dart';
 import 'package:demo/features/authentication/widget/register.dart';
+import 'package:demo/features/authentication/widget/revalidate_password.dart';
 import 'package:demo/features/authentication/widget/success.dart';
 import 'package:demo/features/home/main_screen.dart';
 import 'package:demo/features/home/widget/gym_activity.dart';
@@ -66,7 +67,9 @@ class AppRoutes {
     RoutesApp(
         routeName: AppPage.REGISTER,
         builder: (context) => const RegisterScreen()),
-
+    RoutesApp(
+        routeName: AppPage.SUCCESS_PASSWORD,
+        builder: (context) => const RevalidatePasswordSuccess()),
     RoutesApp(
         routeName: AppPage.AUTH, builder: (context) => AuthenticationScreen()),
     RoutesApp(

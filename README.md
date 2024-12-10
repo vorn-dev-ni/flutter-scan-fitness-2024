@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-# flutter-scan-fitness-2024
-Flutter + Firebase + Gemini Api
-=======
-
 # Flutter Gym Scan
 
 **Flutter Gym Scan** is a mobile application built using Flutter, designed to assist users in managing gym and fitness activities, with features like scanning, tracking workouts, and foods calories with one click.
@@ -169,6 +164,5 @@ This custom script will handle the correct flavor setup based on the arguments p
 
 
 
----
 
->>>>>>> db13d13 (Initial commit)
+

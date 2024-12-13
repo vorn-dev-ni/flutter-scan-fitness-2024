@@ -25,7 +25,6 @@ class ScanScreen extends ConsumerStatefulWidget {
 
 class _ScanScreenState extends ConsumerState<ScanScreen> {
   File? image;
-
   @override
   Widget build(BuildContext context) {
     ref.watch(imageControllerProvider);
@@ -114,7 +113,12 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
       ref.read(imageControllerProvider.notifier).updateFile(imageTemp);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         HelpersUtils.navigatorState(context).pushNamed(AppPage.RESULT,
-            arguments: {'type': type, 'file': imageTemp});
+            arguments: {
+              'type': type,
+              'file': imageTemp,
+              'recent': false,
+              'imageUrl': ""
+            });
       });
     } on PlatformException catch (e) {
       print('Failed to pick image: $e');
@@ -186,24 +190,6 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  void _handleScanGym(BuildContext context) {
-    HelpersUtils.navigatorState(context).pushNamed(
-      AppPage.RESULT,
-      arguments: {
-        'type': ActivityTag.gym,
-      },
-    );
-  }
-
-  void _handleScanFoods(BuildContext context) {
-    HelpersUtils.navigatorState(context).pushNamed(
-      AppPage.RESULT,
-      arguments: {
-        'type': ActivityTag.food,
-      },
     );
   }
 }

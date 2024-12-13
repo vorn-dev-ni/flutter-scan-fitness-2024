@@ -4,6 +4,8 @@ import 'package:demo/common/routes/routes.dart';
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/bottom_nav.dart';
 import 'package:demo/data/service/firebase_remote_config.dart';
+import 'package:demo/features/account/controller/profile_controller.dart';
+import 'package:demo/features/account/model/profile_state.dart';
 import 'package:demo/features/app_screen.dart';
 import 'package:demo/features/home/model/app_bar.dart';
 import 'package:demo/utils/constant/app_colors.dart';
@@ -11,7 +13,6 @@ import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
-import 'package:demo/utils/local_storage/local_storage_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -34,7 +35,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   void initState() {
     super.initState();
     bindingUsername();
-
     AppRoutes.navigationStacks.forEach(
       (element) {
         navItems.add(
@@ -96,7 +96,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   Future bindingUsername() async {
     // _preferences = await SharedPreferences.getInstance();
     setState(() {
-      username = LocalStorageUtils().getKey("fullname").toString();
       titleBar = FirebaseRemoteConfigService()
               .getString(AppConfigState.banner_tag.value?.toString() ?? "") ??
           "N/A";
@@ -106,19 +105,23 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final int selectedIndex = ref.watch(navigationStateProvider);
+    final profileState = ref.watch(profileControllerProvider);
+
     return Scaffold(
-      appBar: _appBar(selectedIndex),
+      appBar: _appBar(selectedIndex, profileState),
       body: _widgetBody(selectedIndex, renderScreen),
       bottomNavigationBar: CustomBottomNavigationBar(
           selectedIndex: selectedIndex, onTap: _onTap, items: navItems),
     );
   }
 
-  AppBarConfig getAppBarConfig(int selectedIndex) {
+  AppBarConfig getAppBarConfig(int selectedIndex, ProfileState profile_state) {
     switch (selectedIndex) {
       case 0:
         return AppBarConfig(
-            text: "${titleBar} $username", isCenter: false, showHeader: true);
+            text: "${titleBar} ${profile_state.fullName}",
+            isCenter: false,
+            showHeader: true);
       case 1:
         return const AppBarConfig(
             text: "Scan", isCenter: true, showHeader: false);
@@ -131,16 +134,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     }
   }
 
-  AppBar _appBar(int selectedIndex) {
+  AppBar _appBar(int selectedIndex, ProfileState profile_state) {
     return AppBarCustom(
         bgColor: AppColors.backgroundLight,
-        text: getAppBarConfig(selectedIndex).text,
-        // leading: TextButton(
-        //   onPressed: () => throw Exception(),
-        //   child: const Text("Throw Test Exception"),
-        // ),
-        showheader: getAppBarConfig(selectedIndex).showHeader,
-        isCenter: getAppBarConfig(selectedIndex).isCenter);
+        text: getAppBarConfig(selectedIndex, profile_state).text,
+        showheader: getAppBarConfig(selectedIndex, profile_state).showHeader,
+        isCenter: getAppBarConfig(selectedIndex, profile_state).isCenter);
   }
 
   SafeArea _widgetBody(int selectedIndex, renderScreen) {

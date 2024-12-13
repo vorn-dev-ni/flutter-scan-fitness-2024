@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/data/service/gemini_service.dart';
+import 'package:demo/features/result/controller/scan_result_controller.dart';
 import 'package:demo/features/result/widget/gyms/food_screen.dart';
 import 'package:demo/features/result/widget/gyms/gym_screen.dart';
 import 'package:demo/features/scan/controller/image_controller.dart';
@@ -28,26 +29,16 @@ class ResultScreen extends ConsumerStatefulWidget {
 
 class _ResultScreenState extends ConsumerState<ResultScreen> {
   bool showLoading = true;
-  bool isDisposed = false;
+  bool isRecent = false;
+  late String imageUrl;
   late ActivityTag _activityTag;
-  late File file;
-  late GeminiService _geminiService;
+  File? file;
+  late GeminiService _geminiService = GeminiService();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _geminiService = GeminiService(
-        model: GenerativeModel(
-      model: dotenv!.env!['MODEL']!.toString(),
-      apiKey: dotenv!.env!['GEMINI_API'].toString(),
-    ));
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    isDisposed = true;
   }
 
   @override
@@ -55,7 +46,10 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     super.didChangeDependencies();
     final args = ModalRoute.of(context)?.settings?.arguments as Map;
     _activityTag = args['type'];
+
     file = args['file'];
+    isRecent = args['recent'];
+    imageUrl = args['imageUrl'];
   }
 
   void _showBottomSheet(BuildContext context, ActivityTag type) {
@@ -141,17 +135,21 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     }
   }
 
-  Widget renderResult({required ActivityTag type, required File file}) {
+  Widget renderResult({required ActivityTag type, File? file}) {
     return type == ActivityTag.food
         ? FoodComponent(
             tag: ActivityTag.food,
-            file: this.file,
+            file: file,
+            imageUrl: imageUrl,
             onAction: _showBottomSheet,
+            isRecent: isRecent,
           )
         : GymComponent(
             tag: ActivityTag.gym,
-            file: this.file,
+            file: file,
+            imageUrl: imageUrl,
             onAction: _showBottomSheet,
+            isRecent: isRecent,
           );
   }
 
@@ -182,6 +180,4 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       ),
     );
   }
-
-  void _retry() {}
 }

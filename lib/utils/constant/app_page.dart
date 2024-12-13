@@ -7,6 +7,7 @@ class AppPage {
   static const DEMO = 'Demo';
 
   static const RESULT = "Result";
+  static const ACTIVITIES = "Activities";
 
   // Navigation Bar
   static const NAV_WELCOME_HOME = 'NAV_HOME';
@@ -26,4 +27,8 @@ class AppPage {
   //Utils
   static const NOTFOUND = 'NotFound';
   static const NO_INTERNET = 'No internet';
+
+  //Profile
+
+  static const PROFILE = 'Profile';
 }

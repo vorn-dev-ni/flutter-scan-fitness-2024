@@ -1,16 +1,21 @@
-import 'package:demo/utils/constant/app_colors.dart';
+import 'package:demo/common/widget/bodyno_found.dart';
+import 'package:demo/utils/constant/sizes.dart';
 import 'package:flutter/material.dart';
 
 class NotFoundScreen extends StatelessWidget {
-  const NotFoundScreen({super.key});
+  late final String description;
+  NotFoundScreen({super.key, this.description = "Oops Page not Found"});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text(
-          'Seem like the screen is not exist',
-          style: TextStyle(color: AppColors.textColor),
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(Sizes.xxxl),
+            child:
+                bodyNoFound(context, description, body: "", showButton: false),
+          ),
         ),
       ),
     );

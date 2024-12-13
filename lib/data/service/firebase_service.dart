@@ -2,6 +2,7 @@ import 'package:demo/data/service/firestore_service.dart';
 import 'package:demo/utils/firebase/firebase.dart';
 import 'package:demo/utils/local_storage/local_storage_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -18,19 +19,23 @@ class FirebaseAuthService {
           email: email, password: password);
       return userCredential.user;
     } catch (e) {
-      print('Failed with error code: ${e}');
+      if (kDebugMode) {
+        print('Failed with error code: ${e}');
+      }
 
       rethrow; // Handle specific exceptions in your UI layer
     }
   }
 
   Future syncUsertoFirestore(String fullName, String email) async {
+    print("Receive ${fullName} ${email}");
     FirestoreService firestoreService =
         FirestoreService(firebaseAuthService: this);
-    firestoreService.addUserToFirestore(fullName, email);
+    await LocalStorageUtils().setKeyString("fullname", fullName);
+    await LocalStorageUtils().setKeyString("email", email);
+    print("has sync to database success");
 
-    LocalStorageUtils().setKeyString("fullname", fullName);
-    LocalStorageUtils().setKeyString("email", email);
+    await firestoreService.addUserToFirestore(fullName, email);
   }
 
   Future reloadUser() async {
@@ -50,9 +55,7 @@ class FirebaseAuthService {
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
               email: email ?? "", password: password ?? "");
-      if (credential.user != null && password != null) {
-        syncUsertoFirestore(credential!.user!.email!, password);
-      }
+
       return credential;
     } on FirebaseAuthException catch (e) {
       print('Failed with error code: ${e.code}');

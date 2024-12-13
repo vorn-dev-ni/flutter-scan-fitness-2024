@@ -24,7 +24,7 @@ Widget DurationCard({required String label}) {
             width: Sizes.xs - 2,
           ),
           Text(
-            '${label}',
+            label,
             style: AppTextTheme.lightTextTheme.labelMedium
                 ?.copyWith(color: AppColors.textColor),
           ),

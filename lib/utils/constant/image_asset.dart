@@ -8,5 +8,8 @@ final class ImageAsset {
   static const fit = 'assets/utils/fit.png';
   static const fitnessHealth = 'assets/icon/health.png';
   static const lottiesloadng = 'assets/lotties/loading.json';
+  static const lottiesLoadingGym = 'assets/lotties/loading_two.json';
+
   static const emailSvg = 'assets/utils/email.png';
+  static const defaultAvatar = "assets/utils/default_avatar.png";
 }

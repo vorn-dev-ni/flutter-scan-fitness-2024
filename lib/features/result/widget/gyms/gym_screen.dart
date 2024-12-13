@@ -1,11 +1,17 @@
+// ignore_for_file: must_be_immutable, library_private_types_in_public_api
+
+import 'dart:convert';
 import 'dart:io';
 import 'package:demo/common/widget/app_loading.dart';
 import 'package:demo/common/widget/error_fallback.dart';
+import 'package:demo/data/service/firebase_service.dart';
+import 'package:demo/data/service/firestore_service.dart';
 import 'package:demo/data/service/gemini_service.dart';
 import 'package:demo/features/result/controller/scan_result_controller.dart';
 import 'package:demo/features/result/model/gym_model.dart';
 import 'package:demo/features/result/model/scan_result_model.dart';
 import 'package:demo/features/result/widget/gyms/resource_workout.dart';
+import 'package:demo/features/scan/controller/image_controller.dart';
 import 'package:demo/features/scan/widget/selection_box.dart';
 import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/enums.dart';
@@ -23,11 +29,18 @@ import 'package:sizer/sizer.dart';
 
 class GymComponent extends ConsumerStatefulWidget {
   late ActivityTag tag;
+  late bool isRecent;
+  late String imageUrl;
   final Function(BuildContext context, ActivityTag tag) onAction;
 
-  late File file;
+  late File? file;
   GymComponent(
-      {Key? key, required this.tag, required this.file, required this.onAction})
+      {Key? key,
+      required this.tag,
+      required this.file,
+      required this.imageUrl,
+      required this.onAction,
+      required this.isRecent})
       : super(key: key);
 
   @override
@@ -35,16 +48,15 @@ class GymComponent extends ConsumerStatefulWidget {
 }
 
 class _GymComponentState extends ConsumerState<GymComponent> {
-  late GeminiService _geminiService;
+  final GeminiService _geminiService = GeminiService();
+  late bool isRecent = false;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _geminiService = GeminiService(
-        model: GenerativeModel(
-      model: dotenv!.env!['MODEL']!.toString(),
-      apiKey: dotenv!.env!['GEMINI_API'].toString(),
-    ));
+
+    _binding();
   }
 
   void _retry() {
@@ -54,8 +66,9 @@ class _GymComponentState extends ConsumerState<GymComponent> {
   @override
   Widget build(BuildContext context) {
     const activityTag = ActivityTag.gym;
-    final scanResult =
-        ref.watch(scanResultControllerProvider(activityTag, _geminiService));
+    final scanResult = ref.watch(scanResultControllerProvider(
+        activityTag, _geminiService, isRecent, widget.imageUrl));
+
     return SingleChildScrollView(
         child: scanResult.when(
       data: (data) {
@@ -117,6 +130,12 @@ class _GymComponentState extends ConsumerState<GymComponent> {
           AppException(title: _appError.title, message: _appError.message),
           cb: _retry),
     );
+  }
+
+  void _binding() {
+    setState(() {
+      isRecent = widget.isRecent;
+    });
   }
 }
 
@@ -204,6 +223,7 @@ Widget workoutSections(List<String> instructions) {
 }
 
 Widget overviewGym(GymResultModel gym) {
+  print(json.encode(gym));
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -265,7 +285,7 @@ Widget overviewGym(GymResultModel gym) {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      gym.rep ?? "300 -400",
+                      gym.set?.toString() ?? "300 -400",
                       style: AppTextTheme.lightTextTheme.titleLarge?.copyWith(
                           color: const Color.fromRGBO(59, 134, 254, 1)),
                     ),
@@ -307,12 +327,12 @@ Widget overviewGym(GymResultModel gym) {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      gym.set ?? "300 -400",
+                      '${gym.rep}' ?? "300 -400",
                       style: AppTextTheme.lightTextTheme.titleLarge
                           ?.copyWith(color: AppColors.primaryColor),
                     ),
                     Text(
-                      "reps",
+                      "reps per set ",
                       style: AppTextTheme.lightTextTheme.bodyMedium
                           ?.copyWith(color: AppColors.primaryColor),
                     ),

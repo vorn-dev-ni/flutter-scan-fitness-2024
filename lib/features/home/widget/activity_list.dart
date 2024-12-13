@@ -1,85 +1,102 @@
+// ignore_for_file: non_constant_identifier_names
+import 'package:demo/common/widget/app_loading.dart';
+import 'package:demo/common/widget/bodyno_found.dart';
 import 'package:demo/common/widget/button.dart';
 import 'package:demo/common/widget/duration_card.dart';
+import 'package:demo/common/widget/error_fallback.dart';
 import 'package:demo/common/widget/tag_cad.dart';
-import 'package:demo/features/home/model/activity.dart';
+import 'package:demo/data/service/firebase_service.dart';
+import 'package:demo/features/home/controller/activity_controller.dart';
+import 'package:demo/features/home/model/activity_model.dart';
 import 'package:demo/utils/constant/app_colors.dart';
+import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/constant/image_asset.dart';
+import 'package:demo/utils/exception/app_exception.dart';
+import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:demo/utils/constant/sizes.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
-class ActivityList extends StatefulWidget {
-  const ActivityList({super.key});
+class ActivityList extends ConsumerStatefulWidget {
+  late bool showHeader;
+  ActivityList({super.key, this.showHeader = true});
 
   @override
-  State<ActivityList> createState() => _ActivityListState();
+  ConsumerState<ActivityList> createState() => _ActivityListState();
 }
 
-class _ActivityListState extends State<ActivityList> {
-  List<Activity> _activities = [];
+class _ActivityListState extends ConsumerState<ActivityList> {
   @override
   void initState() {
     super.initState();
-    _activities = [
-      Activity(
-        title: 'Morning Gym Session',
-        imageUrl:
-            'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=3570&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        tag: ActivityTag.gym,
-        createdDate:
-            DateTime.now().subtract(const Duration(days: 1)), // Yesterday
-      ),
-      Activity(
-        title: 'Lunch at Italian Restaurant',
-        tag: ActivityTag.food,
-        imageUrl:
-            'https://plus.unsplash.com/premium_photo-1661265933107-85a5dbd815af?q=80&w=3518&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-
-        createdDate:
-            DateTime.now().subtract(const Duration(days: 2)), // 2 days ago
-      ),
-      Activity(
-        title: 'Evening Cardio',
-        tag: ActivityTag.gym,
-        imageUrl:
-            'https://plus.unsplash.com/premium_photo-1661920538067-c48451160c72?q=80&w=3570&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-
-        createdDate:
-            DateTime.now().subtract(const Duration(hours: 5)), // 5 hours ago
-      ),
-      Activity(
-        title: 'Dinner at Sushi Place',
-        tag: ActivityTag.food,
-        imageUrl:
-            'https://images.unsplash.com/photo-1521805103424-d8f8430e8933?q=80&w=3570&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-
-        createdDate:
-            DateTime.now().subtract(const Duration(days: 3)), // 3 days ago
-      ),
-    ];
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Sizes.lg),
-      child: ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: _activities.length, // Add 1 to include the header
-        itemBuilder: (context, index) {
-          late final activities = _activities[index];
-          if (index == 0) {
-            return TouchableHeader();
-          }
-          return AcitivtyTabItem(activities);
-        },
-      ),
+    final activitiesStream = ref.watch(
+      activityControllerProvider(
+          FirebaseAuthService().currentUser?.uid ?? "", widget.showHeader),
     );
+
+    return Padding(
+        padding: const EdgeInsets.symmetric(vertical: Sizes.lg),
+        child: activitiesStream.when(
+          data: (data) {
+            final activities = data.docs;
+            if (activities.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (widget.showHeader == true) TouchableHeader(),
+                    Center(
+                      child: bodyNoFound(
+                          context,
+                          body:
+                              "You no recent activities yet, let\'s start now !!!",
+                          "No Activity"),
+                    )
+                  ],
+                ),
+              );
+            }
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: widget.showHeader
+                  ? const NeverScrollableScrollPhysics()
+                  : const AlwaysScrollableScrollPhysics(),
+              itemCount: activities.length,
+              itemBuilder: (context, index) {
+                final mapRespose =
+                    activities[index].data() as Map<String, dynamic>;
+                final data = ActivityModel.fromJson(mapRespose);
+                return Column(
+                  children: [
+                    if (index == 0 && widget.showHeader) TouchableHeader(),
+                    AcitivtyTabItem(data)
+                  ],
+                );
+              },
+            );
+          },
+          error: (error, stackTrace) {
+            print(error.toString());
+            final appError =
+                AppException(title: "Oops", message: error.toString());
+            return errorFallback(appError, cb: () {
+              ref.invalidate(activityControllerProvider);
+            });
+          },
+          loading: () {
+            return appLoadingSpinner();
+          },
+        ));
   }
 
-  Widget AcitivtyTabItem(Activity activities) {
+  Widget AcitivtyTabItem(ActivityModel activities) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Sizes.sm),
       child: Material(
@@ -89,9 +106,7 @@ class _ActivityListState extends State<ActivityList> {
         // clipBehavior: Clip.hardEdge,
         borderRadius: BorderRadius.circular(Sizes.xl),
         child: InkWell(
-          onTap: () {
-            // Handle tap action here
-          },
+          onTap: () => _handleNavigate(activities),
           borderRadius: BorderRadius.circular(20),
           splashColor: Colors.blue.withOpacity(0.3),
           highlightColor: Colors.blue.withOpacity(0.1),
@@ -108,11 +123,19 @@ class _ActivityListState extends State<ActivityList> {
                     fadeOutCurve: Curves.bounceOut,
                     width: 80,
                     height: 80,
+                    imageErrorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        ImageAsset.placeHolderImage,
+                        fit: BoxFit.cover,
+                        height: 80,
+                        width: 80,
+                      );
+                    },
                     // imageCacheHeight: 80,
                     // imageCacheWidth: 80,
                     fadeInDuration: const Duration(milliseconds: 500),
                     placeholder: ImageAsset.placeHolderImage,
-                    image: activities.imageUrl,
+                    image: activities.imageUrl ?? "",
                   ),
                 ),
               ),
@@ -131,6 +154,9 @@ class _ActivityListState extends State<ActivityList> {
                       style: AppTextTheme.lightTextTheme.titleMedium
                           ?.copyWith(color: AppColors.primaryColor),
                     ),
+                    // const SizedBox(
+                    //   height: Sizes.sm - 2,
+                    // ),
                     const SizedBox(
                       height: Sizes.sm - 2,
                     ),
@@ -139,12 +165,27 @@ class _ActivityListState extends State<ActivityList> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        TagCard(label: 'Gym'),
+                        // const SizedBox(
+                        //   height: Sizes.sm - 2,
+                        // ),
+                        const SizedBox(
+                          height: Sizes.sm - 2,
+                        ),
+                        TagCard(label: activities.tag),
                         const Spacer(),
-                        Padding(
-                            padding: const EdgeInsets.only(right: Sizes.lg),
-                            child: DurationCard(label: '3d'))
+                        const SizedBox(
+                          height: Sizes.sm - 2,
+                        ),
+                        if (activities.createdAt != null)
+                          Padding(
+                              padding: const EdgeInsets.only(right: Sizes.lg),
+                              child: DurationCard(
+                                  label:
+                                      "${timeago.format(activities!.createdAt!)}")),
                       ],
+                    ),
+                    const SizedBox(
+                      height: Sizes.sm - 2,
                     ),
                   ],
                 ),
@@ -170,7 +211,10 @@ class _ActivityListState extends State<ActivityList> {
           ButtonApp(
               splashColor: AppColors.primaryColor,
               label: 'View All',
-              onPressed: () {},
+              onPressed: () {
+                HelpersUtils.navigatorState(context)
+                    .pushNamed(AppPage.ACTIVITIES);
+              },
               radius: Sizes.lg,
               textStyle: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
                   color: AppColors.primaryColor,
@@ -181,5 +225,22 @@ class _ActivityListState extends State<ActivityList> {
         ],
       ),
     );
+  }
+
+  _handleNavigate(activities) {
+    try {
+      print(activities.imageUrl);
+      if (activities.imageUrl != null || activities.imageUrl != "") {
+        HelpersUtils.navigatorState(context)
+            .pushNamed(AppPage.RESULT, arguments: {
+          'type': activities.tag == 'food' ? ActivityTag.food : ActivityTag.gym,
+          'imageUrl': activities?.imageUrl,
+          'recent': true
+        });
+      }
+    } catch (e) {
+      HelpersUtils.showErrorSnackbar(
+          context, "Oops", e.toString(), StatusSnackbar.failed);
+    }
   }
 }

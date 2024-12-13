@@ -2,11 +2,12 @@ import 'package:demo/common/model/route_app.dart';
 import 'package:demo/common/model/screen_app.dart';
 import 'package:demo/common/routes/routes.dart';
 import 'package:demo/data/service/firebase_service.dart';
+import 'package:demo/features/home/main_screen.dart';
 import 'package:demo/features/other/not_found.dart';
 import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/firebase/firebase.dart';
 import 'package:demo/utils/firebase/firebase_options.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:demo/utils/local_storage/local_storage_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -30,18 +31,18 @@ class GlobalConfig {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     // print('App Routes ${AppRoutes.mainStacks.toString()}');
-    final User? currentUser = FirebaseAuthService().currentUser;
+
+    final email = LocalStorageUtils().getKey('email');
+    final fullname = LocalStorageUtils().getKey('fullname');
 
     if (kDebugMode) {
-      print(
-          '>>> On initial route call ${currentUser?.email} setting ${settings.name}');
+      print('>>> On initial route call setting ${settings.name} ${email}');
     }
 
     final matchingRoute = AppRoutes.mainStacks.firstWhere(
       (route) => route.routeName == settings.name,
       orElse: () => RoutesApp(
-          routeName: AppPage.NOTFOUND,
-          builder: (context) => const NotFoundScreen()),
+          routeName: AppPage.NOTFOUND, builder: (context) => NotFoundScreen()),
     );
 
     final navigationRoute = AppRoutes.navigationStacks.firstWhere(
@@ -49,14 +50,21 @@ class GlobalConfig {
       orElse: () => ScreenApp(
           routeName: AppPage.NOTFOUND,
           arguments: null,
-          builder: (context) => const NotFoundScreen()),
+          builder: (context) => NotFoundScreen()),
     );
 
     if (navigationRoute.routeName == AppPage.NOTFOUND &&
         matchingRoute.routeName == AppPage.NOTFOUND) {
       // Screen does not exist
       return MaterialPageRoute(
-        builder: (context) => const NotFoundScreen(),
+        builder: (context) => NotFoundScreen(),
+        settings: settings,
+      );
+    }
+
+    if (settings.name == "Welcome" && email != null && fullname != null) {
+      return MaterialPageRoute(
+        builder: (context) => const MainScreen(),
         settings: settings,
       );
     }

@@ -18,10 +18,17 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 
 class FoodComponent extends ConsumerStatefulWidget {
   late ActivityTag tag;
-  late File file;
+  late File? file;
+  late bool isRecent;
+  late String imageUrl;
   final Function(BuildContext context, ActivityTag tag) onAction;
   FoodComponent(
-      {Key? key, required this.tag, required this.file, required this.onAction})
+      {Key? key,
+      required this.tag,
+      required this.file,
+      required this.onAction,
+      required this.imageUrl,
+      required this.isRecent})
       : super(
           key: key,
         );
@@ -31,7 +38,8 @@ class FoodComponent extends ConsumerStatefulWidget {
 }
 
 class _FoodComponentState extends ConsumerState<FoodComponent> {
-  late GeminiService _geminiService;
+  final GeminiService _geminiService = GeminiService();
+  late bool isRecent = false;
   void _retry() {
     widget.onAction(context, widget.tag);
   }
@@ -39,22 +47,21 @@ class _FoodComponentState extends ConsumerState<FoodComponent> {
   @override
   void initState() {
     super.initState();
-    _geminiService = GeminiService(
-        model: GenerativeModel(
-      model: dotenv.env!['MODEL']?.toString() ?? "",
-      apiKey: dotenv!.env!['GEMINI_API'].toString(),
-    ));
+
+    _binding();
   }
 
   @override
   Widget build(BuildContext context) {
     const activityTag = ActivityTag.food;
-    final scanResult =
-        ref.watch(scanResultControllerProvider(activityTag, _geminiService));
+    final scanResult = ref.watch(scanResultControllerProvider(
+        activityTag, _geminiService, isRecent, widget.imageUrl));
     return scanResult.when(
       data: (data) {
         if (data is ScanModelResult && data.modelResult is FoodModelResult) {
           final result = data.modelResult;
+
+          print(data.imageFile);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -99,6 +106,12 @@ class _FoodComponentState extends ConsumerState<FoodComponent> {
         return appLoadingSpinner();
       },
     );
+  }
+
+  void _binding() {
+    setState(() {
+      isRecent = widget.isRecent;
+    });
   }
 }
 

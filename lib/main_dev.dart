@@ -66,7 +66,6 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     _streamSubscription.cancel();
     super.dispose();
   }
@@ -80,7 +79,9 @@ class _MyAppState extends ConsumerState<MyApp> {
         AppPage.NO_INTERNET,
       );
     } else {
-      print(" Internet is back !! ");
+      if (kDebugMode) {
+        print(" Internet is back !! ");
+      }
       if (navigatorKey.currentState?.canPop() == true) {
         navigatorKey.currentState?.pop();
       }

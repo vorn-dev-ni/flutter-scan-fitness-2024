@@ -39,9 +39,22 @@ Widget GridMealItem(Gridmeal item, {void Function()? onTap}) {
                   ),
                 ],
               ),
-              IconTab(
-                  svgAsset: SvgAsset.gymSvg,
-                  forebackground: item.backgroundColor)
+              // Column(
+              //   children: [
+              //     IconTab(
+              //         svgAsset: SvgAsset.caloriesIconSvg,
+              //         forebackground: item.backgroundColor),
+              //     IconTab(
+              //         svgAsset: SvgAsset.dumbellSvg,
+              //         forebackground: item.backgroundColor),
+              //     IconTab(
+              //         svgAsset: SvgAsset.stepSvg,
+              //         forebackground: item.backgroundColor),
+              //     IconTab(
+              //         svgAsset: SvgAsset.sleepSvg,
+              //         forebackground: item.backgroundColor),
+              //   ],
+              // )
             ],
           ),
           const Spacer(),

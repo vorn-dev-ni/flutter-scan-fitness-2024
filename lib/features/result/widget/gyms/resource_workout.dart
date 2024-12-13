@@ -1,3 +1,4 @@
+// ignore: must_be_immutable
 import 'package:demo/common/model/youtube_model.dart';
 import 'package:demo/common/widget/app_loading.dart';
 import 'package:demo/common/widget/button.dart';

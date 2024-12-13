@@ -247,11 +247,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
-  void _handleRegister() {
+  Future _handleRegister() async {
     bool? isValid =
         ref.read(registerControllerProvider.notifier).checkValidation(context);
     if (isValid == true) {
-      authController.createUser();
+      await authController.createUser();
     }
   }
 }

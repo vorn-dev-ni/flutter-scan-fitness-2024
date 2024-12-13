@@ -5,6 +5,7 @@ import 'package:demo/common/widget/button.dart';
 import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/app_page.dart';
+import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/constant/image_asset.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
@@ -27,19 +28,15 @@ class _SuccessAuthState extends ConsumerState<SuccessAuth> {
   @override
   void initState() {
     // TODO: implement initState
-    print("Run success init");
 
     super.initState();
     _authSubscription = _firebaseService.authStateChanges.listen((User? user) {
-      print("Home User is ${user?.email}");
-
       _checkUserAuth(user);
     });
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     _authSubscription.cancel();
     super.dispose();
   }
@@ -98,26 +95,22 @@ class _SuccessAuthState extends ConsumerState<SuccessAuth> {
                     ),
                     ButtonApp(
                         height: 2.h,
-                        splashColor: const Color.fromARGB(255, 255, 171, 164)
+                        splashColor: const Color.fromARGB(255, 196, 215, 245)
                             .withOpacity(0.1),
                         label: 'Resend Email',
                         onPressed: _resendEmail,
                         radius: Sizes.lg,
                         textStyle: AppTextTheme.lightTextTheme.bodyMedium
                             ?.copyWith(
-                                color: AppColors.errorColor,
+                                color: AppColors.backgroundLight,
                                 fontWeight: FontWeight.w600) as dynamic,
-                        color: AppColors.errorLight,
-                        textColor: Colors.white,
+                        color: AppColors.primaryColor,
+                        textColor: AppColors.backgroundLight,
                         elevation: 0),
                   ],
                 ),
               ]),
         )));
-  }
-
-  Future _resendEmail() async {
-    await _firebaseService.currentUser?.sendEmailVerification();
   }
 
   Future _checkUserAuth(User? user) async {
@@ -136,8 +129,22 @@ class _SuccessAuthState extends ConsumerState<SuccessAuth> {
     }
   }
 
-  void _sendingEmailVerify() async {
-    print("Sending email now");
-    await _firebaseService.currentUser?.sendEmailVerification();
+  Future _resendEmail() async {
+    try {
+      await _firebaseService.currentUser?.sendEmailVerification();
+      HelpersUtils.showErrorSnackbar(
+          duration: 1000,
+          context,
+          "Success",
+          "Please check your email again",
+          StatusSnackbar.success);
+    } catch (e) {
+      HelpersUtils.showErrorSnackbar(
+          duration: 40000,
+          context,
+          "Oops!!!",
+          e.toString(),
+          StatusSnackbar.failed);
+    }
   }
 }

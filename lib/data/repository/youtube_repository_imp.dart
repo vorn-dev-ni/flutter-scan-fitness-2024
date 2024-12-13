@@ -3,6 +3,7 @@
 import 'package:demo/common/model/youtube_model.dart';
 import 'package:demo/data/repository/api_repository.dart';
 import 'package:demo/data/service/youtube_service.dart';
+import 'package:dio/dio.dart';
 
 class YoutubeRepository implements ApiRepository<YouTubeSearchResponse> {
   late YoutubeService youtubeService;
@@ -19,9 +20,10 @@ class YoutubeRepository implements ApiRepository<YouTubeSearchResponse> {
   }
 
   @override
-  Future<YouTubeSearchResponse?> getAll() async {
+  Future<YouTubeSearchResponse?> getAll({CancelToken? cancelToken}) async {
     try {
-      final response = await youtubeService.getYoutubeList();
+      final response =
+          await youtubeService.getYoutubeList(cancelToken: cancelToken);
       if (response != null) {
         return YouTubeSearchResponse?.fromJson(response);
       }

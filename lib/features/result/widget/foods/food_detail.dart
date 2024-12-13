@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:demo/features/result/model/food_model.dart';
 import 'package:demo/features/result/widget/foods/food_similar_card.dart';
 import 'package:demo/utils/constant/sizes.dart';
@@ -35,7 +33,7 @@ Widget similarFoodBuilder(
         height: Sizes.lg,
       ),
       SizedBox.fromSize(
-        size: Size(double.maxFinite, 25.h),
+        size: Size(double.maxFinite, 27.h),
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           // shrinkWrap: true,
@@ -56,7 +54,7 @@ Widget foodHeaderBox(FoodModelResult food) {
         height: Sizes.xl,
       ),
       Text(
-        food?.title ?? "N/A",
+        food.title ?? "N/A",
         textAlign: TextAlign.center,
         style: AppTextTheme.lightTextTheme.titleLarge
             ?.copyWith(fontWeight: FontWeight.bold),
@@ -64,8 +62,8 @@ Widget foodHeaderBox(FoodModelResult food) {
       const SizedBox(
         height: Sizes.lg,
       ),
-      Text(food?.comment ?? "N/A",
-          textAlign: TextAlign.start,
+      Text(food.comment ?? "N/A",
+          textAlign: TextAlign.justify,
           style: AppTextTheme.lightTextTheme.titleMedium),
       const SizedBox(
         height: Sizes.xl,

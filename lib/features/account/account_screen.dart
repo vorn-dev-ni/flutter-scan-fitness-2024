@@ -1,6 +1,8 @@
 import 'package:demo/core/riverpod/navigation_state.dart';
 import 'package:demo/common/widget/button.dart';
 import 'package:demo/data/service/firebase_service.dart';
+import 'package:demo/features/account/controller/profile_controller.dart';
+import 'package:demo/features/account/model/profile_state.dart';
 import 'package:demo/features/account/model/tab_setting.dart';
 import 'package:demo/features/authentication/controller/auth_controller.dart';
 import 'package:demo/utils/constant/app_colors.dart';
@@ -9,7 +11,6 @@ import 'package:demo/utils/constant/image_asset.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/constant/svg_asset.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
-import 'package:demo/utils/local_storage/local_storage_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,48 +28,51 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   late List<TabSetting> listPrivacySettings = [];
   late List<TabSetting> listGeneralSettings = [];
   late AuthController authController;
+  late FirebaseAuthService _firebaseAuthService;
   late String displayEmail;
   late String displayName;
   @override
   void initState() {
     super.initState();
+    _firebaseAuthService = FirebaseAuthService();
 
     authController =
-        AuthController(firebaseAuthService: FirebaseAuthService(), ref: ref);
+        AuthController(firebaseAuthService: _firebaseAuthService, ref: ref);
 
     listPrivacySettings.addAll([
       TabSetting(
-          leadSvgString: SvgAsset.settingSvg,
+          leadSvgString: SvgAsset.policySvg,
           tailSvgString: SvgAsset.nextSvg,
           title: 'Policy and privacy terms'),
       TabSetting(
-          leadSvgString: SvgAsset.settingSvg,
+          leadSvgString: SvgAsset.inviteFriendSvg,
           tailSvgString: SvgAsset.nextSvg,
           title: 'Invite Your Friends'),
     ]);
     listGeneralSettings.addAll([
       TabSetting(
-          leadSvgString: SvgAsset.settingSvg,
+          leadSvgString: SvgAsset.appearanceSvg,
           tailSvgString: SvgAsset.nextSvg,
           title: 'Appearances'),
       TabSetting(
-          leadSvgString: SvgAsset.settingSvg,
+          leadSvgString: SvgAsset.notiifcationSvg,
           tailSvgString: SvgAsset.nextSvg,
           title: 'Notifications'),
       TabSetting(
-          leadSvgString: SvgAsset.settingSvg,
+          leadSvgString: SvgAsset.languageSvg,
           tailSvgString: SvgAsset.nextSvg,
           title: 'Languages'),
     ]);
-    _bindingUser();
   }
 
   @override
   Widget build(BuildContext context) {
+    final profileState = ref.watch(profileControllerProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ProfileTile(),
+        ProfileTile(profileState),
         AccountTab(
             header: 'Settings',
             desc: 'Update your info to keep your account',
@@ -165,38 +169,81 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     );
   }
 
-  Widget ProfileTile() {
+  Widget ProfileTile(ProfileState profileState) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Sizes.xl),
       child: ListTile(
-        onTap: () {},
+        onTap: () {
+          HelpersUtils.navigatorState(context).pushNamed(AppPage.PROFILE);
+        },
         splashColor: AppColors.primaryColor.withOpacity(0.1),
         contentPadding: const EdgeInsets.all(0),
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(Sizes.xxxl + 20),
-          clipBehavior: Clip.hardEdge,
-          child: FadeInImage.assetNetwork(
-            fit: BoxFit.cover,
-            fadeInCurve: Curves.linear,
-            fadeOutCurve: Curves.bounceOut,
-            width: 50,
-            height: 50,
-            // imageCacheHeight: 50,
-            // imageCacheWidth: 50,
-            fadeInDuration: const Duration(milliseconds: 500),
-            placeholder: ImageAsset.placeHolderImage,
-            image:
-                'https://plus.unsplash.com/premium_photo-1689568126014-06fea9d5d341?q=80&w=3307&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        leading: Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Colors.blue, // Border color
+              width: 2.0, // Border width
+            ),
+            borderRadius:
+                BorderRadius.circular(Sizes.xxxl + 20), // Same as ClipRRect
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(Sizes.xxxl + 20),
+            clipBehavior: Clip.hardEdge,
+            child: profileState.imageUrl.isNotEmpty
+                ? FadeInImage.assetNetwork(
+                    fit: BoxFit.cover,
+                    fadeInCurve: Curves.linear,
+                    fadeOutCurve: Curves.bounceOut,
+                    height: 50,
+                    width: 50,
+                    imageErrorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        ImageAsset.placeHolderImage,
+                        fit: BoxFit.cover,
+                        height: 50,
+                        width: 50,
+                      );
+                    },
+                    // imageCacheHeight: 200,
+                    // imageCacheWidth: 200,
+                    fadeInDuration: const Duration(milliseconds: 500),
+                    placeholder: ImageAsset.placeHolderImage,
+                    image: profileState.imageUrl)
+                : Image.asset(
+                    ImageAsset.defaultAvatar,
+                    fit: BoxFit.cover,
+                    height: 50,
+                    width: 50,
+                  ),
           ),
         ),
+        // leading: ClipRRect(
+        //   borderRadius: BorderRadius.circular(Sizes.xxxl + 20),
+        //   clipBehavior: Clip.hardEdge,
+        //   child: FadeInImage.assetNetwork(
+        //     fit: BoxFit.cover,
+        //     fadeInCurve: Curves.linear,
+        //     fadeOutCurve: Curves.bounceOut,
+        //     width: 50,
+        //     height: 50,
+        //     // imageCacheHeight: 50,
+        //     // imageCacheWidth: 50,
+        //     fadeInDuration: const Duration(milliseconds: 500),
+        //     placeholder: ImageAsset.placeHolderImage,
+
+        //     image:
+        //         'https://plus.unsplash.com/premium_photo-1689568126014-06fea9d5d341?q=80&w=3307&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        //   ),
+        // ),
         title: Text(
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          displayName ?? 'N/A',
+          profileState.fullName,
           style: AppTextTheme.lightTextTheme.bodyLarge,
         ),
         subtitle: Text(
-          displayEmail ?? 'N/A',
+          profileState.email,
           style: AppTextTheme.lightTextTheme.bodySmall,
         ),
         trailing: SvgPicture.string(
@@ -212,15 +259,8 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
 
   Future _handleLogout() async {
     await authController.logoutUser();
-    ref.invalidate(navigationStateProvider);
     HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
-        AppPage.FIRST, ModalRoute.withName(AppPage.FIRST));
-  }
-
-  void _bindingUser() {
-    setState(() {
-      displayEmail = LocalStorageUtils().getKey("email") ?? "";
-      displayName = LocalStorageUtils().getKey("fullname") ?? "";
-    });
+        AppPage.FIRST, (Route<dynamic> route) => false);
+    ref.invalidate(navigationStateProvider);
   }
 }

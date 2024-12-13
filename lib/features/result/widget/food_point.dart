@@ -1,12 +1,10 @@
 import 'package:demo/features/result/model/food_model.dart';
-import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 Widget foodPoints(NutritionFacts nutrition_fact) {
-  print(nutrition_fact.iconType);
   Color getColorBullet(iconType) {
     switch (iconType) {
       case 'calories':

@@ -9,7 +9,7 @@ import 'package:sizer/sizer.dart';
 Widget foodSimilarCard(String header, SimilarRecommendations similars) {
   return SizedBox(
     width: 60.w,
-    height: 10.h,
+    // height: 10.h,
     child: Material(
       borderRadius: BorderRadius.circular(Sizes.lg),
       color: Colors.transparent,
@@ -24,21 +24,21 @@ Widget foodSimilarCard(String header, SimilarRecommendations similars) {
               //   flex: 1,
               // ),
               SizedBox(
-                height: 3.9.h,
-                width: 50.w,
+                // height: 5.9.h,
+                width: 100.w,
                 child: Text(
                   similars.title ?? "N/A",
                   textAlign: TextAlign.left,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextTheme.lightTextTheme.labelMedium
+                  style: AppTextTheme.lightTextTheme.labelLarge
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
 
               ...List.generate(
                 similars.nutritionFacts?.length ?? 0,
-                (index) => unitTile(similars?.nutritionFacts![index]),
+                (index) => unitTile(similars.nutritionFacts![index]),
               )
               // unitTile(similars.?.toString() ?? ""),
               // unitTile(similars.sugar?.toString() ?? ""),

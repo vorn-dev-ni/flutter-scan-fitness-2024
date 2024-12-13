@@ -10,10 +10,12 @@ AppBar AppBarCustom(
     bool? isCenter = true,
     Widget? leading,
     TabBar? tabbar,
+    Color? foregroundColor = AppColors.neutralBlack,
     bool showheader = true}) {
   return AppBar(
     centerTitle: isCenter,
     scrolledUnderElevation: 0,
+    foregroundColor: foregroundColor,
     elevation: 0,
     actions: [
       Padding(
@@ -29,7 +31,7 @@ AppBar AppBarCustom(
           text ?? "",
           textAlign: TextAlign.start,
           style: AppTextTheme.lightTextTheme.headlineSmall
-              ?.copyWith(fontWeight: FontWeight.bold),
+              ?.copyWith(fontWeight: FontWeight.bold, color: foregroundColor),
         ),
         if (showheader) HeaderText(),
       ],

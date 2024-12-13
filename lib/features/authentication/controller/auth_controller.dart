@@ -1,6 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:demo/core/riverpod/app_provider.dart';
 import 'package:demo/data/service/firebase_service.dart';
+import 'package:demo/data/service/firestore_service.dart';
+import 'package:demo/features/account/controller/profile_controller.dart';
+import 'package:demo/features/account/controller/user_state_controller.dart';
 import 'package:demo/features/authentication/controller/login_controller.dart';
 import 'package:demo/features/authentication/controller/register_controller.dart';
 import 'package:demo/utils/constant/app_page.dart';
@@ -35,15 +38,8 @@ class AuthController {
 
   Future<void> navigateToScreenSuccess(name, email) async {
     try {
-      // await _updateUserProfile(user, user!.displayName!);
-
-      LocalStorageUtils().setKeyString("fullname", name ?? "");
-      LocalStorageUtils().setKeyString("email", email ?? "");
-
-      HelpersUtils.delay(100, () {
-        HelpersUtils.navigatorState(ref.context).pushNamedAndRemoveUntil(
-            AppPage.EMAIL_VERIFY, ModalRoute.withName(AppPage.EMAIL_VERIFY));
-      });
+      HelpersUtils.navigatorState(ref.context).pushNamedAndRemoveUntil(
+          AppPage.EMAIL_VERIFY, ModalRoute.withName(AppPage.EMAIL_VERIFY));
     } catch (e) {
       throw FirebaseCredentialException(
           title: "Failed to send email verification",
@@ -55,15 +51,23 @@ class AuthController {
   Future<void> createUser() async {
     try {
       ref.read(appLoadingStateProvider.notifier).setState(true);
-
       final userInfo = ref.read(registerControllerProvider);
+
       final UserCredential? userCredential = await firebaseAuthService
           .createUser(email: userInfo.email, password: userInfo.password);
       if (userCredential?.user != null) {
-        await _updateUserProfile(userCredential!.user!, userInfo.fullName);
         await userCredential?.user?.sendEmailVerification();
-        await navigateToScreenSuccess(userInfo.fullName, userInfo.email);
+
+        await _updateUserProfile(userCredential!.user!, userInfo.fullName);
+        await firebaseAuthService.currentUser?.reload();
+        if (userCredential.user != null) {
+          await firebaseAuthService.syncUsertoFirestore(
+              userInfo.fullName ?? "", userInfo.email);
+          ref.invalidate(profileControllerProvider);
+        }
+
         ref.read(appLoadingStateProvider.notifier).setState(false);
+        await navigateToScreenSuccess(userInfo.fullName, userInfo.email);
         print("User has successfully completed the setup");
       }
     } catch (e) {
@@ -72,17 +76,46 @@ class AuthController {
             ref.context, e.title, e.message, StatusSnackbar.failed);
       } else {
         HelpersUtils.showErrorSnackbar(ref.context, "Server Error",
-            "Something  went wrong", StatusSnackbar.failed);
+            e.toString() as dynamic, StatusSnackbar.failed);
       }
       ref.read(appLoadingStateProvider.notifier).setState(false);
     }
   }
 
-  Future<void> loginUser() async {
+  Future resetPassword(String email) async {
     try {
       ref.read(appLoadingStateProvider.notifier).setState(true);
-      // final userInfo = ref.read(registerControllerProvider);
-      // print("User info is ${userInfo.email}");
+      await firebaseAuthService.resetPasswordWithEmail(email);
+      HelpersUtils.delay(1000, () {
+        HelpersUtils.navigatorState(ref.context)
+            .pushNamed(AppPage.SUCCESS_PASSWORD, arguments: {'email': email});
+        ref.read(appLoadingStateProvider.notifier).setState(false);
+      });
+    } catch (e) {
+      HelpersUtils.showErrorSnackbar(ref.context, "Something went wrong",
+          e.toString(), StatusSnackbar.failed);
+      ref.read(appLoadingStateProvider.notifier).setState(false);
+
+      // ref.read(appLoadingStateProvider.notifier).setState(false);
+    }
+  }
+
+  Future resendPasswordEmail(String email) async {
+    try {
+      ref.read(appLoadingStateProvider.notifier).setState(true);
+      await firebaseAuthService.resetPasswordWithEmail(email);
+      ref.read(appLoadingStateProvider.notifier).setState(false);
+    } catch (e) {
+      HelpersUtils.showErrorSnackbar(ref.context, "Something went wrong",
+          e.toString(), StatusSnackbar.failed);
+      ref.read(appLoadingStateProvider.notifier).setState(false);
+
+      // ref.read(appLoadingStateProvider.notifier).setState(false);
+    }
+  }
+
+  Future<void> loginUser() async {
+    try {
       final userInfo = ref.read(loginControllerProvider);
       User? user = await firebaseAuthService.signInWithEmailAndPassword(
           email: userInfo.email, password: userInfo.password);
@@ -92,15 +125,24 @@ class AuthController {
             title: "Unauthorized", message: 'Please verify your email ');
       }
       if (user != null) {
-        LocalStorageUtils().setKeyString("fullname", user.displayName ?? "");
-        LocalStorageUtils().setKeyString("email", user.email ?? "");
+        await _updateUserProfile(user, user.displayName!);
+        await firebaseAuthService.currentUser?.reload();
+
+        String? userImage =
+            await FirestoreService(firebaseAuthService: firebaseAuthService)
+                .getUserAvatar(user.uid);
+
+        await LocalStorageUtils()
+            .setKeyString("fullname", user.displayName ?? "");
+        await LocalStorageUtils().setKeyString("email", user.email ?? "");
+        await LocalStorageUtils().setKeyString("avatarImage", userImage ?? "");
       }
-      ref.read(appLoadingStateProvider.notifier).setState(false);
-      await firebaseAuthService.currentUser?.reload();
     } catch (e) {
+      ref.read(appLoadingStateProvider.notifier).setState(false);
+
       HelpersUtils.showErrorSnackbar(
           ref.context, "Firebase Error", e.toString(), StatusSnackbar.failed);
-      ref.read(appLoadingStateProvider.notifier).setState(false);
+      rethrow;
     }
   }
 
@@ -109,11 +151,13 @@ class AuthController {
       // FirebaseAuth firebaseAuth = FirebaseAuth.instance;
       // await firebaseAuth.signOut();
       await LocalStorageUtils().clear();
+
       if (kDebugMode) {
         print("LocalStorageUtils has clear all");
       }
 
       await firebaseAuthService.signOut();
+      await firebaseAuthService.reloadUser();
     } catch (e) {
       HelpersUtils.showErrorSnackbar(
           ref.context, "Something Wrong", e.toString(), StatusSnackbar.failed);

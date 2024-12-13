@@ -7,7 +7,7 @@ part of 'scan_result_controller.dart';
 // **************************************************************************
 
 String _$scanResultControllerHash() =>
-    r'6e90d9fe73a263fd4d448c1f35c178653547f166';
+    r'7c02f6a69d9f094f7d2355f38e9a5fcdc98eff50';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -33,10 +33,14 @@ class _SystemHash {
 abstract class _$scanResultController extends BuildlessAsyncNotifier<Object?> {
   late final ActivityTag type;
   late final GeminiService service;
+  late final bool isRecent;
+  late final String? imageUrl;
 
   FutureOr<Object?> build(
     ActivityTag type,
     GeminiService service,
+    bool isRecent,
+    String? imageUrl,
   );
 }
 
@@ -53,10 +57,14 @@ class ScanResultControllerFamily extends Family<AsyncValue> {
   ScanResultControllerProvider call(
     ActivityTag type,
     GeminiService service,
+    bool isRecent,
+    String? imageUrl,
   ) {
     return ScanResultControllerProvider(
       type,
       service,
+      isRecent,
+      imageUrl,
     );
   }
 
@@ -67,6 +75,8 @@ class ScanResultControllerFamily extends Family<AsyncValue> {
     return call(
       provider.type,
       provider.service,
+      provider.isRecent,
+      provider.imageUrl,
     );
   }
 
@@ -92,10 +102,14 @@ class ScanResultControllerProvider
   ScanResultControllerProvider(
     ActivityTag type,
     GeminiService service,
+    bool isRecent,
+    String? imageUrl,
   ) : this._internal(
           () => scanResultController()
             ..type = type
-            ..service = service,
+            ..service = service
+            ..isRecent = isRecent
+            ..imageUrl = imageUrl,
           from: scanResultControllerProvider,
           name: r'scanResultControllerProvider',
           debugGetCreateSourceHash:
@@ -107,6 +121,8 @@ class ScanResultControllerProvider
               ScanResultControllerFamily._allTransitiveDependencies,
           type: type,
           service: service,
+          isRecent: isRecent,
+          imageUrl: imageUrl,
         );
 
   ScanResultControllerProvider._internal(
@@ -118,10 +134,14 @@ class ScanResultControllerProvider
     required super.from,
     required this.type,
     required this.service,
+    required this.isRecent,
+    required this.imageUrl,
   }) : super.internal();
 
   final ActivityTag type;
   final GeminiService service;
+  final bool isRecent;
+  final String? imageUrl;
 
   @override
   FutureOr<Object?> runNotifierBuild(
@@ -130,6 +150,8 @@ class ScanResultControllerProvider
     return notifier.build(
       type,
       service,
+      isRecent,
+      imageUrl,
     );
   }
 
@@ -140,7 +162,9 @@ class ScanResultControllerProvider
       override: ScanResultControllerProvider._internal(
         () => create()
           ..type = type
-          ..service = service,
+          ..service = service
+          ..isRecent = isRecent
+          ..imageUrl = imageUrl,
         from: from,
         name: null,
         dependencies: null,
@@ -148,6 +172,8 @@ class ScanResultControllerProvider
         debugGetCreateSourceHash: null,
         type: type,
         service: service,
+        isRecent: isRecent,
+        imageUrl: imageUrl,
       ),
     );
   }
@@ -161,7 +187,9 @@ class ScanResultControllerProvider
   bool operator ==(Object other) {
     return other is ScanResultControllerProvider &&
         other.type == type &&
-        other.service == service;
+        other.service == service &&
+        other.isRecent == isRecent &&
+        other.imageUrl == imageUrl;
   }
 
   @override
@@ -169,6 +197,8 @@ class ScanResultControllerProvider
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
     hash = _SystemHash.combine(hash, type.hashCode);
     hash = _SystemHash.combine(hash, service.hashCode);
+    hash = _SystemHash.combine(hash, isRecent.hashCode);
+    hash = _SystemHash.combine(hash, imageUrl.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -182,6 +212,12 @@ mixin ScanResultControllerRef on AsyncNotifierProviderRef<Object?> {
 
   /// The parameter `service` of this provider.
   GeminiService get service;
+
+  /// The parameter `isRecent` of this provider.
+  bool get isRecent;
+
+  /// The parameter `imageUrl` of this provider.
+  String? get imageUrl;
 }
 
 class _ScanResultControllerProviderElement
@@ -193,6 +229,10 @@ class _ScanResultControllerProviderElement
   ActivityTag get type => (origin as ScanResultControllerProvider).type;
   @override
   GeminiService get service => (origin as ScanResultControllerProvider).service;
+  @override
+  bool get isRecent => (origin as ScanResultControllerProvider).isRecent;
+  @override
+  String? get imageUrl => (origin as ScanResultControllerProvider).imageUrl;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

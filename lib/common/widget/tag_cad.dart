@@ -15,21 +15,23 @@ Widget TagCard({required String label}) {
       padding: const EdgeInsets.symmetric(
           vertical: Sizes.sm - 2, horizontal: Sizes.sm),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            '${label}',
+            label == 'food' ? "Food" : "Gym",
             style: AppTextTheme.lightTextTheme.labelMedium
-                ?.copyWith(color: AppColors.textColor),
+                ?.copyWith(color: AppColors.primaryColor),
           ),
           const SizedBox(
-            width: Sizes.sm,
+            width: Sizes.sm - 4,
           ),
           SvgPicture.string(
-            SvgAsset.dumbellSvg,
+            label == 'food' ? SvgAsset.foodTag : SvgAsset.dumbellSvg,
             width: 16,
             height: 16,
+            colorFilter: const ColorFilter.mode(
+                Color.fromARGB(255, 23, 130, 252), BlendMode.srcIn),
           )
         ],
       ),

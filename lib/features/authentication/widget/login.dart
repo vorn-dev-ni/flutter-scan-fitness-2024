@@ -3,8 +3,10 @@ import 'package:demo/common/widget/button.dart';
 import 'package:demo/core/riverpod/app_provider.dart';
 import 'package:demo/data/service/firebase_remote_config.dart';
 import 'package:demo/data/service/firebase_service.dart';
+import 'package:demo/features/account/controller/profile_controller.dart';
 import 'package:demo/features/authentication/controller/auth_controller.dart';
 import 'package:demo/features/authentication/controller/login_controller.dart';
+import 'package:demo/features/authentication/controller/tabbar_controller.dart';
 import 'package:demo/features/authentication/model/login_state.dart';
 import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/app_page.dart';
@@ -209,7 +211,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Text(
                 textAlign: TextAlign.right,
                 ScreenText.LoginScreen['forgetPassword'],
-                style: AppTextTheme.lightTextTheme.bodyMedium,
+                style: AppTextTheme.lightTextTheme.bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -238,12 +241,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  void _handleLogin() {
+  Future _handleLogin() async {
     bool? isValid =
         ref.read(loginControllerProvider.notifier).checkValidation(context);
+    ref.read(appLoadingStateProvider.notifier).setState(true);
 
     if (isValid == true) {
-      authController.loginUser();
+      await authController.loginUser();
+      ref.invalidate(tabbarControllerProvider);
+      ref.invalidate(profileControllerProvider);
+      HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
+          AppPage.START, (Route<dynamic> route) => false);
     }
+    ref.read(appLoadingStateProvider.notifier).setState(false);
   }
 }

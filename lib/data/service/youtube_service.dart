@@ -8,9 +8,10 @@ class YoutubeService {
   final String url;
   YoutubeService({required this.httpClient, required this.url});
 
-  Future<dynamic> getYoutubeList() async {
+  Future<dynamic> getYoutubeList({CancelToken? cancelToken}) async {
     try {
-      final Response? response = await httpClient.get(url);
+      final Response? response =
+          await httpClient.get(url, cancel_token: cancelToken);
       print("Response > url is ${url}");
       if (response != null) {
         return HelpersUtils.validateResponse(response)

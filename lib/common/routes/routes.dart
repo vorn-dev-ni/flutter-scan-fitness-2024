@@ -2,12 +2,15 @@ import 'package:demo/common/model/grid_meal.dart';
 import 'package:demo/common/model/route_app.dart';
 import 'package:demo/common/model/screen_app.dart';
 import 'package:demo/features/account/account_screen.dart';
+import 'package:demo/features/account/profile_screen.dart';
 import 'package:demo/features/authentication/auth.dart';
 import 'package:demo/features/authentication/widget/forget_password.dart';
 import 'package:demo/features/authentication/widget/login.dart';
 import 'package:demo/features/authentication/widget/register.dart';
+import 'package:demo/features/authentication/widget/revalidate_password.dart';
 import 'package:demo/features/authentication/widget/success.dart';
 import 'package:demo/features/home/main_screen.dart';
+import 'package:demo/features/home/widget/all_activities.dart';
 import 'package:demo/features/home/widget/gym_activity.dart';
 import 'package:demo/features/other/no_internet.dart';
 import 'package:demo/features/result/result_screen.dart';
@@ -23,26 +26,27 @@ class AppRoutes {
   static List<Gridmeal> myMeals = [
     Gridmeal(
         label: 'Calories',
-        value: 720,
+        value: 100,
         perUnit: 'kcal',
         backgroundColor: const Color(0xffFF9898),
         textColors: AppColors.backgroundLight),
     Gridmeal(
-        label: 'Calories',
-        value: 720,
-        perUnit: 'kcal',
-        backgroundColor: AppColors.secondaryDark,
+        label: 'Sleep',
+        value: 6,
+        perUnit: 'h',
+        backgroundColor: AppColors.primaryLight,
         textColors: AppColors.backgroundLight),
     Gridmeal(
-        label: 'Calories',
-        value: 720,
-        perUnit: 'kcal',
-        backgroundColor: const Color(0xffFFE5E2),
-        textColors: const Color(0xffFF9898)),
+      label: 'Steps',
+      value: 24,
+      perUnit: 'kcal',
+      backgroundColor: AppColors.primaryDark,
+      textColors: const Color.fromARGB(255, 188, 216, 255),
+    ),
     Gridmeal(
-        label: 'Calories',
-        value: 720,
-        perUnit: 'kcal',
+        label: 'Kilo',
+        value: 85,
+        perUnit: 'Kg',
         backgroundColor: const Color(0xff4099FF),
         textColors: AppColors.backgroundLight),
   ];
@@ -55,6 +59,9 @@ class AppRoutes {
     // const MainScreen(),
     // const RegisterScreen(),
     RoutesApp(
+        routeName: AppPage.ACTIVITIES,
+        builder: (context) => const AllActivitiesScreen()),
+    RoutesApp(
         routeName: AppPage.START, builder: (context) => const MainScreen()),
     RoutesApp(
         routeName: AppPage.FIRST, builder: (context) => const StartingScreen()),
@@ -66,7 +73,9 @@ class AppRoutes {
     RoutesApp(
         routeName: AppPage.REGISTER,
         builder: (context) => const RegisterScreen()),
-
+    RoutesApp(
+        routeName: AppPage.SUCCESS_PASSWORD,
+        builder: (context) => const RevalidatePasswordSuccess()),
     RoutesApp(
         routeName: AppPage.AUTH, builder: (context) => AuthenticationScreen()),
     RoutesApp(
@@ -78,6 +87,9 @@ class AppRoutes {
     RoutesApp(
         routeName: AppPage.NO_INTERNET,
         builder: (context) => const NoInternet()),
+    RoutesApp(
+        routeName: AppPage.PROFILE,
+        builder: (context) => const ProfileScreen()),
   ];
   static final List<ScreenApp> navigationStacks = [
     ScreenApp(

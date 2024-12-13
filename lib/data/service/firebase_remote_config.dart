@@ -20,6 +20,7 @@ class FirebaseRemoteConfigService {
       "banner_tag": "Welcome Gym Bro",
       "social_login": false,
       "showPopup": false,
+      "health_track": false,
     });
     await _firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
       fetchTimeout: const Duration(minutes: 2),

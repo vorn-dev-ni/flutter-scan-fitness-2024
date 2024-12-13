@@ -12,6 +12,7 @@ import 'package:demo/utils/constant/screen_text.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/flavor/config.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
+import 'package:demo/utils/local_storage/local_storage_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -156,12 +157,12 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
   Future _checkUserAuth(User? user) async {
     // await _firebaseService.signOut();
     if (user != null) {
-      if (user.emailVerified) {
+      if (user.emailVerified && ref.read(tabbarControllerProvider) == 2) {
         _authSubscription.cancel();
         // Navigate to the START screen if the user is verified
         if (mounted) {
           HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
-              AppPage.START, ModalRoute.withName(AppPage.START));
+              AppPage.START, (Route<dynamic> route) => false);
         }
       } else {
         await user.reload();

@@ -12,9 +12,7 @@ import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/exception/app_exception.dart';
 import 'package:flutter/material.dart';
 import 'package:demo/features/result/widget/food_point.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 
 class FoodComponent extends ConsumerStatefulWidget {
   late ActivityTag tag;

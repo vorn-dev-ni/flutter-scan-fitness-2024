@@ -6,20 +6,21 @@ import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 Widget foodPoints(NutritionFacts nutrition_fact) {
+  print(nutrition_fact.iconType);
   Color getColorBullet(iconType) {
     switch (iconType) {
       case 'calories':
         return const Color.fromARGB(255, 240, 144, 0);
       case 'fat':
         return const Color(0xffDD2F2F);
-      case 'protein':
+      case 'proteins':
         return const Color.fromARGB(255, 141, 185, 246);
       case 'sugar':
         return const Color(0xff9BDCFD);
-      case 'carbohydrate':
-        return const Color.fromARGB(255, 164, 220, 148);
+      case 'carbohydrates':
+        return const Color.fromARGB(255, 28, 124, 86);
       default:
-        return AppColors.primaryColor;
+        return const Color.fromARGB(255, 32, 107, 161);
     }
   }
 

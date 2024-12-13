@@ -10,11 +10,11 @@ Widget foodDetail(FoodModelResult food) {
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
       foodHeaderBox(food),
-      similarFoodBuilder(
-          header: 'Similar Foods', similars: food.similarRecommendations ?? []),
-      const SizedBox(
-        height: Sizes.xxl,
-      )
+      // similarFoodBuilder(
+      //     header: 'Similar Foods', similars: food.similarRecommendations ?? []),
+      // const SizedBox(
+      //   height: Sizes.xxl,
+      // )
     ],
   );
 }

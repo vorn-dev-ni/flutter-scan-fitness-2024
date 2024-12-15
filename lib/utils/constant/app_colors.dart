@@ -8,6 +8,8 @@ class AppColors {
   static const Color primaryLight =
       Color(0xFF82B1FF); // Light version of primary
   static const Color primaryDark = Color(0xFF0043A4); // Dark version of primary
+  static const Color primaryGrey =
+      Color.fromARGB(255, 169, 169, 169); // Dark version of primary
 
   // Secondary Colors
   static const Color secondaryColor =

@@ -1,4 +1,3 @@
-import 'package:app_settings/app_settings.dart';
 import 'package:demo/common/model/screen_app.dart';
 import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/core/riverpod/navigation_state.dart';
@@ -6,7 +5,6 @@ import 'package:demo/common/routes/routes.dart';
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/bottom_nav.dart';
 import 'package:demo/data/service/firebase_remote_config.dart';
-import 'package:demo/data/service/health_connect.dart';
 import 'package:demo/features/account/controller/profile_controller.dart';
 import 'package:demo/features/account/model/profile_state.dart';
 import 'package:demo/features/app_screen.dart';
@@ -20,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:demo/utils/localization/translation_helper.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -33,8 +30,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   DateTime today = HelpersUtils.getToday();
   late List<BottomNavigationBarItem> navItems = [];
   late List<ScreenApp> renderScreen = [];
-  late final FlutterHealthConnectService _flutterHealthConnectService =
-      FlutterHealthConnectService();
 
   late String titleBar = "";
   String? username = "";

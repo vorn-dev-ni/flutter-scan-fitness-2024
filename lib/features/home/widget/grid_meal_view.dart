@@ -239,22 +239,27 @@ class _GridMealViewState extends ConsumerState<GridMealView> {
   Future _updatePermission() async {
     bool permissionActivity = true;
     bool permissionLocation = true;
+    bool permissionNotification = true;
     debugPrint("Reading permission _updatePermission");
     bool status_health =
         await _flutterHealthConnectService.requestHealthConnectPermission();
     var status_activity = await Permission.activityRecognition.status;
     var status_location = await Permission.location.status;
+    var status_notification = await Permission.notification.status;
     if (status_location.isDenied) {
       permissionLocation = false;
+    }
+    if (status_notification.isDenied) {
+      permissionNotification = false;
     }
     if (status_activity.isDenied) {
       permissionActivity = false;
     }
     if (Platform.isAndroid) {
-      if (!permissionActivity || !permissionLocation || !status_health) {
+      if (!permissionActivity || !status_health) {
         HelpersUtils.showAlertDialog(context,
             text: "Health Permission",
-            desc: "Please allow health fitness to track down your activity",
+            desc: "Please allow health fitness and activity tracker",
             negativeText: "Cancel", onPresspositive: () async {
           await AppSettings.openAppSettings(type: AppSettingsType.settings);
         }, positiveText: "Open Settings");
@@ -273,6 +278,7 @@ class _GridMealViewState extends ConsumerState<GridMealView> {
     ref.read(appSettingsControllerProvider.notifier).updateHealthPermission(
         activity: permissionActivity,
         health_permission: status_health,
+        notification: permissionNotification,
         location: permissionLocation);
   }
 }

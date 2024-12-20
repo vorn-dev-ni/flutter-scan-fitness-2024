@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:demo/common/model/app_setting_state.dart';
 import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/core/riverpod/connectivity_state.dart';
 import 'package:demo/data/service/firebase_remote_config.dart';
+import 'package:demo/data/service/notification_service.dart';
 import 'package:demo/l10n/I10n.dart';
 import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/enums.dart';
@@ -21,7 +21,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sizer/sizer.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+Future<void> _backgroundHandler(RemoteMessage message) async {
+  // Handle background message
+}
 // import 'package:flutter_config/flutter_config.dart';
 void main() async {
   // await FlutterConfig.loadEnvVariables();
@@ -29,6 +34,10 @@ void main() async {
   await GlobalConfig().init();
   await LocalStorageUtils().init();
   await FirebaseRemoteConfigService().init();
+  await FirebaseMessaging.instance.requestPermission();
+
+  FirebaseMessaging.onBackgroundMessage(_backgroundHandler);
+
   //Detech Flutter platform crash
   FlutterError.onError = (errorDetails) {
     FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
@@ -57,9 +66,20 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   void initState() {
     super.initState();
-    HelpersUtils.removeSplashScreen();
 
+    HelpersUtils.removeSplashScreen();
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      print('Message data: ${message.data}');
+      await NotificationLocalService.showNotificaiton(message);
+      if (message.notification != null) {
+        print('Message also contained a notification: ${message.notification}');
+      }
+    });
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('Message clicked! ${message.messageId}');
+    });
     _systemDeviceChrome();
+    _localNotificationInit();
     _streamSubscription = ref
         .read(connectivityStateProvider.notifier)
         .onConnectivityChange()
@@ -140,5 +160,9 @@ class _MyAppState extends ConsumerState<MyApp> {
       statusBarIconBrightness: Brightness.dark,
     ));
     await DeviceUtils.setToPortraitModeOnly();
+  }
+
+  Future _localNotificationInit() async {
+    await NotificationLocalService.init(context);
   }
 }

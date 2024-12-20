@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:app_settings/app_settings.dart';
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/tile_switch.dart';
 import 'package:demo/core/riverpod/app_setting_controller.dart';
@@ -19,7 +20,35 @@ class NotificationSettingScreen extends ConsumerStatefulWidget {
 }
 
 class _NotificationSettingScreenState
-    extends ConsumerState<NotificationSettingScreen> {
+    extends ConsumerState<NotificationSettingScreen>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    WidgetsBinding.instance.addObserver(this);
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // _checkPermissionStatus();
+      debugPrint("didChangeAppLifecycleState");
+    }
+  }
+
+  Future<void> _checkPermissionStatus() async {
+    // if (await Permission.location.isGranted) {
+    //   _syncData();
+    // }
+  }
+
   @override
   Widget build(BuildContext context) {
     final appState = ref.watch(appSettingsControllerProvider);
@@ -68,6 +97,6 @@ class _NotificationSettingScreenState
   }
 
   Future _openSettings() async {
-    // await AppSettings.openAppSettings();
+    await AppSettings.openAppSettings();
   }
 }

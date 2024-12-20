@@ -103,7 +103,7 @@ class HelpersUtils {
         return AlertDialog(
           title: Text(
             text,
-            style: AppTextTheme.lightTextTheme.labelLarge,
+            style: AppTextTheme.lightTextTheme.headlineSmall,
           ),
           content: Text(
             desc,

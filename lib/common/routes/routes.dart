@@ -4,7 +4,7 @@ import 'package:demo/common/model/screen_app.dart';
 import 'package:demo/features/account/account_screen.dart';
 import 'package:demo/features/account/profile_screen.dart';
 import 'package:demo/features/account/widget/lang_screen.dart';
-import 'package:demo/features/account/widget/notification_screen.dart';
+import 'package:demo/features/account/widget/permission_screen.dart';
 import 'package:demo/features/account/widget/terms_condition_screen.dart';
 import 'package:demo/features/account/widget/theme_screen.dart';
 import 'package:demo/features/authentication/auth.dart';

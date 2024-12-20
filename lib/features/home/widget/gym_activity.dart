@@ -1,11 +1,6 @@
 import 'package:demo/common/model/grid_meal.dart';
-import 'package:demo/data/service/firebase_remote_config.dart';
-import 'package:demo/features/account/profile_screen.dart';
-import 'package:demo/features/home/controller/activity_controller.dart';
-import 'package:demo/features/home/controller/user_health_controller.dart';
 import 'package:demo/features/home/widget/activity_list.dart';
 import 'package:demo/features/home/widget/grid_meal_view.dart';
-import 'package:demo/utils/constant/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sizer/sizer.dart';

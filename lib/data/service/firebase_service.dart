@@ -9,7 +9,8 @@ class FirebaseAuthService {
 
   User? get currentUser => _auth.currentUser;
   FirebaseAuth? get getAuth => _auth;
-  Stream<User?> get authStateChanges => _auth.userChanges();
+  Stream<User?> get userStateChanges => _auth.userChanges();
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   Future<User?> signInWithEmailAndPassword(
       {required String email, required String password}) async {
@@ -31,9 +32,6 @@ class FirebaseAuthService {
     print("Receive ${fullName} ${email}");
     FirestoreService firestoreService =
         FirestoreService(firebaseAuthService: this);
-    await LocalStorageUtils().setKeyString("fullname", fullName);
-    await LocalStorageUtils().setKeyString("email", email);
-    print("has sync to database success");
 
     await firestoreService.addUserToFirestore(fullName, email);
   }

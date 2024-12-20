@@ -95,73 +95,91 @@ class _ResourceWorkoutState extends ConsumerState<ResourceWorkout> {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: Sizes.sm),
                     child: ListTile(
-                        onTap: () {
-                          HelpersUtils.deepLinkLauncher(
-                              "${ApiUrl.youtube_schema}${searchResults[index].id.videoId}");
-                        },
-                        tileColor: AppColors.secondaryColor,
-                        splashColor: AppColors.primaryColor.withOpacity(0.1),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(Sizes.xl)),
-                        contentPadding: const EdgeInsets.all(Sizes.md),
-                        title: Text(
-                          searchResults[index].snippet.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextTheme.lightTextTheme.labelLarge
-                              ?.copyWith(
-                                  color: AppColors.primaryColor,
-                                  fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: Sizes.sm),
-                          child: Row(
+                      onTap: () {
+                        HelpersUtils.deepLinkLauncher(
+                            "${ApiUrl.youtube_schema}${searchResults[index].id.videoId}");
+                      },
+                      tileColor: AppColors.secondaryColor,
+                      splashColor: AppColors.primaryColor.withOpacity(0.1),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(Sizes.xl)),
+                      contentPadding: const EdgeInsets.all(Sizes.md),
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Stack(
+                            // fit: StackFit.expand,
                             children: [
-                              const SizedBox(
-                                height: Sizes.md,
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(Sizes.sm),
+                                child: FadeInImage.assetNetwork(
+                                    fit: BoxFit.cover,
+                                    fadeInCurve: Curves.linear,
+                                    fadeOutCurve: Curves.bounceOut,
+
+                                    // imageCacheHeight: 200,
+                                    // imageCacheWidth: 200,
+                                    fadeInDuration:
+                                        const Duration(milliseconds: 500),
+                                    placeholder: ImageAsset.placeHolderImage,
+                                    image: searchResults[index]
+                                        .snippet
+                                        .thumbnails
+                                        .medium
+                                        .url),
                               ),
-                              SvgPicture.string(
-                                SvgAsset.durationSvg,
-                                width: 2.w,
-                                height: 2.h,
-                                colorFilter: const ColorFilter.mode(
-                                    AppColors.primaryColor, BlendMode.srcIn),
-                              ),
-                              const SizedBox(
-                                width: Sizes.xs - 2,
-                              ),
-                              Text(
-                                FormatterUtils.formatAppDateString(
-                                    searchResults[index].snippet.publishedAt),
-                                style: AppTextTheme.lightTextTheme.labelMedium
-                                    ?.copyWith(color: AppColors.primaryColor),
+                              Positioned(
+                                left: 140,
+                                right: 140,
+                                top: 0,
+                                bottom: 0,
+                                child: SvgPicture.string(
+                                  SvgAsset.playButtonSvg,
+                                  width: 10,
+                                  height: 10,
+                                  fit: BoxFit.contain,
+                                ),
                               ),
                             ],
                           ),
+                          Text(
+                            searchResults[index].snippet.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextTheme.lightTextTheme.labelLarge
+                                ?.copyWith(
+                                    color: AppColors.primaryColor,
+                                    fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: Sizes.sm),
+                        child: Row(
+                          children: [
+                            const SizedBox(
+                              height: Sizes.md,
+                            ),
+                            SvgPicture.string(
+                              SvgAsset.durationSvg,
+                              width: 2.w,
+                              height: 2.h,
+                              colorFilter: const ColorFilter.mode(
+                                  AppColors.primaryColor, BlendMode.srcIn),
+                            ),
+                            const SizedBox(
+                              width: Sizes.xs - 2,
+                            ),
+                            Text(
+                              FormatterUtils.formatAppDateString(
+                                  searchResults[index].snippet.publishedAt),
+                              style: AppTextTheme.lightTextTheme.labelMedium
+                                  ?.copyWith(color: AppColors.primaryColor),
+                            ),
+                          ],
                         ),
-                        trailing: SvgPicture.string(
-                          SvgAsset.playButtonSvg,
-                          width: 30,
-                          height: 30,
-                        ),
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(Sizes.lg),
-                          child: FadeInImage.assetNetwork(
-                              fit: BoxFit.cover,
-                              fadeInCurve: Curves.linear,
-                              fadeOutCurve: Curves.bounceOut,
-                              width: 15.w,
-                              height: 50.h,
-                              // imageCacheHeight: 200,
-                              // imageCacheWidth: 200,
-                              fadeInDuration: const Duration(milliseconds: 500),
-                              placeholder: ImageAsset.placeHolderImage,
-                              image: searchResults[index]
-                                  .snippet
-                                  .thumbnails
-                                  .medium
-                                  .url),
-                        )),
+                      ),
+                    ),
                   );
                 },
               );

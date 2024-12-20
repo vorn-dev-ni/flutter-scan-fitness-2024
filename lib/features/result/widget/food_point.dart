@@ -35,11 +35,11 @@ Widget foodPoints(NutritionFacts nutrition_fact) {
     title: Text(
       nutrition_fact.title!.startsWith('Carbohydrate')
           ? "Carbs"
-          : nutrition_fact.title ?? " ",
+          : nutrition_fact.title ?? "N/A",
       style: AppTextTheme.lightTextTheme.labelLarge,
     ),
     subtitle: Text(
-      nutrition_fact.value?.toString() ?? "",
+      nutrition_fact.value?.toString() ?? "N/A",
       style: AppTextTheme.lightTextTheme.bodySmall,
     ),
   );

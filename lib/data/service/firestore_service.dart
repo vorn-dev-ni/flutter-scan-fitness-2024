@@ -22,7 +22,12 @@ class FirestoreService {
     _isDisposed = true;
   }
 
-  Stream<QuerySnapshot> getAllByUserId(String collectionName, {int limit = 0}) {
+  Stream<QuerySnapshot> getAllByUserId(String collectionName,
+      {int limit = 0, String? sortBy}) {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return const Stream<QuerySnapshot<Object?>>.empty();
+    }
     Query queryDoc = _firestore
         .collection(collectionName)
         .where("userId", isEqualTo: firebaseAuthService.currentUser?.uid);
@@ -31,11 +36,20 @@ class FirestoreService {
       queryDoc = queryDoc.limit(limit);
       ;
     }
+    if (sortBy == 'desc') {
+      debugPrint("Called ${sortBy}");
+      return queryDoc.orderBy("created_at", descending: true).snapshots();
+    }
 
-    return queryDoc.orderBy("created_at", descending: true).snapshots();
+    debugPrint("Called ${sortBy}");
+    return queryDoc.orderBy("created_at", descending: false).snapshots();
   }
 
   Future addDocument(String collection, Map<String, dynamic> values) async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return const Stream<QuerySnapshot<Object?>>.empty();
+    }
     if (_isDisposed == true) {
       return;
     }
@@ -46,6 +60,7 @@ class FirestoreService {
 
   Future<AuthModel?> addUserToFirestore(String fullName, String email) async {
     final FirebaseAuth? auth = firebaseAuthService?.getAuth;
+
     if (auth != null) {
       try {
         String userId = auth.currentUser!.uid;
@@ -129,14 +144,13 @@ class FirestoreService {
     }
   }
 
-  Future<String?> getUserAvatar(String docId) async {
+  Future<Map<String, dynamic>?> getUserAvatar(String docId) async {
     CollectionReference users = _firestore.collection('users');
     try {
       DocumentSnapshot docSnapshot = await users.doc(docId).get();
       if (docSnapshot.exists) {
         final data = docSnapshot.data() as Map<String, dynamic>;
-
-        return data['avatarImage'] as String?;
+        return data;
       } else {
         print("No document found for the given docId.");
         return null;
@@ -149,8 +163,8 @@ class FirestoreService {
     }
   }
 
-  Future<void> updateUser(
-      String email, String fullName, String? imageUrl) async {
+  Future<void> updateUser(String email, String fullName, String? imageUrl,
+      {String? gender, String? dob}) async {
     CollectionReference users = _firestore.collection('users');
 
     print("Update user receive ${imageUrl}");
@@ -159,9 +173,12 @@ class FirestoreService {
       print("Update user id ${docId}");
 
       if (docId.isNotEmpty && docId != "") {
-        await users
-            .doc(docId)
-            .update({'fullName': fullName, 'avatarImage': imageUrl});
+        await users.doc(docId).update({
+          'fullName': fullName,
+          'avatarImage': imageUrl,
+          'dob': dob,
+          'gender': gender
+        });
         await firebaseAuthService.currentUser
             ?.updateProfile(displayName: fullName);
         print("Update success fully");

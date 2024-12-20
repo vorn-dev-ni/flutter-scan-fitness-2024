@@ -83,7 +83,8 @@ class _FoodComponentState extends ConsumerState<FoodComponent> {
       },
       error: (error, stackTrace) {
         // HelpersUtils.showErrorSnackbar(context, title, message, status);
-        late AppException _appError = AppException(title: 'Oops', message: '');
+        late AppException _appError =
+            AppException(title: 'Oops', message: error.toString());
         if (error is AppException) {
           _appError = AppException(title: error.title, message: error.message);
         }
@@ -101,7 +102,7 @@ class _FoodComponentState extends ConsumerState<FoodComponent> {
             cb: _retry);
       },
       loading: () {
-        return appLoadingSpinner();
+        return appLoadingSpinner(text: 'Please wait...');
       },
     );
   }

@@ -8,6 +8,7 @@ class StringAsset {
   static const account = 'Account';
   static const prompsGym = """
 make the response faster please
+if there is a multiple gyms equipment u see, just choose 1 only
 with the following image pls  tell me what is this machine in gym pls response back as json object with {
     "name" , "summary", ( make it short )
     "exercise", "set" as string, "rep"  as string , "calories_burn_per_set (50-100cal)  as string ("
@@ -17,6 +18,7 @@ with the following image pls  tell me what is this machine in gym pls response 
   static const prompsFoodCalories = '''
 make the response faster please
 with the following image pls rate my foods and 
+if there is a multiple foods u see, just choose 1 only
 response as json object with the following 
 fields : rating, title, comment, calories, calcium with it units, 
 fat, proteins, sugar as gram , carbohydrates , rating overall 
@@ -28,7 +30,7 @@ rate it low and if it a salad or healthy make it high rating or  ,
 {
     "rating": 3 as int,
     "title": "",
-    "comment": "A classic American favorite, but high in fat and calories." as string make it like 40 words,
+    "comment": "A classic American favorite, but high in fat and calories." as string make it like 60 words,
     "nutrition_facts":[] as   {
             "iconType": "calories",
             "value": "500-800 kcal",
@@ -39,4 +41,7 @@ rate it low and if it a salad or healthy make it high rating or  ,
 }
 
   ''';
+
+  static const termsAndConditions =
+      'https://www.freeprivacypolicy.com/live/57d164a4-d796-463f-b37d-7893b92c025c';
 }

@@ -20,9 +20,8 @@ class GeminiService {
     try {
       final response = await model.generateContent(prompt);
       final responseString = FormatterUtils.removeJsonString(response!.text!);
-
+      print('Map response: $responseString');
       Map<String, dynamic> mapResponse = json.decode(responseString);
-      // print('Map response: $mapResponse');
 
       stopwatch.stop();
 

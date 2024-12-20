@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:sizer/sizer.dart';
 
-Widget appLoadingSpinner() {
+Widget appLoadingSpinner({String text = ''}) {
   return SizedBox.fromSize(
     size: Size(100.w, 80.h),
     child: Column(
@@ -16,13 +16,13 @@ Widget appLoadingSpinner() {
           ImageAsset.lottiesLoadingGym,
           alignment: Alignment.center,
           fit: BoxFit.cover,
-          width: 60.w,
-          height: 30.h,
+          width: 50.w,
+          height: 22.h,
         ),
         Text(
-          'Generating Result......',
+          text,
           style: AppTextTheme.lightTextTheme.bodyLarge?.copyWith(
-              color: AppColors.primaryDark, fontWeight: FontWeight.bold),
+              color: AppColors.primaryDark, fontWeight: FontWeight.w500),
         )
       ],
     ),

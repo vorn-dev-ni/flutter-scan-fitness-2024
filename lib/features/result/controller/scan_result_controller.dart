@@ -72,6 +72,7 @@ class scanResultController extends _$scanResultController {
       }
     } catch (e) {
       kDebugMode ? print("Error during fetching ${e}") : null;
+
       rethrow;
     }
   }

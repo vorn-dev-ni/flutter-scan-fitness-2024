@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'navigation_state.g.dart';
 
-@Riverpod(keepAlive: true)
+@riverpod
 class NavigationState extends _$NavigationState {
   @override
   int build() {

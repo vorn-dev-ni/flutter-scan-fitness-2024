@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:timeago/timeago.dart';
 
 class FormatterUtils {
   FormatterUtils._();
@@ -17,6 +18,73 @@ class FormatterUtils {
         .replaceAll(RegExp(r'```'), '')
         .replaceAll(RegExp(r'json'), '')
         .trim();
+  }
+
+  static String countryCodeToFlag(String countryCode) {
+    return countryCode
+        .toUpperCase()
+        .split('')
+        .map((char) => String.fromCharCode(char.codeUnitAt(0) + 0x1F1A5))
+        .join();
+  }
+
+  static double calculateHealthScore({
+    required double sleepHours,
+    required int steps,
+    required double caloriesBurned,
+    double sleepWeight = 1.0,
+    double stepsWeight = 1.0,
+    double caloriesWeight = 1.0,
+  }) {
+    // Normalize the sleep score (7-9 hours is optimal)
+    double sleepScore = _calculateSleepScore(sleepHours);
+
+    // Normalize the step score (Goal: 10,000 steps)
+    double stepScore = _calculateStepScore(steps);
+
+    // Normalize the calorie burn score (Goal: 300-500 calories burned)
+    double calorieScore = _calculateCalorieScore(caloriesBurned);
+
+    // Weighted average based on user's preferences
+    double totalWeight = sleepWeight + stepsWeight + caloriesWeight;
+    double weightedHealthScore = ((sleepScore * sleepWeight) +
+            (stepScore * stepsWeight) +
+            (calorieScore * caloriesWeight)) /
+        totalWeight;
+
+    return weightedHealthScore;
+  }
+
+  static double _calculateSleepScore(double hours) {
+    if (hours < 7) {
+      return (hours / 7) * 50; // below target
+    } else if (hours > 9) {
+      return ((9 - (hours - 9)) / 2) * 50; // above target
+    } else {
+      return 100; // within optimal range
+    }
+  }
+
+  static double _calculateStepScore(int steps) {
+    const targetSteps = 10000;
+    if (steps < targetSteps) {
+      return (steps / targetSteps) * 50; // below target
+    } else {
+      return 100; // on or above target
+    }
+  }
+
+  static double _calculateCalorieScore(double calories) {
+    const minCalories = 300;
+    const maxCalories = 500;
+    if (calories < minCalories) {
+      return (calories / minCalories) * 50; // below target
+    } else if (calories > maxCalories) {
+      return ((maxCalories - (calories - maxCalories)) / 2) *
+          50; // above target
+    } else {
+      return 100; // within optimal range
+    }
   }
 
   /// Formats a DateTime to a readable string (e.g., "Nov 22, 2024").
@@ -63,6 +131,11 @@ class FormatterUtils {
     } catch (e) {
       return "Invalid date format";
     }
+  }
+
+  static String formatDob(DateTime date) {
+    DateFormat format = DateFormat("dd-MM-yyyy");
+    return format.format(date);
   }
 
   // Helper for month names

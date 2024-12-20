@@ -15,6 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sizer/sizer.dart';
+import 'package:demo/utils/localization/translation_helper.dart';
 
 class ScanScreen extends ConsumerStatefulWidget {
   ScanScreen({super.key});
@@ -30,6 +31,9 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     ref.watch(imageControllerProvider);
     return Column(
       children: [
+        const SizedBox(
+          height: Sizes.xl,
+        ),
         SelectionBox(
           onPress: () {
             // _handleScanGym(context)
@@ -145,9 +149,10 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Choose",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Text(
+                tr(context).choose,
+                style: AppTextTheme.lightTextTheme?.bodyLarge
+                    ?.copyWith(color: AppColors.backgroundDark),
               ),
               const SizedBox(
                 height: Sizes.xl,
@@ -160,7 +165,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
                   HelpersUtils.navigatorState(context).pop();
                 },
                 title: Text(
-                  "Camera",
+                  tr(context).camera,
                   style: AppTextTheme.lightTextTheme.labelLarge,
                 ),
                 leading: SvgPicture.string(
@@ -177,7 +182,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
                   HelpersUtils.navigatorState(context).pop();
                 },
                 title: Text(
-                  "Gallery",
+                  tr(context).gallery,
                   style: AppTextTheme.lightTextTheme.labelLarge,
                 ),
                 leading: SvgPicture.string(

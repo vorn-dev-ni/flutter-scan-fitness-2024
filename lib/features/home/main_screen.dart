@@ -1,9 +1,12 @@
+import 'package:app_settings/app_settings.dart';
 import 'package:demo/common/model/screen_app.dart';
+import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/core/riverpod/navigation_state.dart';
 import 'package:demo/common/routes/routes.dart';
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/bottom_nav.dart';
 import 'package:demo/data/service/firebase_remote_config.dart';
+import 'package:demo/data/service/health_connect.dart';
 import 'package:demo/features/account/controller/profile_controller.dart';
 import 'package:demo/features/account/model/profile_state.dart';
 import 'package:demo/features/app_screen.dart';
@@ -16,6 +19,8 @@ import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:demo/utils/localization/translation_helper.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -28,13 +33,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   DateTime today = HelpersUtils.getToday();
   late List<BottomNavigationBarItem> navItems = [];
   late List<ScreenApp> renderScreen = [];
+  late final FlutterHealthConnectService _flutterHealthConnectService =
+      FlutterHealthConnectService();
+
   late String titleBar = "";
   String? username = "";
+  String resultText = '';
 
   @override
   void initState() {
     super.initState();
     bindingUsername();
+    // _checkAppPermission();
     AppRoutes.navigationStacks.forEach(
       (element) {
         navItems.add(
@@ -95,23 +105,29 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   Future bindingUsername() async {
     // _preferences = await SharedPreferences.getInstance();
+
     setState(() {
       titleBar = FirebaseRemoteConfigService()
               .getString(AppConfigState.banner_tag.value?.toString() ?? "") ??
           "N/A";
     });
+    // await FlutterHealthConnectService().getDailyRecords();
   }
 
   @override
   Widget build(BuildContext context) {
     final int selectedIndex = ref.watch(navigationStateProvider);
     final profileState = ref.watch(profileControllerProvider);
+    final appState = ref.watch(appSettingsControllerProvider);
 
     return Scaffold(
       appBar: _appBar(selectedIndex, profileState),
       body: _widgetBody(selectedIndex, renderScreen),
       bottomNavigationBar: CustomBottomNavigationBar(
-          selectedIndex: selectedIndex, onTap: _onTap, items: navItems),
+          appsettingState: appState!,
+          selectedIndex: selectedIndex,
+          onTap: _onTap,
+          items: navItems),
     );
   }
 
@@ -123,20 +139,25 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             isCenter: false,
             showHeader: true);
       case 1:
-        return const AppBarConfig(
-            text: "Scan", isCenter: true, showHeader: false);
+        return AppBarConfig(
+            text: tr(context).scan ?? "Scan",
+            isCenter: true,
+            showHeader: false);
       case 2:
-        return const AppBarConfig(
-            text: "Profile", isCenter: false, showHeader: false);
+        return AppBarConfig(
+            text: tr(context).profile ?? "Profile",
+            isCenter: false,
+            showHeader: false);
       default:
         return const AppBarConfig(
             text: "", isCenter: false, showHeader: false); // Default values
     }
   }
 
-  AppBar _appBar(int selectedIndex, ProfileState profile_state) {
+  PreferredSizeWidget _appBar(int selectedIndex, ProfileState profile_state) {
     return AppBarCustom(
-        bgColor: AppColors.backgroundLight,
+        bgColor: AppColors.primaryDark,
+        foregroundColor: AppColors.backgroundLight,
         text: getAppBarConfig(selectedIndex, profile_state).text,
         showheader: getAppBarConfig(selectedIndex, profile_state).showHeader,
         isCenter: getAppBarConfig(selectedIndex, profile_state).isCenter);
@@ -147,6 +168,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: Sizes.xl - 2),
       child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           child: navigationScreen(selectedIndex, context)),
     ));
   }

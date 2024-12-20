@@ -3,6 +3,10 @@ import 'package:demo/common/model/route_app.dart';
 import 'package:demo/common/model/screen_app.dart';
 import 'package:demo/features/account/account_screen.dart';
 import 'package:demo/features/account/profile_screen.dart';
+import 'package:demo/features/account/widget/lang_screen.dart';
+import 'package:demo/features/account/widget/notification_screen.dart';
+import 'package:demo/features/account/widget/terms_condition_screen.dart';
+import 'package:demo/features/account/widget/theme_screen.dart';
 import 'package:demo/features/authentication/auth.dart';
 import 'package:demo/features/authentication/widget/forget_password.dart';
 import 'package:demo/features/authentication/widget/login.dart';
@@ -58,6 +62,18 @@ class AppRoutes {
     // const LoginScreen(),
     // const MainScreen(),
     // const RegisterScreen(),
+    RoutesApp(
+        routeName: AppPage.APPEARENCE,
+        builder: (context) => const ChangeThemeScreen()),
+    RoutesApp(
+        routeName: AppPage.LANG,
+        builder: (context) => const LanguageSettingScreen()),
+    RoutesApp(
+        routeName: AppPage.TERMS,
+        builder: (context) => const TermsConditionScreen()),
+    RoutesApp(
+        routeName: AppPage.NOTIFICATION,
+        builder: (context) => const NotificationSettingScreen()),
     RoutesApp(
         routeName: AppPage.ACTIVITIES,
         builder: (context) => const AllActivitiesScreen()),

@@ -5,7 +5,6 @@ import 'package:demo/utils/constant/screen_text.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/constant/svg_asset.dart';
 import 'package:demo/utils/device/device_utils.dart';
-import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';

@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:demo/common/model/app_setting_state.dart';
+import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/core/riverpod/connectivity_state.dart';
 import 'package:demo/data/service/firebase_remote_config.dart';
+import 'package:demo/l10n/I10n.dart';
 import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/enums.dart';
+import 'package:demo/utils/device/device_utils.dart';
 import 'package:demo/utils/flavor/config.dart';
 import 'package:demo/utils/global_config.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
@@ -12,8 +16,11 @@ import 'package:demo/utils/theme/schema.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // import 'package:flutter_config/flutter_config.dart';
 void main() async {
@@ -51,6 +58,8 @@ class _MyAppState extends ConsumerState<MyApp> {
   void initState() {
     super.initState();
     HelpersUtils.removeSplashScreen();
+
+    _systemDeviceChrome();
     _streamSubscription = ref
         .read(connectivityStateProvider.notifier)
         .onConnectivityChange()
@@ -67,6 +76,7 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   void dispose() {
     _streamSubscription.cancel();
+    _systemDeviceChrome();
     super.dispose();
   }
 
@@ -91,18 +101,44 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Sizer(builder: (context, orientation, screenType) {
+      final appsettingState = ref.watch(appSettingsControllerProvider);
+
       return MaterialApp(
         title: 'Flutter Dev',
+        locale: Locale(appsettingState.localization),
+        supportedLocales: L10n.all,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         debugShowCheckedModeBanner: false,
+        themeMode: appsettingState.appTheme == AppTheme.light
+            ? ThemeMode.light
+            : ThemeMode.dark,
+
         // routes: AppRoutes.getAppRoutes(),
         navigatorKey: navigatorKey,
         onGenerateRoute: (settings) =>
             GlobalConfig.instance.onGenerateRoute(settings),
-        darkTheme: SchemaData.darkThemeData,
-        theme: SchemaData.lightThemeData,
+        darkTheme: SchemaData.darkThemeData(
+          Locale(appsettingState.localization),
+        ),
+        theme: SchemaData.lightThemeData(
+          Locale(appsettingState.localization),
+        ),
         initialRoute: AppPage.FIRST,
         // home: const MainScreen(),
       );
     });
+  }
+
+  Future _systemDeviceChrome() async {
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.white,
+      statusBarIconBrightness: Brightness.dark,
+    ));
+    await DeviceUtils.setToPortraitModeOnly();
   }
 }

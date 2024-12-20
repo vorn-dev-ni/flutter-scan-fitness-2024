@@ -19,6 +19,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sizer/sizer.dart';
+import 'package:demo/utils/localization/translation_helper.dart';
 
 class ResultScreen extends ConsumerStatefulWidget {
   const ResultScreen({super.key});
@@ -70,9 +71,10 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Choose",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Text(
+                tr(context).gallery,
+                style: AppTextTheme.lightTextTheme?.bodyLarge
+                    ?.copyWith(color: AppColors.backgroundDark),
               ),
               const SizedBox(
                 height: Sizes.xl,
@@ -157,7 +159,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBarCustom(
-        bgColor: AppColors.backgroundLight,
+        bgColor: AppColors.primaryDark,
+        foregroundColor: AppColors.backgroundLight,
         text: _activityTag == ActivityTag.food ? "Foods" : "Gym",
         showheader: false,
         isCenter: false,

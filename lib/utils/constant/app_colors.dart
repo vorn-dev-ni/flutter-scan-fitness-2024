@@ -4,13 +4,16 @@ class AppColors {
   AppColors._();
 
   // Primary Colors
+
+  static const Color primaryMed = Color(0xff2192FF);
   static const Color primaryColor = Color(0xFF0070F0); // Main brand color
   static const Color primaryLight =
       Color(0xFF82B1FF); // Light version of primary
   static const Color primaryDark = Color(0xFF0043A4); // Dark version of primary
-  static const Color primaryGrey =
-      Color.fromARGB(255, 169, 169, 169); // Dark version of primary
-
+  static const Color primaryGrey = Color(0xffEEEEEE);
+  static const Color monoGrey5 = Color(0xffDDDDDD);
+  static const Color monoGrey4 =
+      Color.fromARGB(255, 214, 217, 220); // Dark version of primary
   // Secondary Colors
   static const Color secondaryColor =
       Color(0xFFEBF4FF); // Soft background accent
@@ -32,7 +35,7 @@ class AppColors {
 
   // Success Colors
   static const Color successColor = Color(0xFF28A745); // Success green
-  static const Color successLight = Color(0xFFD4EDDA); // Light success
+  static const Color successLight = Color(0xFF5DB996); // Light success
 
   // Warning Colors
   static const Color warningColor = Color(0xFFFFC107); // Warning yellow
@@ -41,6 +44,6 @@ class AppColors {
   // Background Colors
   static const Color backgroundLight = Color(0xFFFFFFFF); // White background
   static const Color backgroundDark = Color(0xFF121212); // Dark background
-
+  static const Color textDarkColor = Colors.white; // Darker tertiary
   static const Color textColor = Colors.black; // Darker tertiary
 }

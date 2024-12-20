@@ -3,7 +3,6 @@ import 'package:demo/core/riverpod/app_provider.dart';
 import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/data/service/firestore_service.dart';
 import 'package:demo/features/account/controller/profile_controller.dart';
-import 'package:demo/features/account/controller/user_state_controller.dart';
 import 'package:demo/features/authentication/controller/login_controller.dart';
 import 'package:demo/features/authentication/controller/register_controller.dart';
 import 'package:demo/utils/constant/app_page.dart';
@@ -114,7 +113,7 @@ class AuthController {
     }
   }
 
-  Future<void> loginUser() async {
+  Future<void> loginUser(BuildContext context) async {
     try {
       final userInfo = ref.read(loginControllerProvider);
       User? user = await firebaseAuthService.signInWithEmailAndPassword(
@@ -127,15 +126,16 @@ class AuthController {
       if (user != null) {
         await _updateUserProfile(user, user.displayName!);
         await firebaseAuthService.currentUser?.reload();
-
-        String? userImage =
+        final data =
             await FirestoreService(firebaseAuthService: firebaseAuthService)
-                .getUserAvatar(user.uid);
-
+                .getUserAvatar(user.uid) as Map<String, dynamic>;
+        await LocalStorageUtils().setKeyString("gender", data['gender'] ?? "");
+        await LocalStorageUtils().setKeyString("dob", data['dob'] ?? "");
         await LocalStorageUtils()
             .setKeyString("fullname", user.displayName ?? "");
         await LocalStorageUtils().setKeyString("email", user.email ?? "");
-        await LocalStorageUtils().setKeyString("avatarImage", userImage ?? "");
+        await LocalStorageUtils()
+            .setKeyString("avatarImage", data['avatarImage'] ?? "");
       }
     } catch (e) {
       ref.read(appLoadingStateProvider.notifier).setState(false);

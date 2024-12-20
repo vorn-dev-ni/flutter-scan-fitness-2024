@@ -89,6 +89,47 @@ class HelpersUtils {
     );
   }
 
+  static Future showAlertDialog(
+    BuildContext context, {
+    required String text,
+    required String desc,
+    required String positiveText,
+    required String negativeText,
+    required Function onPresspositive,
+  }) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            text,
+            style: AppTextTheme.lightTextTheme.labelLarge,
+          ),
+          content: Text(
+            desc,
+            style: AppTextTheme.lightTextTheme.labelLarge,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                onPresspositive();
+                // HelpersUtils.deepLinkLauncher(url);
+                // HelpersUtils.navigatorState(context).pop();
+              },
+              child: Text(positiveText),
+            ),
+            TextButton(
+              onPressed: () {
+                HelpersUtils.navigatorState(context).pop();
+              },
+              child: Text(negativeText),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   static Future<File?> convertUrlToLocalFile(String url) async {
     try {
       final response = await HttpsClient().httpClients.get(

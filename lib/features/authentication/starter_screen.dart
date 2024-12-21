@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/button.dart';
 import 'package:demo/data/service/firebase_service.dart';
-import 'package:demo/data/service/firestore_service.dart';
 import 'package:demo/data/service/health_connect.dart';
 import 'package:demo/features/authentication/controller/tabbar_controller.dart';
 import 'package:demo/features/other/app_info.dart';
@@ -53,7 +52,6 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
     // TODO: implement dispose
     _userSubscription.cancel();
     _authStateSubscription.cancel();
-    requestPermissions();
     super.dispose();
   }
 
@@ -208,15 +206,5 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
       // HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
       //     AppPage.FIRST, (Route<dynamic> route) => false);
     }
-  }
-
-  Future requestPermissions() async {
-    print("Requesting two permission");
-    // Future<void>.delayed(
-    //   const Duration(seconds: 10),
-    //   () async {
-    //     await FlutterHealthConnectService().requestLocationAndActivity();
-    //   },
-    // );
   }
 }

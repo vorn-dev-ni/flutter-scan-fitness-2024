@@ -256,21 +256,32 @@ class _GridMealViewState extends ConsumerState<GridMealView> {
       permissionActivity = false;
     }
     if (Platform.isAndroid) {
-      if (!permissionActivity || !status_health) {
+      if (!status_health) {
         HelpersUtils.showAlertDialog(context,
             text: "Health Permission",
-            desc: "Please allow health fitness and activity tracker",
+            desc: "Please allow health fitness and activity tracker.",
             negativeText: "Cancel", onPresspositive: () async {
-          await AppSettings.openAppSettings(type: AppSettingsType.settings);
+          await AppSettings.openAppSettings();
+        }, positiveText: "Open Settings");
+      }
+      if (permissionLocation == false || permissionActivity == false) {
+        HelpersUtils.showAlertDialog(context,
+            text: "Track Activity",
+            desc:
+                "Please allow location and body sensor tracking to continue using.",
+            negativeText: "Cancel", onPresspositive: () async {
+          await AppSettings.openAppSettings();
         }, positiveText: "Open Settings");
       }
     } else {
+      //IOS
       if (permissionLocation == false) {
         HelpersUtils.showAlertDialog(context,
-            text: "Health Permission",
-            desc: "Please allow location tracking to track down your activity",
+            text: "Track Activity",
+            desc:
+                "Please allow location and body sensor tracking to continue using.",
             negativeText: "Cancel", onPresspositive: () async {
-          await AppSettings.openAppSettings(type: AppSettingsType.settings);
+          await AppSettings.openAppSettings();
         }, positiveText: "Open Settings");
       }
     }

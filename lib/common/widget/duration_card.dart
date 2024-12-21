@@ -19,6 +19,8 @@ Widget DurationCard({required String label}) {
             SvgAsset.durationSvg,
             width: 20,
             height: 20,
+            colorFilter:
+                const ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
           ),
           const SizedBox(
             width: Sizes.xs - 2,
@@ -26,7 +28,7 @@ Widget DurationCard({required String label}) {
           Text(
             label,
             style: AppTextTheme.lightTextTheme.labelMedium
-                ?.copyWith(color: AppColors.textColor),
+                ?.copyWith(color: AppColors.primaryColor),
           ),
         ],
       ),

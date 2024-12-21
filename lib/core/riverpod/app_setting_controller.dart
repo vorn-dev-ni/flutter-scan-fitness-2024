@@ -24,10 +24,10 @@ class AppSettingsController extends _$AppSettingsController {
   }
 
   void updateHealthPermission(
-      {required bool health_permission,
-      required bool location,
-      required bool notification,
-      required bool activity}) {
+      {bool? health_permission,
+      bool? location,
+      bool? notification,
+      bool? activity}) {
     state = state.copyWith(
         health_permission: health_permission,
         location_permission: location,

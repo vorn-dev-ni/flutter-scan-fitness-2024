@@ -1,9 +1,9 @@
 import 'dart:io';
-
 import 'package:app_settings/app_settings.dart';
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/tile_switch.dart';
 import 'package:demo/core/riverpod/app_setting_controller.dart';
+import 'package:demo/data/service/health_connect.dart';
 import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:flutter/material.dart';
@@ -22,31 +22,31 @@ class NotificationSettingScreen extends ConsumerStatefulWidget {
 class _NotificationSettingScreenState
     extends ConsumerState<NotificationSettingScreen>
     with WidgetsBindingObserver {
+  late final FlutterHealthConnectService _flutterHealthConnectService;
+
   @override
   void initState() {
-    WidgetsBinding.instance.addObserver(this);
-
     super.initState();
+    _flutterHealthConnectService = FlutterHealthConnectService();
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
+    // TODO: implement dispose
     WidgetsBinding.instance.removeObserver(this);
+
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    // TODO: implement didChangeAppLifecycleState
+    super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
-      // _checkPermissionStatus();
+      _requestPermission();
       debugPrint("didChangeAppLifecycleState");
     }
-  }
-
-  Future<void> _checkPermissionStatus() async {
-    // if (await Permission.location.isGranted) {
-    //   _syncData();
-    // }
   }
 
   @override
@@ -85,11 +85,10 @@ class _NotificationSettingScreenState
                   appState?.receviedNotification ?? false,
                   (value) => _openSettings(),
                 ),
-                tileSwitch(
-                  "Allow Health Tracker",
-                  appState?.health_permission ?? false,
-                  (value) => _openSettings(),
-                ),
+                tileSwitch("Allow Health Tracker",
+                    appState?.health_permission ?? false, (value) {
+                  _openSettings();
+                }),
               ],
             ),
           ),
@@ -98,5 +97,14 @@ class _NotificationSettingScreenState
 
   Future _openSettings() async {
     await AppSettings.openAppSettings();
+  }
+
+  Future _requestPermission() async {
+    bool isValid =
+        await FlutterHealthConnectService().requestHealthConnectPermission();
+
+    ref
+        .read(appSettingsControllerProvider.notifier)
+        .updateHealthPermission(health_permission: isValid);
   }
 }

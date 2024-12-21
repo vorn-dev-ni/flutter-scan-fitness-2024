@@ -25,7 +25,7 @@ class NotificationLocalService {
       enableVibration: true,
       priority: Priority.high,
       importance: Importance.max,
-      largeIcon: DrawableResourceAndroidBitmap("ic_launcher"),
+      // largeIcon: DrawableResourceAndroidBitmap("ic_launcher"),
       styleInformation: MediaStyleInformation(
         htmlFormatContent: true,
         htmlFormatTitle: true,

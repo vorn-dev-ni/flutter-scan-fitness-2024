@@ -133,6 +133,7 @@ class _MyAppState extends ConsumerState<MyApp> {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
+
         debugShowCheckedModeBanner: false,
         themeMode: appsettingState.appTheme == AppTheme.light
             ? ThemeMode.light

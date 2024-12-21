@@ -32,9 +32,7 @@ class GlobalConfig {
     // Check and request permissions
     bool isAuthorized = await _flutterHealthConnectService.authorize();
     print("request areceived >> ${isAuthorized}");
-    if (!isAuthorized) {
-      await _flutterHealthConnectService.requestHealthConnectPermission();
-    }
+    await _flutterHealthConnectService.requestHealthConnectPermission();
   }
 
   Future<void> init() async {

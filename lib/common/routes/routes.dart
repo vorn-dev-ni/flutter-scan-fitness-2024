@@ -103,6 +103,7 @@ class AppRoutes {
     RoutesApp(
         routeName: AppPage.NO_INTERNET,
         builder: (context) => const NoInternet()),
+    RoutesApp(routeName: AppPage.NAV_SCAN, builder: (context) => ScanScreen()),
     RoutesApp(
         routeName: AppPage.PROFILE,
         builder: (context) => const ProfileScreen()),

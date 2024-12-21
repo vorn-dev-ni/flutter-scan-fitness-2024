@@ -5,6 +5,7 @@ import 'package:demo/common/routes/routes.dart';
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/bottom_nav.dart';
 import 'package:demo/data/service/firebase_remote_config.dart';
+import 'package:demo/data/service/health_connect.dart';
 import 'package:demo/features/account/controller/profile_controller.dart';
 import 'package:demo/features/account/model/profile_state.dart';
 import 'package:demo/features/app_screen.dart';
@@ -18,6 +19,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:demo/utils/localization/translation_helper.dart';
+import 'package:health/health.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -26,11 +29,12 @@ class MainScreen extends ConsumerStatefulWidget {
   ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends ConsumerState<MainScreen> {
+class _MainScreenState extends ConsumerState<MainScreen>
+    with WidgetsBindingObserver {
   DateTime today = HelpersUtils.getToday();
   late List<BottomNavigationBarItem> navItems = [];
   late List<ScreenApp> renderScreen = [];
-
+  late FlutterHealthConnectService _flutterHealthConnectService;
   late String titleBar = "";
   String? username = "";
   String resultText = '';
@@ -38,6 +42,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    _flutterHealthConnectService = FlutterHealthConnectService();
     bindingUsername();
     // _checkAppPermission();
     AppRoutes.navigationStacks.forEach(
@@ -98,6 +105,46 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _updatePermission();
+      debugPrint("didChangeAppLifecycleState");
+    }
+  }
+
+  Future _updatePermission() async {
+    bool permissionActivity = true;
+    bool permissionLocation = true;
+    bool permissionNotification = true;
+    debugPrint("Reading permission _updatePermission");
+
+    var status_activity = await Permission.activityRecognition.status;
+    var status_location = await Permission.location.status;
+    var status_notification = await Permission.notification.status;
+    if (status_location.isDenied) {
+      permissionLocation = false;
+    }
+    if (status_notification.isDenied) {
+      permissionNotification = false;
+    }
+    if (status_activity.isDenied) {
+      permissionActivity = false;
+    }
+
+    ref.read(appSettingsControllerProvider.notifier).updateHealthPermission(
+        activity: permissionActivity,
+        notification: permissionNotification,
+        location: permissionLocation);
+  }
+
   Future bindingUsername() async {
     // _preferences = await SharedPreferences.getInstance();
 
@@ -118,6 +165,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     return Scaffold(
       appBar: _appBar(selectedIndex, profileState),
       body: _widgetBody(selectedIndex, renderScreen),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     // Add your camera logic here
+      //     print("Camera button pressed");
+      //   },
+      //   child: Icon(Icons.camera_alt),
+      //   backgroundColor: Colors.blue,
+      // ),
       bottomNavigationBar: CustomBottomNavigationBar(
           appsettingState: appState!,
           selectedIndex: selectedIndex,

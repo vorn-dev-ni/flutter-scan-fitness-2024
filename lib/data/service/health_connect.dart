@@ -26,23 +26,22 @@ class FlutterHealthConnectService {
     return _instance;
   }
   List<HealthDataAccess> get permissions =>
-      [...steptypes, ...caloriesTypes, ...sleepTypes]
-          .map((type) => [
-                // Types that only require READ access
-                HealthDataType.WALKING_HEART_RATE,
-                HealthDataType.ELECTROCARDIOGRAM,
-                HealthDataType.HIGH_HEART_RATE_EVENT,
-                HealthDataType.LOW_HEART_RATE_EVENT,
-                HealthDataType.IRREGULAR_HEART_RATE_EVENT,
-                HealthDataType.EXERCISE_TIME,
-                HealthDataType.STEPS,
-                HealthDataType.SLEEP_ASLEEP,
-                HealthDataType.SLEEP_IN_BED,
-                HealthDataType.SLEEP_AWAKE,
-              ].contains(type)
-                  ? HealthDataAccess.READ
-                  : HealthDataAccess.READ_WRITE)
-          .toList();
+      [...steptypes, ...caloriesTypes, ...sleepTypes].map((type) {
+        // Define a set of types that require only READ access
+        const readOnlyTypes = {
+          HealthDataType.ELECTROCARDIOGRAM,
+          HealthDataType.EXERCISE_TIME,
+          HealthDataType.STEPS,
+          HealthDataType.SLEEP_ASLEEP,
+          HealthDataType.SLEEP_IN_BED,
+          HealthDataType.SLEEP_AWAKE,
+        };
+
+        // Check if the type is in the read-only list
+        return readOnlyTypes.contains(type)
+            ? HealthDataAccess.READ
+            : HealthDataAccess.READ_WRITE;
+      }).toList();
 
   Future<void> init() async {
     await Health().configure();
@@ -139,7 +138,7 @@ class FlutterHealthConnectService {
         [...steptypes, ...caloriesTypes, ...sleepTypes],
         permissions: permissions);
     debugPrint("Health permission is ${hasPermissions}");
-    if (hasPermissions == false) {
+    if (hasPermissions == false || hasPermissions == null) {
       try {
         bool authorized = await Health().requestAuthorization(
           [...steptypes, ...caloriesTypes, ...sleepTypes],

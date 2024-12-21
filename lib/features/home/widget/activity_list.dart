@@ -105,15 +105,6 @@ class _ActivityListState extends ConsumerState<ActivityList> {
       },
       loading: () {
         return appLoadingSpinner();
-        return Center(
-          child: SizedBox(
-            width: 50,
-            height: 50,
-            child: CircularProgressIndicator(
-              color: AppColors.primaryLight,
-            ),
-          ),
-        );
       },
     );
   }

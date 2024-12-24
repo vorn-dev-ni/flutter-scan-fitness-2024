@@ -15,7 +15,10 @@ import 'package:demo/features/authentication/widget/revalidate_password.dart';
 import 'package:demo/features/authentication/widget/success.dart';
 import 'package:demo/features/home/main_screen.dart';
 import 'package:demo/features/home/widget/all_activities.dart';
+import 'package:demo/features/home/widget/calories/personal_info_screen.dart';
 import 'package:demo/features/home/widget/gym_activity.dart';
+import 'package:demo/features/home/widget/sleep/sleep_edit_screen.dart';
+import 'package:demo/features/home/widget/steps/step_edit_screen.dart';
 import 'package:demo/features/other/no_internet.dart';
 import 'package:demo/features/result/result_screen.dart';
 import 'package:demo/features/scan/scan_screen.dart';
@@ -62,6 +65,14 @@ class AppRoutes {
     // const LoginScreen(),
     // const MainScreen(),
     // const RegisterScreen(),
+    RoutesApp(
+        routeName: AppPage.SLEEPS,
+        builder: (context) => const SleepEditScreen()),
+    RoutesApp(
+        routeName: AppPage.CALORIES,
+        builder: (context) => const PersonalInfoScreen()),
+    RoutesApp(
+        routeName: AppPage.STEPS, builder: (context) => const StepEditScreen()),
     RoutesApp(
         routeName: AppPage.APPEARENCE,
         builder: (context) => const ChangeThemeScreen()),

@@ -18,10 +18,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:sizer/sizer.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:demo/utils/localization/translation_helper.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:demo/utils/localization/translation_helper.dart';
 
 class AccountScreen extends ConsumerStatefulWidget {
   const AccountScreen({super.key});
@@ -106,7 +106,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
             splashColor:
                 const Color.fromARGB(255, 255, 171, 164).withOpacity(0.1),
             label: translations?.log_out ?? 'Logout',
-            onPressed: _handleLogout,
+            onPressed: askLogout,
             radius: Sizes.lg,
             textStyle: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
                 color: AppColors.errorColor,
@@ -298,6 +298,22 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
           allowDrawingOutsideViewBox: true, // Optional, remove if not needed
         ),
       ),
+    );
+  }
+
+  void askLogout() {
+    HelpersUtils.showAlertDialog(
+      context,
+      text: tr(context).are_you_sure,
+      onPressNegative: () async {
+        await _handleLogout();
+      },
+      desc: tr(context).desc_alert,
+      negativeText: tr(context).positive,
+      onPresspositive: () {
+        HelpersUtils.navigatorState(context).pop();
+      },
+      positiveText: tr(context).negative,
     );
   }
 

@@ -163,6 +163,17 @@ class FirestoreService {
     }
   }
 
+  Stream<DocumentSnapshot> getUserWorkoutGoal(String docId) {
+    try {
+      return _firestore.collection('goals').doc(docId).snapshots();
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error retrieving workout goal: $e");
+      }
+      rethrow;
+    }
+  }
+
   Future<void> updateUser(String email, String fullName, String? imageUrl,
       {String? gender, String? dob}) async {
     CollectionReference users = _firestore.collection('users');
@@ -181,6 +192,45 @@ class FirestoreService {
         });
         await firebaseAuthService.currentUser
             ?.updateProfile(displayName: fullName);
+        print("Update success fully");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> updateUserTarget(
+      {required String type, required String value}) async {
+    CollectionReference users = _firestore.collection('goals');
+
+    try {
+      String docId = firebaseAuthService.currentUser?.uid ?? "";
+      print("Update user id ${docId}");
+      Map<String, dynamic> payload = {};
+      if (type == 'Steps') {
+        payload = {
+          'steps': value,
+        };
+      }
+      if (type == 'Active Calories') {
+        payload = {
+          'calories': value,
+        };
+      }
+
+      if (type == 'Sleep') {
+        payload = {
+          'sleeps': value,
+        };
+      }
+      print("Update successful for type: $type with value: $value");
+
+      if (docId.isNotEmpty && docId != "") {
+        await users.doc("VeUtIDdNqsMVGknkbeBeBQhcT7S2").update(payload);
+        print("Update successful for type: $type with value: $value");
         print("Update success fully");
       }
     } catch (e) {

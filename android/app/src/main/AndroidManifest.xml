@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.example.demo">
 
     <!-- Permissions for general data -->
+
+
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -8,25 +10,18 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-    <uses-permission android:name="android.permission.BODY_SENSORS" />
+   <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.health.READ_STEPS" />
     <uses-permission android:name="android.permission.health.WRITE_STEPS" />
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
     <uses-permission android:name="android.permission.health.WRITE_SLEEP" />
-    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
-    <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
-    <uses-permission android:name="android.permission.health.READ_DISTANCE"/>
+<uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED" />
+<uses-permission android:name="android.permission.health.WRITE_ACTIVE_CALORIES_BURNED" />
+<uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND"/>
+<uses-permission android:name="android.permission.BODY_SENSORS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.health.READ_ACTIVE_ENERGY_BURNED" />
-<uses-permission android:name="android.permission.health.WRITE_ACTIVE_ENERGY_BURNED" />
-<uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
-<uses-permission android:name="android.permission.health.WRITE_TOTAL_CALORIES_BURNED" />
-
-    
-
     <!-- Queries for specific intents (Placed correctly under <manifest> and not <application>) -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
@@ -67,6 +62,10 @@
         <meta-data
             android:name="com.google.android.webview.WebView"
             android:value="true" />
+          <activity
+      android:name="com.yalantis.ucrop.UCropActivity"
+      android:screenOrientation="portrait"
+      android:theme="@style/Ucrop.CropTheme"/> <!-- This line is updated -->
 
         <!-- Main Activity -->
         <activity android:name=".MainActivity" 
@@ -78,7 +77,7 @@
                   android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
                   android:hardwareAccelerated="true"
                   android:windowSoftInputMode="adjustResize">
-
+       
             <!-- Flutter Metadata -->
             <meta-data android:name="flutterEmbedding" android:value="2" />
             <meta-data

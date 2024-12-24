@@ -7,9 +7,9 @@ import 'package:demo/data/service/health_connect.dart';
 import 'package:demo/features/home/main_screen.dart';
 import 'package:demo/features/other/not_found.dart';
 import 'package:demo/utils/constant/app_page.dart';
-import 'package:demo/utils/device/device_utils.dart';
 import 'package:demo/utils/firebase/firebase.dart';
 import 'package:demo/utils/firebase/firebase_options.dart';
+import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/local_storage/local_storage_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -26,13 +26,31 @@ class GlobalConfig {
   factory GlobalConfig() {
     return instance;
   }
+  Future requestBodySensor() async {
+    // PermissionStatus permissionStatus = await Permission.sensors.status;
+    // debugPrint('${permissionStatus}');
+    // if (permissionStatus.isPermanentlyDenied || permissionStatus.isDenied) {
+    //   return;
+    // }
+    PermissionStatus bodysensors = await Permission.sensors.request();
+    if (bodysensors.isDenied) {
+      debugPrint("bodysensors permission denied. Requesting...");
+      if (!bodysensors.isGranted) {
+        debugPrint("bodysensors permission denied. Returning false.");
+        // return false;
+      }
+    }
+  }
 
   Future healthInit() async {
     await _flutterHealthConnectService.init();
     // Check and request permissions
     bool isAuthorized = await _flutterHealthConnectService.authorize();
     print("request areceived >> ${isAuthorized}");
-    await _flutterHealthConnectService.requestHealthConnectPermission();
+
+    HelpersUtils.delay(3000, () async {
+      await _flutterHealthConnectService.requestHealthConnectPermission();
+    });
   }
 
   Future<void> init() async {

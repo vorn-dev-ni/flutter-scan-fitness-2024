@@ -63,7 +63,7 @@ Widget foodHeaderBox(FoodModelResult food) {
         height: Sizes.lg,
       ),
       Text(food.comment ?? "N/A",
-          textAlign: TextAlign.justify,
+          textAlign: TextAlign.left,
           style: AppTextTheme.lightTextTheme.titleMedium),
       const SizedBox(
         height: Sizes.xl,

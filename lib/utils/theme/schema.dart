@@ -37,6 +37,10 @@ class SchemaData {
         error: AppColors.errorColor,
         surface: AppColors.secondaryColor,
       ),
+      datePickerTheme: const DatePickerThemeData(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+      ),
     );
   }
 
@@ -53,6 +57,10 @@ class SchemaData {
       ),
     ).copyWith(
       scaffoldBackgroundColor: Colors.black12,
+      datePickerTheme: const DatePickerThemeData(
+        backgroundColor: Colors.black,
+        surfaceTintColor: Colors.black,
+      ),
       textTheme: AppTextTheme.darkTextTheme,
       brightness: Brightness.dark,
       elevatedButtonTheme: ElevationTheme.elevationButtonDark,

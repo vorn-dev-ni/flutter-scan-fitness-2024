@@ -99,8 +99,8 @@ class _LanguageSettingScreenState extends ConsumerState<LanguageSettingScreen> {
                         ),
                         title: Text(
                           _langs[index].toLanguageTag() == 'en'
-                              ? 'English'
-                              : 'Cambodia',
+                              ? tr(context).english
+                              : tr(context).khmer,
                           style: appThemeRef == AppTheme.light
                               ? AppTextTheme.lightTextTheme.labelLarge
                               : AppTextTheme.darkTextTheme.labelLarge

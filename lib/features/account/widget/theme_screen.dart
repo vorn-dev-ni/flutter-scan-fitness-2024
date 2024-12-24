@@ -45,7 +45,7 @@ class _ChangeThemeScreenState extends ConsumerState<ChangeThemeScreen> {
                   height: Sizes.xl,
                 ),
                 tileSwitch(
-                  "${appThemeRef?.appTheme?.name[0].toUpperCase()}${appThemeRef?.appTheme?.name.substring(1)} Theme ",
+                  "${appThemeRef.appTheme == AppTheme.dark ? tr(context).dark : tr(context).light}",
                   appThemeRef.appTheme == AppTheme.dark,
                   (value) => _toggleTheme(appThemeRef.appTheme!),
                 ),

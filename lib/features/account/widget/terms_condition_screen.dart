@@ -102,6 +102,7 @@ Page resource error:
     return Scaffold(
       appBar: const AppBarCustom(
         showheader: false,
+        text: 'Terms and Privacy',
         bgColor: AppColors.primaryDark,
         foregroundColor: AppColors.backgroundLight,
       ),

@@ -22,11 +22,8 @@ import 'package:sizer/sizer.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-Future<void> _backgroundHandler(RemoteMessage message) async {
-  // Handle background message
-}
+Future<void> _backgroundHandler(RemoteMessage message) async {}
 // import 'package:flutter_config/flutter_config.dart';
 void main() async {
   // await FlutterConfig.loadEnvVariables();
@@ -102,18 +99,18 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   void _handleCheckConnection(List<ConnectivityResult> event) {
     if (event.contains(ConnectivityResult.none)) {
+      GlobalConfig.instance.navigatorKey.currentState?.pushNamed(
+        AppPage.NO_INTERNET,
+      );
       if (kDebugMode) {
         print("No Internet !! ");
       }
-      navigatorKey.currentState?.pushNamed(
-        AppPage.NO_INTERNET,
-      );
     } else {
       if (kDebugMode) {
         print(" Internet is back !! ");
       }
-      if (navigatorKey.currentState?.canPop() == true) {
-        navigatorKey.currentState?.pop();
+      if (GlobalConfig.instance.navigatorKey.currentState?.canPop() == true) {
+        GlobalConfig.instance.navigatorKey.currentState?.pop();
       }
     }
   }
@@ -140,7 +137,7 @@ class _MyAppState extends ConsumerState<MyApp> {
             : ThemeMode.dark,
 
         // routes: AppRoutes.getAppRoutes(),
-        navigatorKey: navigatorKey,
+        navigatorKey: GlobalConfig.instance.navigatorKey,
         onGenerateRoute: (settings) =>
             GlobalConfig.instance.onGenerateRoute(settings),
         darkTheme: SchemaData.darkThemeData(

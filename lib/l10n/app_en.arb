@@ -19,6 +19,7 @@
       }
     }
   },
+  "please_wait":"Please Wait...",
   "activities":"Activities",
   "notification": "Notifications",
   "app_permission":"App Permission",
@@ -65,5 +66,35 @@
      "success_email_desc" : "Please check your email again",
      "lang_desc":"Select your preferered language to use",
        "success_lang":"Language has been updated",
-  "success_lang_desc":"Successfully !!!"
+  "success_lang_desc":"Successfully !!!",
+  "today_summary":"Today Summary",
+  "my_activity":"My Activity",
+  "target":"Target",
+  "edit_target":"Edit Target",
+   "target_goal":"Target Goal:",
+   "select_gender":"Select Gender",
+   "male":"Male",
+   "female":"Female",
+   "dob":"Date of birth",
+   "save_change":"Save Changes",
+   "are_you_sure":"Are you sure ?",
+   "desc_alert":"Please make confirm to your choice?",
+   "positive":"Yes",
+   "negative":"No",
+   "whoops":"Whoops!!!",
+   "slow_internet":"Slow or no internet connection right now. Please check your internet settings !!!",
+   "check_internet":"Check Internet",
+     "allow_location":"Allow Location Always",
+  "allow_recognition":"Allow Activity Recognition",
+  "allow_body_sensors":"Allow Body Sensors",
+  "allow_notification":"Allow Notifications",
+    "kcal":"Kilocalories",
+    "khmer":"Khmer",
+    "english":"English",
+    "dark":"Dark Theme",
+    "light":"Light Theme",
+      "sort_asc":"Sort by date Ascending",
+  "sort_desc":"Sort by date Descending"
+ 
+
 }

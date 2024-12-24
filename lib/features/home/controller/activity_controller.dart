@@ -5,7 +5,7 @@ import 'package:demo/data/service/firestore_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'activity_controller.g.dart';
 
-@Riverpod(keepAlive: false)
+@Riverpod(keepAlive: true)
 class ActivityController extends _$ActivityController {
   bool _hasDelayed = false;
 
@@ -23,7 +23,7 @@ class ActivityController extends _$ActivityController {
 
     if (!_hasDelayed) {
       _hasDelayed = true;
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(milliseconds: 800));
     }
     ref.read(appLoadingStateProvider.notifier).setState(false);
 

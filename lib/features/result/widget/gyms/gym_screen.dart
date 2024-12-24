@@ -1,5 +1,5 @@
 // ignore_for_file: must_be_immutable, library_private_types_in_public_api
-
+import 'package:demo/utils/localization/translation_helper.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:demo/common/widget/app_loading.dart';
@@ -93,7 +93,7 @@ class _GymComponentState extends ConsumerState<GymComponent> {
       },
       error: _handleError,
       loading: () {
-        return appLoadingSpinner(text: 'Please wait...');
+        return appLoadingSpinner(text: tr(context).please_wait);
       },
     ));
   }

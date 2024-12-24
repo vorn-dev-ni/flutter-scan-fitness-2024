@@ -7,7 +7,7 @@ part of 'activity_controller.dart';
 // **************************************************************************
 
 String _$activityControllerHash() =>
-    r'b87ae6278659cdccc0e962b83a83301f881da94c';
+    r'dc4fb6712a0b3b6f5429a84d30e67286490fbb9d';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -31,7 +31,7 @@ class _SystemHash {
 }
 
 abstract class _$ActivityController
-    extends BuildlessAutoDisposeStreamNotifier<QuerySnapshot> {
+    extends BuildlessStreamNotifier<QuerySnapshot> {
   late final String userId;
   late final bool isLimit;
   late final int limit;
@@ -97,8 +97,8 @@ class ActivityControllerFamily extends Family<AsyncValue<QuerySnapshot>> {
 }
 
 /// See also [ActivityController].
-class ActivityControllerProvider extends AutoDisposeStreamNotifierProviderImpl<
-    ActivityController, QuerySnapshot> {
+class ActivityControllerProvider
+    extends StreamNotifierProviderImpl<ActivityController, QuerySnapshot> {
   /// See also [ActivityController].
   ActivityControllerProvider(
     String userId,
@@ -180,7 +180,7 @@ class ActivityControllerProvider extends AutoDisposeStreamNotifierProviderImpl<
   }
 
   @override
-  AutoDisposeStreamNotifierProviderElement<ActivityController, QuerySnapshot>
+  StreamNotifierProviderElement<ActivityController, QuerySnapshot>
       createElement() {
     return _ActivityControllerProviderElement(this);
   }
@@ -208,8 +208,7 @@ class ActivityControllerProvider extends AutoDisposeStreamNotifierProviderImpl<
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin ActivityControllerRef
-    on AutoDisposeStreamNotifierProviderRef<QuerySnapshot> {
+mixin ActivityControllerRef on StreamNotifierProviderRef<QuerySnapshot> {
   /// The parameter `userId` of this provider.
   String get userId;
 
@@ -224,8 +223,8 @@ mixin ActivityControllerRef
 }
 
 class _ActivityControllerProviderElement
-    extends AutoDisposeStreamNotifierProviderElement<ActivityController,
-        QuerySnapshot> with ActivityControllerRef {
+    extends StreamNotifierProviderElement<ActivityController, QuerySnapshot>
+    with ActivityControllerRef {
   _ActivityControllerProviderElement(super.provider);
 
   @override

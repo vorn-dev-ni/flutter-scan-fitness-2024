@@ -8,7 +8,9 @@ import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sizer/sizer.dart';
+import 'package:demo/utils/localization/translation_helper.dart';
 import 'package:demo/utils/localization/translation_helper.dart';
 
 class NotificationSettingScreen extends ConsumerStatefulWidget {
@@ -27,7 +29,10 @@ class _NotificationSettingScreenState
   @override
   void initState() {
     super.initState();
+
     _flutterHealthConnectService = FlutterHealthConnectService();
+    _requestPermission();
+
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -70,25 +75,27 @@ class _NotificationSettingScreenState
                   height: Sizes.xl,
                 ),
                 tileSwitch(
-                  "Allow Location Always",
+                  tr(context).allow_location,
                   appState?.location_permission ?? false,
                   (value) => _openSettings(),
                 ),
                 if (Platform.isAndroid)
                   tileSwitch(
-                    "Allow Activity Recognition",
+                    tr(context).allow_recognition,
                     appState?.body_sensor_permission ?? false,
                     (value) => _openSettings(),
                   ),
+                if (Platform.isAndroid)
+                  tileSwitch(
+                    tr(context).allow_body_sensors,
+                    appState?.device_sensor_permission ?? false,
+                    (value) => _openSettings(),
+                  ),
                 tileSwitch(
-                  "Allow Notification",
+                  tr(context).allow_notification,
                   appState?.receviedNotification ?? false,
                   (value) => _openSettings(),
                 ),
-                tileSwitch("Allow Health Tracker",
-                    appState?.health_permission ?? false, (value) {
-                  _openSettings();
-                }),
               ],
             ),
           ),
@@ -100,11 +107,39 @@ class _NotificationSettingScreenState
   }
 
   Future _requestPermission() async {
-    bool isValid =
-        await FlutterHealthConnectService().requestHealthConnectPermission();
+    // bool isValid =
+    //     await FlutterHealthConnectService().requestHealthConnectPermission();
+    bool permissionActivity = true;
+    bool permissionLocation = true;
+    bool permissionNotification = true;
+    bool permissionSensors = true;
+    bool status_health = await _flutterHealthConnectService.checkPermission();
 
-    ref
-        .read(appSettingsControllerProvider.notifier)
-        .updateHealthPermission(health_permission: isValid);
+    debugPrint("Reading permission _updatePermission ${status_health}");
+
+    var status_activity = await Permission.activityRecognition.status;
+    var status_location = await Permission.location.status;
+    var status_notification = await Permission.notification.status;
+    var status_body_sensors = await Permission.sensors.status;
+
+    if (!status_location.isGranted) {
+      permissionLocation = false;
+    }
+    if (!status_notification.isGranted) {
+      permissionNotification = false;
+    }
+    if (!status_activity.isGranted) {
+      permissionActivity = false;
+    }
+    if (!status_body_sensors.isGranted) {
+      permissionSensors = false;
+    }
+    ref.read(appSettingsControllerProvider.notifier).updateAppPermission(
+        activity: permissionActivity,
+        notification: permissionNotification,
+        deviceSensors: permissionSensors,
+        location: permissionLocation);
+    debugPrint(
+        "Notification: ${status_notification} Location: ${status_location} Activity ${status_activity} Permission ${permissionSensors}");
   }
 }

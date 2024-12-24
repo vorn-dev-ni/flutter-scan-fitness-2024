@@ -93,14 +93,22 @@ class HelpersUtils {
     BuildContext context, {
     required String text,
     required String desc,
+    key,
     required String positiveText,
     required String negativeText,
     required Function onPresspositive,
+    Function? onPressNegative,
   }) async {
     return showDialog(
       context: context,
+      useSafeArea: true,
+      // barrierColor: AppColors.backgroundLight,
+      barrierDismissible: false,
+
       builder: (BuildContext context) {
         return AlertDialog(
+          key: key,
+          backgroundColor: AppColors.backgroundLight,
           title: Text(
             text,
             style: AppTextTheme.lightTextTheme.headlineSmall,
@@ -110,20 +118,41 @@ class HelpersUtils {
             style: AppTextTheme.lightTextTheme.labelLarge,
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                onPresspositive();
-                // HelpersUtils.deepLinkLauncher(url);
-                // HelpersUtils.navigatorState(context).pop();
-              },
-              child: Text(positiveText),
+            Expanded(
+              child: TextButton(
+                onPressed: () {
+                  onPresspositive();
+                  // HelpersUtils.deepLinkLauncher(url);
+                  // HelpersUtils.navigatorState(context).pop();
+                },
+                style: const ButtonStyle(
+                    backgroundColor:
+                        WidgetStatePropertyAll(AppColors.errorLight)),
+                child: Text(
+                  positiveText,
+                  style: AppTextTheme.lightTextTheme.labelLarge
+                      ?.copyWith(color: AppColors.errorColor),
+                ),
+              ),
             ),
-            TextButton(
-              onPressed: () {
-                HelpersUtils.navigatorState(context).pop();
-              },
-              child: Text(negativeText),
-            ),
+            if (onPressNegative != null)
+              Expanded(
+                child: TextButton(
+                  onPressed: () {
+                    onPressNegative();
+                    // HelpersUtils.deepLinkLauncher(url);
+                    // HelpersUtils.navigatorState(context).pop();
+                  },
+                  style: const ButtonStyle(
+                      backgroundColor: WidgetStatePropertyAll(
+                          Color.fromARGB(255, 201, 222, 255))),
+                  child: Text(
+                    negativeText,
+                    style: AppTextTheme.lightTextTheme.labelLarge
+                        ?.copyWith(color: AppColors.primaryColor),
+                  ),
+                ),
+              )
           ],
         );
       },

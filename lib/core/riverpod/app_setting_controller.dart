@@ -4,7 +4,7 @@ import 'package:demo/utils/local_storage/local_storage_utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'app_setting_controller.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class AppSettingsController extends _$AppSettingsController {
   @override
   AppSettingState build() {
@@ -23,14 +23,18 @@ class AppSettingsController extends _$AppSettingsController {
     state = state.copyWith(appTheme: app_theme);
   }
 
-  void updateHealthPermission(
-      {bool? health_permission,
-      bool? location,
+  void updateHealth(health_permission) {
+    state = state.copyWith(health_permission: health_permission);
+  }
+
+  void updateAppPermission(
+      {bool? location,
       bool? notification,
-      bool? activity}) {
+      bool? activity,
+      bool? deviceSensors}) {
     state = state.copyWith(
-        health_permission: health_permission,
         location_permission: location,
+        device_sensor_permission: deviceSensors,
         receviedNotification: notification,
         body_sensor_permission: activity);
   }

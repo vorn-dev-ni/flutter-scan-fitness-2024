@@ -285,14 +285,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await authController.loginUser(context);
       ref.invalidate(tabbarControllerProvider);
       ref.invalidate(profileControllerProvider);
-      if (mounted) {
-        ref.read(appLoadingStateProvider.notifier).setState(false);
-      }
       HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
           AppPage.FIRST, (Route<dynamic> route) => false);
-    }
-    if (mounted) {
-      ref.read(appLoadingStateProvider.notifier).setState(false);
     }
   }
 }

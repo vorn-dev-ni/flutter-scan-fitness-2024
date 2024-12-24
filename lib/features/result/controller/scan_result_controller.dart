@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/data/service/gemini_service.dart';
 import 'package:demo/features/result/controller/recent_controller.dart';
 import 'package:demo/features/result/model/food_model.dart';

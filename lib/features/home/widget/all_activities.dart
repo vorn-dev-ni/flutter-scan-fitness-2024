@@ -6,7 +6,6 @@ import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:demo/utils/localization/translation_helper.dart';
@@ -24,7 +23,6 @@ class _AllActivitiesScreenState extends ConsumerState<AllActivitiesScreen> {
   String? sortBy = 'desc';
   @override
   Widget build(BuildContext context) {
-    debugPrint("Re render ${sortBy}");
     final isLoading = ref.watch(appLoadingStateProvider);
     return Scaffold(
         appBar: _appBar(isLoading),
@@ -90,7 +88,7 @@ class _AllActivitiesScreenState extends ConsumerState<AllActivitiesScreen> {
                       )
                     : null,
                 title: Text(
-                  "Sort by date Ascending",
+                  tr(context).sort_asc,
                   style: AppTextTheme.lightTextTheme.bodyLarge
                       ?.copyWith(fontWeight: FontWeight.w400),
                 ),
@@ -114,7 +112,7 @@ class _AllActivitiesScreenState extends ConsumerState<AllActivitiesScreen> {
                   });
                 },
                 title: Text(
-                  "Sort by date Descending",
+                  tr(context).sort_desc,
                   style: AppTextTheme.lightTextTheme.bodyLarge
                       ?.copyWith(fontWeight: FontWeight.w400),
                 ),

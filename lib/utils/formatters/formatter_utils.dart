@@ -28,31 +28,31 @@ class FormatterUtils {
         .join();
   }
 
-  static double calculateHealthScore({
-    required double sleepHours,
-    required int steps,
+  static double calculateHealthPercentage({
+    required int stepsTaken,
     required double caloriesBurned,
-    double sleepWeight = 1.0,
-    double stepsWeight = 1.0,
-    double caloriesWeight = 1.0,
+    required double sleepDuration,
   }) {
-    // Normalize the sleep score (7-9 hours is optimal)
-    double sleepScore = _calculateSleepScore(sleepHours);
+    // For steps: Using 10,000 as a base
+    double stepsPercentage = (stepsTaken / 10000) * 100;
+    stepsPercentage =
+        stepsPercentage > 100 ? 100 : stepsPercentage; // Clamp to 100
 
-    // Normalize the step score (Goal: 10,000 steps)
-    double stepScore = _calculateStepScore(steps);
+    // For calories: Using 2,500 kcal as a base
+    double caloriesPercentage = (caloriesBurned / 2500) * 100;
+    caloriesPercentage =
+        caloriesPercentage > 100 ? 100 : caloriesPercentage; // Clamp to 100
 
-    // Normalize the calorie burn score (Goal: 300-500 calories burned)
-    double calorieScore = _calculateCalorieScore(caloriesBurned);
+    // For sleep: Using 8 hours of sleep as a base
+    double sleepPercentage = (sleepDuration / 8) * 100;
+    sleepPercentage =
+        sleepPercentage > 100 ? 100 : sleepPercentage; // Clamp to 100
 
-    // Weighted average based on user's preferences
-    double totalWeight = sleepWeight + stepsWeight + caloriesWeight;
-    double weightedHealthScore = ((sleepScore * sleepWeight) +
-            (stepScore * stepsWeight) +
-            (calorieScore * caloriesWeight)) /
-        totalWeight;
+    // Calculate the average health percentage
+    double healthPercentage =
+        (stepsPercentage + caloriesPercentage + sleepPercentage) / 3;
 
-    return weightedHealthScore;
+    return healthPercentage * 100;
   }
 
   static double _calculateSleepScore(double hours) {
@@ -133,8 +133,8 @@ class FormatterUtils {
     }
   }
 
-  static String formatDob(DateTime date) {
-    DateFormat format = DateFormat("dd-MM-yyyy");
+  static String formatDob(DateTime date, {String? prefix}) {
+    DateFormat format = DateFormat(prefix ?? "dd-MM-yyyy");
     return format.format(date);
   }
 

@@ -13,6 +13,7 @@ import 'package:demo/utils/exception/app_exception.dart';
 import 'package:flutter/material.dart';
 import 'package:demo/features/result/widget/food_point.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:demo/utils/localization/translation_helper.dart';
 
 class FoodComponent extends ConsumerStatefulWidget {
   late ActivityTag tag;
@@ -58,8 +59,6 @@ class _FoodComponentState extends ConsumerState<FoodComponent> {
       data: (data) {
         if (data is ScanModelResult && data.modelResult is FoodModelResult) {
           final result = data.modelResult;
-
-          print(data.imageFile);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -102,7 +101,7 @@ class _FoodComponentState extends ConsumerState<FoodComponent> {
             cb: _retry);
       },
       loading: () {
-        return appLoadingSpinner(text: 'Please wait...');
+        return appLoadingSpinner(text: tr(context).please_wait);
       },
     );
   }

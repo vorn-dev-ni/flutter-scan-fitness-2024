@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer/sizer.dart';
@@ -67,7 +68,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ? AppColors.backgroundLight
             : AppColors.backgroundDark,
         bottomSheet: Container(
-          color: AppColors.backgroundLight,
+          color: appSettings.appTheme == AppTheme.light
+              ? AppColors.backgroundLight
+              : AppColors.backgroundDark,
           child: Padding(
             padding: const EdgeInsets.all(Sizes.xl),
             child: Row(
@@ -76,7 +79,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: ButtonApp(
                       height: 20,
                       splashColor: const Color.fromARGB(255, 190, 209, 241),
-                      label: 'Save Changes',
+                      label: tr(context).save_change,
                       onPressed: appStateloading == false
                           ? () {
                               _handleSaveProfile();
@@ -97,7 +100,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: Colors.white) as dynamic,
-                      color: AppColors.primaryColor,
+                      color: appSettings.appTheme == AppTheme.light
+                          ? AppColors.primaryLight
+                          : AppColors.primaryColor,
                       textColor: Colors.white,
                       elevation: 0),
                 )
@@ -227,10 +232,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
 
         AppInput(
-          hintText: "Full Name",
+          hintText: tr(context).full_name,
           obscureText: false,
           fillColor: false,
-          placeholder: 'Full Name',
+          placeholder: tr(context).full_name,
           controller: _textEditingFullName,
           onChanged: (value) {
             ref
@@ -246,7 +251,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
         // const Text('Gender'),
         Text(
-          'Select Gender',
+          tr(context).select_gender,
           style: appThemeRef == AppTheme.light
               ? AppTextTheme.lightTextTheme.bodyLarge
               : AppTextTheme.darkTextTheme.bodyLarge,
@@ -263,7 +268,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               },
             ),
             Text(
-              'Male',
+              tr(context).male,
               style: appThemeRef == AppTheme.light
                   ? AppTextTheme.lightTextTheme.bodyMedium
                   : AppTextTheme.darkTextTheme.bodyMedium,
@@ -279,7 +284,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               },
             ),
             Text(
-              'Female',
+              tr(context).female,
               style: appThemeRef == AppTheme.light
                   ? AppTextTheme.lightTextTheme.bodyMedium
                   : AppTextTheme.darkTextTheme.bodyMedium,
@@ -290,7 +295,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           height: Sizes.sm,
         ),
         Text(
-          'Date of birth',
+          tr(context).dob,
           style: appThemeRef == AppTheme.light
               ? AppTextTheme.lightTextTheme.bodyLarge
               : AppTextTheme.darkTextTheme.bodyLarge,
@@ -435,7 +440,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       imageUrl = await _uploadImageController.uploadFile(_imageTem) ?? "";
       // print(_imageTem);
     }
-    print(" Saving Image Url >>> ${imageUrl}");
     ref.read(profileControllerProvider.notifier).saveUserProfile(
         email, _textEditingFullName.text, imageUrl ?? "", ref,
         dob: dob, gender: gender);
@@ -445,7 +449,36 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     try {
       final image = await ImagePicker().pickImage(source: imageSource);
       if (image == null) return;
-      final imageTemp = File(image.path);
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: image.path,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 50,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: AppColors.primaryColor,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: false,
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+              CropAspectRatioPreset.ratio4x3,
+            ],
+          ),
+          IOSUiSettings(
+            title: 'Cropper',
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+              CropAspectRatioPreset.ratio4x3,
+            ],
+          ),
+        ],
+      );
+      final path = croppedFile!.path;
+      final imageTemp = File(path);
+
       setState(() {
         _imageTem = imageTemp;
       });

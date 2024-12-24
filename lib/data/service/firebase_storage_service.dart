@@ -36,12 +36,12 @@ class FirebaseStorageService {
             !(mimeType == 'image/png' || mimeType == 'image/jpeg')) {
           throw Exception('Invalid file type. Only PNG and JPG are allowed.');
         }
-        final resizedFile = await testCompressAndGetFile(file);
+        // final resizedFile = await testCompressAndGetFile(file);
 
-        if (resizedFile != null) {
+        if (file != null) {
           final imageRef =
               await createReferences("image/${HelpersUtils.getToday()}");
-          await imageRef.putFile(resizedFile);
+          await imageRef.putFile(file);
 
           // Return download URL
           return await imageRef.getDownloadURL();

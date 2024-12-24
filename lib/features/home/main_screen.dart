@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:app_settings/app_settings.dart';
 import 'package:demo/common/model/screen_app.dart';
 import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/core/riverpod/navigation_state.dart';
@@ -14,12 +17,12 @@ import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/constant/sizes.dart';
+import 'package:demo/utils/global_config.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:demo/utils/localization/translation_helper.dart';
-import 'package:health/health.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
@@ -32,10 +35,14 @@ class MainScreen extends ConsumerStatefulWidget {
 class _MainScreenState extends ConsumerState<MainScreen>
     with WidgetsBindingObserver {
   DateTime today = HelpersUtils.getToday();
+  final GlobalKey _alertKeyAndroid = GlobalKey();
+  final GlobalKey _alertKeyAndroidIOS = GlobalKey();
+
   late List<BottomNavigationBarItem> navItems = [];
   late List<ScreenApp> renderScreen = [];
   late FlutterHealthConnectService _flutterHealthConnectService;
   late String titleBar = "";
+  bool showDialog = false;
   String? username = "";
   String resultText = '';
 
@@ -45,8 +52,8 @@ class _MainScreenState extends ConsumerState<MainScreen>
     WidgetsBinding.instance.addObserver(this);
 
     _flutterHealthConnectService = FlutterHealthConnectService();
+    _updatePermission();
     bindingUsername();
-    // _checkAppPermission();
     AppRoutes.navigationStacks.forEach(
       (element) {
         navItems.add(
@@ -106,43 +113,98 @@ class _MainScreenState extends ConsumerState<MainScreen>
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      debugPrint("App State is resumed");
+
+      _updatePermission();
+    }
+    if (state == AppLifecycleState.inactive) {
+      if (_alertKeyAndroid.currentState != null) {
+        _alertKeyAndroid.currentState!.activate();
+      }
+    }
+  }
+
+  @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
-      _updatePermission();
-      debugPrint("didChangeAppLifecycleState");
-    }
-  }
-
   Future _updatePermission() async {
-    bool permissionActivity = true;
-    bool permissionLocation = true;
-    bool permissionNotification = true;
-    debugPrint("Reading permission _updatePermission");
+    String title = 'Oops !!!';
+    String message = '';
 
+    debugPrint("RUNRUN RUNURNR");
+
+    bool status_health = await _flutterHealthConnectService.checkPermission();
     var status_activity = await Permission.activityRecognition.status;
     var status_location = await Permission.location.status;
-    var status_notification = await Permission.notification.status;
-    if (status_location.isDenied) {
-      permissionLocation = false;
-    }
-    if (status_notification.isDenied) {
-      permissionNotification = false;
-    }
-    if (status_activity.isDenied) {
-      permissionActivity = false;
+    var status_body_sensors = await Permission.sensors.status;
+
+    debugPrint(
+        "Reading permission status_health ${status_health} body sensor ${status_body_sensors} status_location ${status_location} ");
+
+    if (Platform.isAndroid) {
+      print('_alertKeyAndroid.currentState ${_alertKeyAndroid.currentState}');
+
+      if (!status_location.isGranted || !status_activity.isGranted) {
+        title = "Track Activity is disabled";
+        message =
+            "Please allow location and activity tracking to continue using.";
+      }
+      if (!status_body_sensors.isGranted) {
+        await GlobalConfig.instance.requestBodySensor();
+        title = "Body Sensor is disabled";
+        message = "Please allow body sensor tracking to continue using.";
+      }
+      if (status_health == false) {
+        title = "Health Permission is disabled";
+        message = "Please allow health fitness and activity tracker.";
+      }
+
+      debugPrint("message ${message} title ${title}");
+      if (message.isNotEmpty && showDialog == false) {
+        showDialog = true;
+        HelpersUtils.showAlertDialog(context,
+            key: _alertKeyAndroid,
+            text: title,
+            desc: message,
+            negativeText: "Cancel", onPresspositive: () async {
+          showDialog = false;
+          HelpersUtils.navigatorState(context).pop();
+          await AppSettings.openAppSettings();
+        }, positiveText: "Open Settings");
+      } else {
+        if (showDialog == true &&
+            _alertKeyAndroid.currentState == null &&
+            status_location.isGranted &&
+            status_body_sensors.isGranted &&
+            status_activity.isGranted &&
+            status_health == true) {
+          HelpersUtils.navigatorState(context).pop();
+        }
+      }
+    } else {
+      //IOS
+      if (!status_location.isGranted) {
+        HelpersUtils.showAlertDialog(context,
+            key: _alertKeyAndroidIOS,
+            text: "Location is disabled",
+            desc:
+                "Please allow location and body sensor tracking to continue using.",
+            negativeText: "Cancel", onPresspositive: () async {
+          HelpersUtils.navigatorState(context).pop();
+          await AppSettings.openAppSettings();
+        }, positiveText: "Open Settings");
+      }
     }
 
-    ref.read(appSettingsControllerProvider.notifier).updateHealthPermission(
-        activity: permissionActivity,
-        notification: permissionNotification,
-        location: permissionLocation);
+    ref
+        .read(appSettingsControllerProvider.notifier)
+        .updateHealth(status_health);
   }
 
   Future bindingUsername() async {

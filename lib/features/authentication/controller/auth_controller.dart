@@ -138,10 +138,10 @@ class AuthController {
             .setKeyString("avatarImage", data['avatarImage'] ?? "");
       }
     } catch (e) {
-      ref.read(appLoadingStateProvider.notifier).setState(false);
-
       HelpersUtils.showErrorSnackbar(
           ref.context, "Firebase Error", e.toString(), StatusSnackbar.failed);
+      ref.read(appLoadingStateProvider.notifier).setState(false);
+
       rethrow;
     }
   }

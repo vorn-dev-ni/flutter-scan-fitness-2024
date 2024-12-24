@@ -21,7 +21,7 @@ with the following image pls rate my foods and
 if there is a multiple foods u see, just choose 1 only
 response as json object with the following 
 fields : rating, title, comment, calories, calcium with it units, 
-fat, proteins, sugar as gram , carbohydrates , rating overall 
+fat, proteins, sugar as gram , carbohydrates , rating overall  ( make sure to always include these 6 types)
 out of 5 base on healthiness if too much calories or junk food 
 rate it low and if it a salad or healthy make it high rating or  , 
  if user submit image that is not related to that pls return error with key code, message as json object 
@@ -39,7 +39,6 @@ rate it low and if it a salad or healthy make it high rating or  ,
     "isHealthy": true / false,
   
 }
-
   ''';
 
   static const termsAndConditions =

@@ -7,10 +7,12 @@ Widget tileSwitch(String label, bool value, Function(bool value) toggleSwitch) {
   return Card(
     color: AppColors.backgroundLight,
     elevation: 2,
+    clipBehavior: Clip.hardEdge,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(8.0),
     ),
     child: ListTile(
+      onTap: () => toggleSwitch(false),
       contentPadding:
           const EdgeInsets.symmetric(horizontal: Sizes.lg, vertical: Sizes.xs),
       title: Text(label, style: AppTextTheme.lightTextTheme.labelLarge),

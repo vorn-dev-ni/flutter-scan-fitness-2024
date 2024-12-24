@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:demo/features/home/model/user_health.dart';
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:intl/intl.dart';
 
 class FlutterHealthConnectService {
   static final steptypes = [
@@ -10,6 +12,7 @@ class FlutterHealthConnectService {
   ];
   static final caloriesTypes = [
     HealthDataType.ACTIVE_ENERGY_BURNED,
+    // HealthDataType.TOTAL_CALORIES_BURNED,
   ];
   static final sleepTypes = [
     HealthDataType.SLEEP_ASLEEP,
@@ -29,17 +32,15 @@ class FlutterHealthConnectService {
       [...steptypes, ...caloriesTypes, ...sleepTypes].map((type) {
         // Define a set of types that require only READ access
         const readOnlyTypes = {
-          HealthDataType.ELECTROCARDIOGRAM,
-          HealthDataType.EXERCISE_TIME,
           HealthDataType.STEPS,
           HealthDataType.SLEEP_ASLEEP,
-          HealthDataType.SLEEP_IN_BED,
-          HealthDataType.SLEEP_AWAKE,
+          HealthDataType.ACTIVE_ENERGY_BURNED,
+          // HealthDataType.TOTAL_CALORIES_BURNED,
         };
 
         // Check if the type is in the read-only list
         return readOnlyTypes.contains(type)
-            ? HealthDataAccess.READ
+            ? HealthDataAccess.READ_WRITE
             : HealthDataAccess.READ_WRITE;
       }).toList();
 
@@ -60,6 +61,7 @@ class FlutterHealthConnectService {
   Future<bool> authorize() async {
     if (!Platform.isAndroid) {
       debugPrint("Authorization is only required on Android.");
+
       return false;
     }
 
@@ -79,15 +81,16 @@ class FlutterHealthConnectService {
   }
 
   Future<int?> fetchSteps() async {
-    final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(hours: 24));
+    final now = DateTime.now().subtract(const Duration(seconds: 1));
+    final yesterday = now.add(const Duration(days: -1));
 
     // Initialize the Health plugin
     Health health = Health();
 
     // Fetch the total steps in the interval
     try {
-      int? steps = await health.getTotalStepsInInterval(yesterday, now);
+      int? steps = await health.getTotalStepsInInterval(yesterday, now,
+          includeManualEntry: false);
       print('Steps in the last 1 seconds: $steps');
       if (steps != null) {
         print('Steps in the last 1 seconds: $steps');
@@ -100,25 +103,50 @@ class FlutterHealthConnectService {
     }
   }
 
+  Future requestBodySensor() async {
+    PermissionStatus bodysensors = await Permission.sensors.status;
+    if (bodysensors.isDenied) {
+      debugPrint("bodysensors permission denied. Requesting...");
+      PermissionStatus newbodysensors =
+          await Permission.sensorsAlways.request();
+      if (!newbodysensors.isGranted) {
+        debugPrint("bodysensors permission denied. Returning false.");
+        return false;
+      }
+    }
+  }
+
   Future requestLocationAndActivity() async {
     PermissionStatus activityPermissionStatus =
         await Permission.activityRecognition.status;
     PermissionStatus locationPermissionStatus =
         await Permission.location.status;
-
+    PermissionStatus bodysensors = await Permission.sensorsAlways.status;
     // If both permissions are already granted, no need to request again
     if (activityPermissionStatus.isGranted &&
         locationPermissionStatus.isGranted) {
-      debugPrint("Permissions already granted.");
+      debugPrint("activityPermissionStatus Permissions already granted.");
       return true; // Permissions already granted, return true
     }
-
+    if (bodysensors.isGranted && bodysensors.isGranted) {
+      debugPrint("bodysensors Permissions already granted.");
+      return true; // Permissions already granted, return true
+    }
     if (activityPermissionStatus.isDenied) {
       debugPrint("Activity recognition permission denied. Requesting...");
       PermissionStatus newActivityStatus =
           await Permission.activityRecognition.request();
       if (!newActivityStatus.isGranted) {
         debugPrint("Activity recognition permission denied. Returning false.");
+        return false;
+      }
+    }
+    if (bodysensors.isDenied) {
+      debugPrint("Location permission denied. Requesting...");
+      PermissionStatus newbodysensors =
+          await Permission.sensorsAlways.request();
+      if (!newbodysensors.isGranted) {
+        debugPrint("bodysensors permission denied. Returning false.");
         return false;
       }
     }
@@ -134,6 +162,7 @@ class FlutterHealthConnectService {
   }
 
   Future<bool> requestHealthConnectPermission() async {
+    // await requestBodySensor();
     bool? hasPermissions = await Health().hasPermissions(
         [...steptypes, ...caloriesTypes, ...sleepTypes],
         permissions: permissions);
@@ -153,45 +182,90 @@ class FlutterHealthConnectService {
     return hasPermissions ?? false;
   }
 
-  Future<UserHealth?> readLatestData() async {
-    // get data within the last 24 hours
-    final now = DateTime.now();
-    UserHealth? userhealths;
+  Future checkPermission() async {
+    bool? hasPermissions = await Health()
+        .hasPermissions([...steptypes, ...caloriesTypes, ...sleepTypes]);
+    return hasPermissions;
+  }
 
+  Future<UserHealth?> readLatestData({DateTime? periodDate}) async {
+    // Get data within the last 24 hours
+
+    debugPrint("Period date ${periodDate}");
+    final now = periodDate ?? DateTime.now();
     final yesterday = now.subtract(const Duration(hours: 24));
-    int? userSteps = await fetchSteps();
-    debugPrint("User step is ${userSteps}");
-    // _healthDataList.clear();
     try {
-      List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
-        types: [...caloriesTypes, ...sleepTypes],
+      // Fetch health data for the specified types and time interval
+      final healthData = await Health().getHealthDataFromTypes(
+        types: [
+          HealthDataType.ACTIVE_ENERGY_BURNED,
+          HealthDataType.STEPS,
+          HealthDataType.SLEEP_ASLEEP,
+          HealthDataType.SLEEP_AWAKE
+        ],
         startTime: yesterday,
         endTime: now,
+        // recordingMethodsToFilter: [
+        //   RecordingMethod.unknown,
+        //   RecordingMethod.automatic,
+        //   RecordingMethod.active,
+        // ]
       );
-      debugPrint('Total number of data points: ${healthData.length}. '
-          '${healthData.length > 100 ? 'Only showing the first 100.' : ''}');
-      // healthData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
-      // healthData = Health().removeDuplicates(healthData);
 
-      String caloriesBurn = '0';
-      String sleepduration = '0';
-      for (var dataPoint in healthData) {
-        if (dataPoint.type == HealthDataType.TOTAL_CALORIES_BURNED) {
-          caloriesBurn = dataPoint.value.toString();
-        } else if (dataPoint.type == HealthDataType.SLEEP_IN_BED) {
-          sleepduration = dataPoint.value.toString();
-        }
-        userhealths = UserHealth().copyWith(
-            sleepduration: sleepduration,
-            caloriesBurn: caloriesBurn,
-            steps: userSteps?.toString());
-      }
+      // Remove duplicates
+      List<HealthDataPoint> points = Health().removeDuplicates(healthData);
 
-      return userhealths;
+      // Filter data by type
+      final sleepData = points
+          .where((data) =>
+              data.type == HealthDataType.SLEEP_ASLEEP ||
+              data.type == HealthDataType.SLEEP_AWAKE)
+          .toList();
+      final caloriesData = points
+          .where((data) => data.type == HealthDataType.ACTIVE_ENERGY_BURNED)
+          .toList();
+      final stepData =
+          points.where((data) => data.type == HealthDataType.STEPS).toList();
+      int? stepsFromInterval = await Health()
+          .getTotalStepsInInterval(yesterday, now, includeManualEntry: true);
+      // Debugging: Log filtered data
+      debugPrint(
+          'Sleep data Data: ${json.encode(sleepData)} ${stepsFromInterval}');
+      // debugPrint('Sleep Data Count: ${sleepData.length}');
+      // debugPrint('Step Data Count: ${stepData.length}');
 
-      // save all the new data points (only the first 100)
+      // if (healthData.isEmpty) {
+      //   debugPrint('No data points found for the specified types and range.');
+      //   return null;
+      // }
+
+      var hours = sleepData.isNotEmpty
+          ? sleepData[0].value.toJson()['numeric_value'] / 60
+          : 0.0;
+
+      print("hours ${hours}");
+      var calories = caloriesData.isNotEmpty
+          ? caloriesData[0].value.toJson()['numeric_value']
+          : "0.0";
+      // var userSteps = stepData.isNotEmpty
+      //     ? stepData[0].value.toJson()['numeric_value']
+      //     : "0";
+
+      // Construct UserHealth object with the extracted data
+      UserHealth userHealths = UserHealth().copyWith(
+        steps: stepsFromInterval.toString(),
+        caloriesBurn: double.parse(calories.toString()).toStringAsFixed(2),
+        sleepduration: double.parse(hours.toString()).toStringAsFixed(0),
+      );
+
+      // Debugging: Log user health data
+      debugPrint(
+          "User Health Data: ${userHealths.steps}, ${userHealths.caloriesBurn}, ${userHealths.sleepduration}");
+
+      return userHealths;
     } catch (error) {
       debugPrint("Exception in getHealthDataFromTypes: $error");
+      return null;
     }
   }
 

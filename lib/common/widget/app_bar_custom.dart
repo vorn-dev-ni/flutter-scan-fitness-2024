@@ -79,10 +79,13 @@ class AppBarCustom extends ConsumerWidget implements PreferredSizeWidget {
 }
 
 Text HeaderText(AppTheme appThemeRef) {
-  return Text(FormatterUtils.formatAppDateString(DateTime.now().toString()),
-      textAlign: TextAlign.start,
-      style: appThemeRef == AppTheme.light
-          ? AppTextTheme.lightTextTheme.bodyMedium
-              ?.copyWith(color: AppColors.backgroundLight)
-          : AppTextTheme.darkTextTheme.bodyMedium);
+  return Text(
+    FormatterUtils.formatAppDateString(DateTime.now().toString()),
+    textAlign: TextAlign.start,
+    style: appThemeRef == AppTheme.light
+        ? AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
+            color: AppColors.backgroundLight, fontWeight: FontWeight.w500)
+        : AppTextTheme.darkTextTheme.bodyMedium
+            ?.copyWith(fontWeight: FontWeight.w500),
+  );
 }

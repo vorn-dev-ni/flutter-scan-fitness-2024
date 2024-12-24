@@ -39,7 +39,6 @@ class _ActivityListState extends ConsumerState<ActivityList> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("Activity list received ${widget.sortBy}");
     final activitiesStream = ref.watch(
       activityControllerProvider(
           FirebaseAuthService().currentUser?.uid ?? "", widget.showHeader, 0,

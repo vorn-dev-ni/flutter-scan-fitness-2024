@@ -1,17 +1,14 @@
 // ignore_for_file: must_be_immutable, library_private_types_in_public_api
-
+import 'package:demo/utils/localization/translation_helper.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:demo/common/widget/app_loading.dart';
 import 'package:demo/common/widget/error_fallback.dart';
-import 'package:demo/data/service/firebase_service.dart';
-import 'package:demo/data/service/firestore_service.dart';
 import 'package:demo/data/service/gemini_service.dart';
 import 'package:demo/features/result/controller/scan_result_controller.dart';
 import 'package:demo/features/result/model/gym_model.dart';
 import 'package:demo/features/result/model/scan_result_model.dart';
 import 'package:demo/features/result/widget/gyms/resource_workout.dart';
-import 'package:demo/features/scan/controller/image_controller.dart';
 import 'package:demo/features/scan/widget/selection_box.dart';
 import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/enums.dart';
@@ -21,10 +18,8 @@ import 'package:demo/utils/device/device_utils.dart';
 import 'package:demo/utils/exception/app_exception.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:sizer/sizer.dart';
 
 class GymComponent extends ConsumerStatefulWidget {
@@ -98,14 +93,12 @@ class _GymComponentState extends ConsumerState<GymComponent> {
       },
       error: _handleError,
       loading: () {
-        return appLoadingSpinner();
+        return appLoadingSpinner(text: tr(context).please_wait);
       },
     ));
   }
 
   Widget? _handleError(error, stackTrace) {
-    // HelpersUtils.showErrorSnackbar(context, title, message, status);
-
     print('Error calling api ${error}');
 
     late AppException _appError =
@@ -143,6 +136,7 @@ Column equipmentHeader(BuildContext context, GymResultModel gyms, File file) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
+      const SizedBox(height: Sizes.lg),
       ClipRRect(
           borderRadius: BorderRadius.circular(Sizes.xl),
           child: Image.file(
@@ -175,7 +169,7 @@ Widget workoutSections(List<String> instructions) {
     children: [
       const SizedBox(height: Sizes.md),
       Text(
-        "Workouts",
+        "Workout Instructions",
         // textAlign: TextAlign.,
         style: AppTextTheme.lightTextTheme.bodyLarge
             ?.copyWith(fontWeight: FontWeight.w600),
@@ -203,7 +197,13 @@ Widget workoutSections(List<String> instructions) {
                       color: AppColors.primaryColor,
                       fontWeight: FontWeight.bold),
                 ),
-                leading: Material(
+                leading: Text(
+                  '${index + 1}/. ',
+                  style: AppTextTheme.lightTextTheme.bodyLarge?.copyWith(
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.bold),
+                ),
+                trailing: Material(
                   color: AppColors.backgroundLight,
                   borderRadius: BorderRadius.circular(Sizes.md),
                   child: Padding(

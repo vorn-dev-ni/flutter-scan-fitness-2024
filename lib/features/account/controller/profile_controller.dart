@@ -28,25 +28,44 @@ class ProfileController extends _$ProfileController {
     final displayEmail = LocalStorageUtils().getKey("email") ?? "";
     final displayName = LocalStorageUtils().getKey("fullname") ?? "";
     final avatarImage = LocalStorageUtils().getKey("avatarImage") ?? "";
-
-    print("User state is ${displayName} ${displayEmail} ${avatarImage}");
+    final gender = LocalStorageUtils().getKey('gender') ?? "";
+    final dob = LocalStorageUtils().getKey('dob') ?? "";
+    print(
+        "User state is ${displayName} ${displayEmail} ${avatarImage} ${gender} ${dob}");
     return ProfileState(
-        email: displayEmail, fullName: displayName, imageUrl: avatarImage);
+        email: displayEmail,
+        fullName: displayName,
+        imageUrl: avatarImage,
+        dob: dob,
+        gender: gender);
   }
 
-  void syncProfileState(String email, String fullName, String? imageUrl) {
-    state =
-        state.copyWith(fullName: fullName, email: email, imageUrl: imageUrl);
+  void syncProfileState(String email, String fullName, String? imageUrl,
+      {String? gender, String? dob}) {
+    state = state.copyWith(
+        fullName: fullName,
+        email: email,
+        imageUrl: imageUrl,
+        dob: dob,
+        gender: gender);
   }
 
-  Future saveUserProfile(String email, String fullName, String? imageUrl,
-      WidgetRef contextref) async {
+  Future saveUserProfile(
+      String email, String fullName, String? imageUrl, WidgetRef contextref,
+      {String? gender, String? dob}) async {
     try {
       if (fullName.isNotEmpty && email.isNotEmpty) {
-        await _firestoreService.updateUser(email, fullName, imageUrl);
-        syncProfileState(email, fullName, imageUrl);
+        await _firestoreService.updateUser(email, fullName, imageUrl,
+            dob: dob, gender: gender);
+        syncProfileState(email, fullName, imageUrl, dob: dob, gender: gender);
         await LocalStorageUtils().setKeyString('fullname', fullName);
         await LocalStorageUtils().setKeyString('email', email);
+        if (dob!.isNotEmpty) {
+          await LocalStorageUtils().setKeyString('dob', dob);
+        }
+        if (gender!.isNotEmpty) {
+          await LocalStorageUtils().setKeyString('gender', gender);
+        }
         if (imageUrl != null || imageUrl != "") {
           await LocalStorageUtils().setKeyString('avatarImage', imageUrl!);
         }

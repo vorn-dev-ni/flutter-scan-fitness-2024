@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:demo/common/widget/app_input.dart';
 import 'package:demo/common/widget/button.dart';
 import 'package:demo/core/riverpod/app_provider.dart';
+import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/data/service/firebase_remote_config.dart';
 import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/features/account/controller/profile_controller.dart';
@@ -20,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -30,6 +34,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   late AuthController authController;
+  bool _showPassword = false;
   @override
   void initState() {
     super.initState();
@@ -38,29 +43,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final loginState = ref.watch(loginControllerProvider);
+    final translations = AppLocalizations.of(context);
+    final appTheme = ref.watch(appSettingsControllerProvider).appTheme;
 
     return SingleChildScrollView(
       child: Container(
-          color: AppColors.backgroundLight,
+          color: appTheme == AppTheme.light
+              ? AppColors.backgroundLight
+              : AppColors.backgroundDark,
           height: 75.h,
           child: Padding(
             padding: const EdgeInsets.all(Sizes.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                appHeader(),
-                inputArea(context),
+                appHeader(translations, appTheme!),
+                inputArea(context, translations, appTheme),
                 const Spacer(),
-                loginSection(context, loginState)
+                loginSection(context, loginState, translations)
               ],
             ),
           )),
     );
   }
 
-  Column loginSection(BuildContext context, LoginState loginState) {
+  Column loginSection(BuildContext context, LoginState loginState,
+      AppLocalizations? translations) {
     final appStateloading = ref.watch(appLoadingStateProvider);
     return Column(
       children: [
@@ -74,7 +89,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   height: Sizes.lg,
                   splashColor:
                       const Color.fromARGB(255, 75, 100, 240).withOpacity(0.1),
-                  label: 'Login',
+                  label: translations?.login ?? "Login",
                   onPressed: appStateloading == false ? _handleLogin : null,
                   centerLabel: appStateloading
                       ? const SizedBox(
@@ -88,7 +103,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   radius: Sizes.lg,
                   textStyle: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: Colors.white) as dynamic,
+                      color: AppColors.backgroundLight) as dynamic,
                   color: AppColors.primaryLight,
                   textColor: Colors.white,
                   elevation: 0),
@@ -162,7 +177,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         .withOpacity(0.1),
                     label: ScreenText.LoginScreen['loginGoogle'],
                     onPressed: () {
-                      print('Primary Button Pressed');
+                      // print('Primary Button Pressed');
                     },
                     radius: Sizes.lg,
                     textStyle: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
@@ -178,12 +193,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Column inputArea(BuildContext context) {
+  Column inputArea(
+      BuildContext context, AppLocalizations? translations, AppTheme appTheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppInput(
-          hintText: "Email or user name",
+          maxLength: 50,
+          hintText: translations?.email ?? "Email",
           onChanged: (value) => ref
               .read(loginControllerProvider.notifier)
               .updateEmail(value.toString()),
@@ -192,8 +209,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           height: Sizes.lg,
         ),
         AppInput(
-          hintText: "Password",
-          obscureText: true,
+          hintText: translations?.password ?? "Password",
+          maxLength: 16,
+          obscureText: !_showPassword,
+          suffixIcon: IconButton(
+              onPressed: () {
+                setState(() {
+                  _showPassword = !_showPassword;
+                });
+              },
+              icon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Sizes.sm),
+                child: Icon(
+                    _showPassword ? Icons.visibility_off : Icons.visibility),
+              )),
           onChanged: (value) => ref
               .read(loginControllerProvider.notifier)
               .updatePassword(value.toString()),
@@ -210,9 +239,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               },
               child: Text(
                 textAlign: TextAlign.right,
-                ScreenText.LoginScreen['forgetPassword'],
-                style: AppTextTheme.lightTextTheme.bodyMedium
-                    ?.copyWith(fontWeight: FontWeight.w600),
+                "${translations?.forget_password} ?" ?? "Forget password ?",
+                style: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: appTheme == AppTheme.light
+                        ? AppColors.textColor
+                        : AppColors.textDarkColor),
               ),
             ),
           ],
@@ -221,19 +253,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Column appHeader() {
+  Column appHeader(AppLocalizations? translations, AppTheme appTheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          ScreenText.LoginScreen['welcomeBack'],
-          style: AppTextTheme.lightTextTheme.headlineSmall
-              ?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        Text(
-          ScreenText.LoginScreen['enterCred'],
-          style: AppTextTheme.lightTextTheme.bodyMedium,
-        ),
+        Text(translations?.auth_welcome ?? "Welcome back",
+            style: AppTextTheme.lightTextTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: appTheme == AppTheme.dark
+                    ? AppColors.textDarkColor
+                    : AppColors.textColor)),
+        Text(translations?.auth_login ?? "Enter your crediential to conitnue",
+            style: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w400,
+                color: appTheme == AppTheme.dark
+                    ? AppColors.textDarkColor
+                    : AppColors.textColor)),
         const SizedBox(
           height: Sizes.lg,
         ),
@@ -247,12 +282,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.read(appLoadingStateProvider.notifier).setState(true);
 
     if (isValid == true) {
-      await authController.loginUser();
+      await authController.loginUser(context);
       ref.invalidate(tabbarControllerProvider);
       ref.invalidate(profileControllerProvider);
       HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
-          AppPage.START, (Route<dynamic> route) => false);
+          AppPage.FIRST, (Route<dynamic> route) => false);
     }
-    ref.read(appLoadingStateProvider.notifier).setState(false);
   }
 }

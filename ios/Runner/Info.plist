@@ -36,10 +36,30 @@
   <string>tel</string>
     <string>https</string>
 </array>
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+<key>NSAllowsArbitraryLoadsInWebContent</key>
+<true/>
+<key>NSExceptionDomains</key>
+<dict>
+    <key>example.com</key>
+    <dict>
+        <key>NSExceptionAllowsInsecureHTTPLoads</key>
+        <true/>
+    </dict>
+</dict>
 		<key>NSCameraUsageDescription</key>
 <string>We need access to your camera to take pictures</string>
 <key>NSPhotoLibraryUsageDescription</key>
 <string>We need access to your photo library to save pictures</string>
+<key>CFBundleLocalizations</key>
+<array>
+  <string>en</string>
+  <string>ar</string>
+</array>
 		<key>UISupportedInterfaceOrientations</key>
 		<array>
 			<string>UIInterfaceOrientationPortrait</string>
@@ -59,6 +79,11 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>UIBackgroundModes</key>
+ <array>  
+ <string>fetch</string> 
+  <string>remote-notification</string>
+ </array>
 		<key>GoogleService-Info</key>
 <string>$(GOOGLE_SERVICE_INFO_PATH)</string>
 		<key>NSPhotoLibraryUsageDescription</key>
@@ -67,5 +92,13 @@
 <string>We need access to your camera</string>
 <key>NSMicrophoneUsageDescription</key>
 <string>We need access to your microphone</string>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app needs your location to provide better services.</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>This app needs your location even in the background for tracking purposes.</string>
+<key>NSHealthShareUsageDescription</key>
+<string>We will sync your data with the Apple Health app to give you better insights</string>
+<key>NSHealthUpdateUsageDescription</key>
+<string>We will sync your data with the Apple Health app to give you better insights</string>
 	</dict>
 </plist>

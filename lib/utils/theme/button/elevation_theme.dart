@@ -9,6 +9,8 @@ class ElevationTheme {
   static final ElevatedButtonThemeData elevationButtonLight =
       ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
+      // padding: const EdgeInsets.all(Sizes.sm),
+
       elevation: 0, // Light theme elevation
       splashFactory: InkRipple.splashFactory,
       backgroundColor: AppColors.secondaryColor, // Button background
@@ -25,14 +27,15 @@ class ElevationTheme {
   static final ElevatedButtonThemeData elevationButtonDark =
       ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
+      // padding: const EdgeInsets.all(Sizes.xs),
       elevation: 4, // Dark theme elevation (slightly higher for contrast)
       backgroundColor: AppColors.primaryDark, // Button background
       foregroundColor: AppColors.backgroundDark, // Button text color
       shadowColor: AppColors.neutralBlack.withOpacity(0.5), // Dark shadow color
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8), // Rounded corners
+        borderRadius: BorderRadius.circular(8),
+        // Rounded corners
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     ),
   );
 }

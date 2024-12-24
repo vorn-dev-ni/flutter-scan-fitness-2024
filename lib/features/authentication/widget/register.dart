@@ -1,6 +1,7 @@
 import 'package:demo/common/widget/app_input.dart';
 import 'package:demo/common/widget/button.dart';
 import 'package:demo/core/riverpod/app_provider.dart';
+import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/data/service/firebase_remote_config.dart';
 import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/features/authentication/controller/auth_controller.dart';
@@ -11,7 +12,6 @@ import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/constant/svg_asset.dart';
-import 'package:demo/utils/device/device_utils.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +19,7 @@ import 'package:demo/utils/constant/screen_text.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -29,6 +30,9 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   late AuthController authController;
+  bool _showPassword = false;
+  bool _cfshowPassword = false;
+
   @override
   void initState() {
     super.initState();
@@ -41,25 +45,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final registerState = ref.watch(registerControllerProvider);
     final appStateloading = ref.watch(appLoadingStateProvider);
-
+    final appTheme = ref.watch(appSettingsControllerProvider).appTheme;
+    final translations = AppLocalizations.of(context);
     return SingleChildScrollView(
       child: Container(
-          height: 80.h,
-          color: AppColors.backgroundLight,
+          height: 100.h,
+          color: appTheme == AppTheme.light
+              ? AppColors.backgroundLight
+              : AppColors.backgroundDark,
           child: Padding(
             padding: const EdgeInsets.all(Sizes.lg),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              appHeader(),
-              inputArea(),
-              const Spacer(),
-              registerSection(registerState, appStateloading)
+              appHeader(translations, appTheme!),
+              inputArea(translations, appTheme!),
+              registerSection(registerState, appStateloading, translations)
             ]),
           )),
     );
   }
 
-  Column registerSection(RegisterState register_state, bool appStateloading) {
+  Column registerSection(RegisterState register_state, bool appStateloading,
+      AppLocalizations? translations) {
     return Column(
       children: [
         const SizedBox(
@@ -72,7 +79,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   height: Sizes.lg,
                   splashColor:
                       const Color.fromARGB(255, 75, 100, 240).withOpacity(0.1),
-                  label: ScreenText.registerScreen['login'],
+                  label: translations?.sign_up ?? "Sign up",
                   onPressed: appStateloading ? null : _handleRegister,
                   centerLabel: appStateloading
                       ? const SizedBox(
@@ -165,12 +172,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
-  Column inputArea() {
+  Column inputArea(AppLocalizations? translations, AppTheme appTheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppInput(
-          hintText: "Fullname",
+          hintText: translations?.full_name ?? "Fullname",
           onChanged: (value) => ref
               .read(registerControllerProvider.notifier)
               .updateFullname(value.toString()),
@@ -179,7 +186,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           height: Sizes.lg,
         ),
         AppInput(
-          hintText: "Email or user name",
+          maxLength: 50,
+          hintText: translations?.email ?? "Email",
           onChanged: (value) => ref
               .read(registerControllerProvider.notifier)
               .updateEmail(value.toString()),
@@ -188,8 +196,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           height: Sizes.lg,
         ),
         AppInput(
-          hintText: "Password",
-          obscureText: true,
+          hintText: translations?.password ?? "Password",
+          maxLength: 16,
+          obscureText: !_showPassword,
+          suffixIcon: IconButton(
+              onPressed: () {
+                setState(() {
+                  _showPassword = !_showPassword;
+                });
+              },
+              icon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Sizes.sm),
+                child: Icon(
+                    _showPassword ? Icons.visibility_off : Icons.visibility),
+              )),
           onChanged: (value) => ref
               .read(registerControllerProvider.notifier)
               .updatePassword(value.toString()),
@@ -198,8 +218,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           height: Sizes.lg,
         ),
         AppInput(
-          hintText: "Confirm Password",
-          obscureText: true,
+          hintText: translations?.cf_password ?? "Confirm Password",
+          maxLength: 16,
+          obscureText: !_cfshowPassword,
+          suffixIcon: IconButton(
+              onPressed: () {
+                setState(() {
+                  _cfshowPassword = !_cfshowPassword;
+                });
+              },
+              icon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Sizes.sm),
+                child: Icon(
+                    _cfshowPassword ? Icons.visibility_off : Icons.visibility),
+              )),
           onChanged: (value) => ref
               .read(registerControllerProvider.notifier)
               .updateConfirmPassword(value.toString()),
@@ -216,9 +248,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               },
               child: Text(
                 textAlign: TextAlign.right,
-                ScreenText.LoginScreen['forgetPassword'],
-                style: AppTextTheme.lightTextTheme.bodyMedium
-                    ?.copyWith(fontWeight: FontWeight.w600),
+                "${translations?.forget_password} ?" ?? "Forget password ?",
+                style: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: appTheme == AppTheme.light
+                        ? AppColors.textColor
+                        : AppColors.textDarkColor),
               ),
             ),
           ],
@@ -227,18 +262,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
-  Column appHeader() {
+  Column appHeader(AppLocalizations? translations, AppTheme appTheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          ScreenText.registerScreen['header'],
-          style: AppTextTheme.lightTextTheme.headlineSmall
-              ?.copyWith(fontWeight: FontWeight.w600),
+          translations?.register ?? "Register",
+          style: appTheme == AppTheme.light
+              ? AppTextTheme.lightTextTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.w600)
+              : AppTextTheme.darkTextTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.w600),
         ),
         Text(
-          ScreenText.registerScreen['enterCred'],
-          style: AppTextTheme.lightTextTheme.bodyMedium,
+          translations?.auth_register ?? "Sign up or get started !!!",
+          style: appTheme == AppTheme.light
+              ? AppTextTheme.lightTextTheme.bodyMedium
+              : AppTextTheme.darkTextTheme.bodyMedium,
         ),
         const SizedBox(
           height: Sizes.lg,

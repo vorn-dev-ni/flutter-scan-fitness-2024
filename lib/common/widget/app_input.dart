@@ -12,11 +12,15 @@ class AppInput extends StatelessWidget {
   final bool enabled;
   final Color backgroundColor;
   final bool fillColor;
+  final IconButton? suffixIcon;
+  final int? maxLength;
 
   const AppInput({
     Key? key,
     this.fillColor = false,
     this.hintText,
+    this.maxLength = 25,
+    this.suffixIcon,
     this.backgroundColor = Colors.transparent,
     this.placeholder = "Enter your text",
     this.controller,
@@ -34,22 +38,24 @@ class AppInput extends StatelessWidget {
       keyboardType: keyboardType,
       obscureText: obscureText,
       enabled: enabled,
+      maxLength: maxLength,
       onChanged: onChanged,
       canRequestFocus: true,
       decoration: InputDecoration(
-        hintText: hintText,
-        filled: fillColor,
-        fillColor: backgroundColor,
-        border: fillColor == false
-            ? OutlineInputBorder(
-                borderRadius: BorderRadius.circular(Sizes.lg),
-              )
-            : OutlineInputBorder(
-                borderSide: BorderSide.none,
-                borderRadius: BorderRadius.circular(Sizes.lg),
-              ),
-        prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-      ),
+          hintText: hintText,
+          filled: fillColor,
+          label: hintText != null ? Text(hintText!) : null,
+          fillColor: backgroundColor,
+          border: fillColor == false
+              ? OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(Sizes.lg),
+                )
+              : OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(Sizes.lg),
+                ),
+          prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+          suffixIcon: suffixIcon != null ? suffixIcon : null),
     );
   }
 }

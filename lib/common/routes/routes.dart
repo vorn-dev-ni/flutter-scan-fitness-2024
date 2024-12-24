@@ -3,6 +3,10 @@ import 'package:demo/common/model/route_app.dart';
 import 'package:demo/common/model/screen_app.dart';
 import 'package:demo/features/account/account_screen.dart';
 import 'package:demo/features/account/profile_screen.dart';
+import 'package:demo/features/account/widget/lang_screen.dart';
+import 'package:demo/features/account/widget/permission_screen.dart';
+import 'package:demo/features/account/widget/terms_condition_screen.dart';
+import 'package:demo/features/account/widget/theme_screen.dart';
 import 'package:demo/features/authentication/auth.dart';
 import 'package:demo/features/authentication/widget/forget_password.dart';
 import 'package:demo/features/authentication/widget/login.dart';
@@ -11,7 +15,10 @@ import 'package:demo/features/authentication/widget/revalidate_password.dart';
 import 'package:demo/features/authentication/widget/success.dart';
 import 'package:demo/features/home/main_screen.dart';
 import 'package:demo/features/home/widget/all_activities.dart';
+import 'package:demo/features/home/widget/calories/personal_info_screen.dart';
 import 'package:demo/features/home/widget/gym_activity.dart';
+import 'package:demo/features/home/widget/sleep/sleep_edit_screen.dart';
+import 'package:demo/features/home/widget/steps/step_edit_screen.dart';
 import 'package:demo/features/other/no_internet.dart';
 import 'package:demo/features/result/result_screen.dart';
 import 'package:demo/features/scan/scan_screen.dart';
@@ -59,6 +66,26 @@ class AppRoutes {
     // const MainScreen(),
     // const RegisterScreen(),
     RoutesApp(
+        routeName: AppPage.SLEEPS,
+        builder: (context) => const SleepEditScreen()),
+    RoutesApp(
+        routeName: AppPage.CALORIES,
+        builder: (context) => const PersonalInfoScreen()),
+    RoutesApp(
+        routeName: AppPage.STEPS, builder: (context) => const StepEditScreen()),
+    RoutesApp(
+        routeName: AppPage.APPEARENCE,
+        builder: (context) => const ChangeThemeScreen()),
+    RoutesApp(
+        routeName: AppPage.LANG,
+        builder: (context) => const LanguageSettingScreen()),
+    RoutesApp(
+        routeName: AppPage.TERMS,
+        builder: (context) => const TermsConditionScreen()),
+    RoutesApp(
+        routeName: AppPage.NOTIFICATION,
+        builder: (context) => const NotificationSettingScreen()),
+    RoutesApp(
         routeName: AppPage.ACTIVITIES,
         builder: (context) => const AllActivitiesScreen()),
     RoutesApp(
@@ -87,6 +114,7 @@ class AppRoutes {
     RoutesApp(
         routeName: AppPage.NO_INTERNET,
         builder: (context) => const NoInternet()),
+    RoutesApp(routeName: AppPage.NAV_SCAN, builder: (context) => ScanScreen()),
     RoutesApp(
         routeName: AppPage.PROFILE,
         builder: (context) => const ProfileScreen()),

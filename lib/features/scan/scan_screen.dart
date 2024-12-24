@@ -5,7 +5,6 @@ import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/constant/sizes.dart';
-import 'package:demo/utils/constant/string_text.dart';
 import 'package:demo/utils/constant/svg_asset.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
@@ -15,6 +14,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sizer/sizer.dart';
+import 'package:demo/utils/localization/translation_helper.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 class ScanScreen extends ConsumerStatefulWidget {
   ScanScreen({super.key});
@@ -30,6 +31,9 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     ref.watch(imageControllerProvider);
     return Column(
       children: [
+        const SizedBox(
+          height: Sizes.xl,
+        ),
         SelectionBox(
           onPress: () {
             // _handleScanGym(context)
@@ -42,11 +46,11 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                StringAsset.scanBtnTop,
+                tr(context).gym_equipment,
                 style: AppTextTheme.lightTextTheme.bodyLarge,
               ),
               Text(
-                StringAsset.bodyGym,
+                tr(context).gym_equipment_info,
                 style: AppTextTheme.lightTextTheme.bodySmall,
               ),
               SvgPicture.string(
@@ -55,17 +59,6 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
                 height: 18.h,
                 fit: BoxFit.cover,
               ),
-              // Text(
-              //   StringAsset.bodyGym,
-              //   style: AppTextTheme.lightTextTheme.bodySmall,
-              // ),
-
-              // Image.asset(
-              //   ImageAsset.fit,
-              //   width: 109,
-              //   height: 109,
-              //   fit: BoxFit.contain,
-              // )
             ],
           ),
         ),
@@ -84,11 +77,11 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                StringAsset.scanBtnBottom,
+                tr(context).food_calories,
                 style: AppTextTheme.lightTextTheme.bodyLarge,
               ),
               Text(
-                StringAsset.detailFoods,
+                tr(context).food_calories_info,
                 style: AppTextTheme.lightTextTheme.bodySmall,
               ),
               SvgPicture.string(
@@ -109,7 +102,35 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     try {
       final image = await ImagePicker().pickImage(source: imageSource);
       if (image == null) return;
-      final imageTemp = File(image.path);
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: image.path,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 50,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: AppColors.primaryColor,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: false,
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+              CropAspectRatioPreset.ratio4x3,
+            ],
+          ),
+          IOSUiSettings(
+            title: 'Cropper',
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+              CropAspectRatioPreset.ratio4x3,
+            ],
+          ),
+        ],
+      );
+      final path = croppedFile!.path;
+      final imageTemp = File(path);
       ref.read(imageControllerProvider.notifier).updateFile(imageTemp);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         HelpersUtils.navigatorState(context).pushNamed(AppPage.RESULT,
@@ -123,7 +144,11 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     } on PlatformException catch (e) {
       print('Failed to pick image: $e');
       HelpersUtils.showErrorSnackbar(
-          context, "Failed", "${e.message}", StatusSnackbar.failed);
+          duration: 5000,
+          context,
+          "Failed",
+          "${e.message}",
+          StatusSnackbar.failed);
     }
   }
 
@@ -145,9 +170,10 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Choose",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Text(
+                tr(context).choose,
+                style: AppTextTheme.lightTextTheme?.bodyLarge
+                    ?.copyWith(color: AppColors.backgroundDark),
               ),
               const SizedBox(
                 height: Sizes.xl,
@@ -160,7 +186,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
                   HelpersUtils.navigatorState(context).pop();
                 },
                 title: Text(
-                  "Camera",
+                  tr(context).camera,
                   style: AppTextTheme.lightTextTheme.labelLarge,
                 ),
                 leading: SvgPicture.string(
@@ -177,7 +203,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
                   HelpersUtils.navigatorState(context).pop();
                 },
                 title: Text(
-                  "Gallery",
+                  tr(context).gallery,
                   style: AppTextTheme.lightTextTheme.labelLarge,
                 ),
                 leading: SvgPicture.string(

@@ -49,19 +49,19 @@ class ButtonApp extends StatelessWidget {
             backgroundColor: WidgetStatePropertyAll(color),
             overlayColor:
                 WidgetStateProperty.all(splashColor.withOpacity(0.1))),
-        child: Padding(
-          padding: EdgeInsets.all(height ?? 0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              iconButton,
-              centerLabel ??
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            iconButton,
+            Padding(
+              padding: EdgeInsets.all(height ?? 0),
+              child: centerLabel ??
                   Text(
                     label,
                     style: textStyle,
                   ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/data/service/gemini_service.dart';
-import 'package:demo/features/result/controller/scan_result_controller.dart';
 import 'package:demo/features/result/widget/gyms/food_screen.dart';
 import 'package:demo/features/result/widget/gyms/gym_screen.dart';
 import 'package:demo/features/scan/controller/image_controller.dart';
@@ -13,12 +12,12 @@ import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sizer/sizer.dart';
+import 'package:demo/utils/localization/translation_helper.dart';
 
 class ResultScreen extends ConsumerStatefulWidget {
   const ResultScreen({super.key});
@@ -70,9 +69,10 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Choose",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Text(
+                tr(context).choose,
+                style: AppTextTheme.lightTextTheme?.bodyLarge
+                    ?.copyWith(color: AppColors.backgroundDark),
               ),
               const SizedBox(
                 height: Sizes.xl,
@@ -87,7 +87,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   HelpersUtils.navigatorState(context).pop();
                 },
                 title: Text(
-                  "Camera",
+                  tr(context).camera,
                   style: AppTextTheme.lightTextTheme.labelLarge,
                 ),
                 leading: SvgPicture.string(
@@ -105,7 +105,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   HelpersUtils.navigatorState(context).pop();
                 },
                 title: Text(
-                  "Gallery",
+                  tr(context).gallery,
                   style: AppTextTheme.lightTextTheme.labelLarge,
                 ),
                 leading: SvgPicture.string(
@@ -126,7 +126,35 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     try {
       final image = await ImagePicker().pickImage(source: imageSource);
       if (image == null) return;
-      final imageTemp = File(image.path);
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: image.path,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 50,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: AppColors.primaryColor,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: false,
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+              CropAspectRatioPreset.ratio4x3,
+            ],
+          ),
+          IOSUiSettings(
+            title: 'Cropper',
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+              CropAspectRatioPreset.ratio4x3,
+            ],
+          ),
+        ],
+      );
+      final path = croppedFile!.path;
+      final imageTemp = File(path);
       ref.read(imageControllerProvider.notifier).updateFile(imageTemp);
     } on PlatformException catch (e) {
       print('Failed to pick image: $e');
@@ -157,8 +185,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBarCustom(
-        bgColor: AppColors.backgroundLight,
-        text: _activityTag == ActivityTag.food ? "Foods" : "Gym",
+        bgColor: AppColors.primaryDark,
+        foregroundColor: AppColors.backgroundLight,
+        text: _activityTag == ActivityTag.food
+            ? tr(context).food_calories
+            : tr(context).gym_equipment,
         showheader: false,
         isCenter: false,
       ),

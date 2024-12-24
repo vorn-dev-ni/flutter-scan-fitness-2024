@@ -1,5 +1,7 @@
 import 'dart:io';
-
+import 'package:demo/core/riverpod/app_setting_controller.dart';
+import 'package:demo/utils/formatters/formatter_utils.dart';
+import 'package:demo/utils/localization/translation_helper.dart';
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/app_input.dart';
 import 'package:demo/common/widget/button.dart';
@@ -19,7 +21,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer/sizer.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -34,6 +38,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late TextEditingController _textEditingEmail;
   late UploadImageController _uploadImageController;
   late String _avatarImage;
+  DateTime? _selectedDate;
+  String? _selectedGender;
   File? _imageTem = null;
 
   @override
@@ -46,52 +52,62 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final appStateloading = ref.watch(appLoadingStateProvider);
-
+    final appSettings = ref.watch(appSettingsControllerProvider);
     return GestureDetector(
       onTap: () {
         DeviceUtils.hideKeyboard(context);
       },
       child: Scaffold(
         appBar: AppBarCustom(
-            bgColor: Colors.transparent,
-            text: 'Profile',
+            bgColor: AppColors.primaryDark,
+            text: tr(context).profile,
             isCenter: true,
             foregroundColor: AppColors.backgroundLight,
             showheader: false),
-        backgroundColor: AppColors.primaryLight,
-        bottomSheet: Padding(
-          padding: const EdgeInsets.all(Sizes.xl),
-          child: Row(
-            children: [
-              Expanded(
-                child: ButtonApp(
-                    height: Sizes.lg,
-                    splashColor: const Color.fromARGB(255, 190, 209, 241),
-                    label: 'Save Changes',
-                    onPressed: appStateloading == false
-                        ? () {
-                            _handleSaveProfile();
-                          }
-                        : null,
-                    centerLabel: appStateloading == true
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 3,
-                              color: AppColors.primaryLight,
-                            ),
-                          )
-                        : null,
-                    radius: Sizes.lg,
-                    textStyle: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white) as dynamic,
-                    color: AppColors.primaryColor,
-                    textColor: Colors.white,
-                    elevation: 0),
-              )
-            ],
+        backgroundColor: appSettings.appTheme == AppTheme.light
+            ? AppColors.backgroundLight
+            : AppColors.backgroundDark,
+        bottomSheet: Container(
+          color: appSettings.appTheme == AppTheme.light
+              ? AppColors.backgroundLight
+              : AppColors.backgroundDark,
+          child: Padding(
+            padding: const EdgeInsets.all(Sizes.xl),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ButtonApp(
+                      height: 20,
+                      splashColor: const Color.fromARGB(255, 190, 209, 241),
+                      label: tr(context).save_change,
+                      onPressed: appStateloading == false
+                          ? () {
+                              _handleSaveProfile();
+                            }
+                          : null,
+                      centerLabel: appStateloading == true
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                                color: AppColors.primaryLight,
+                              ),
+                            )
+                          : null,
+                      radius: Sizes.lg,
+                      textStyle: AppTextTheme.lightTextTheme.bodyMedium
+                          ?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white) as dynamic,
+                      color: appSettings.appTheme == AppTheme.light
+                          ? AppColors.primaryLight
+                          : AppColors.primaryColor,
+                      textColor: Colors.white,
+                      elevation: 0),
+                )
+              ],
+            ),
           ),
         ),
         body: SafeArea(
@@ -105,8 +121,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const SizedBox(
                     height: Sizes.lg,
                   ),
-                  profileAvatar(),
-                  inputTextSection(),
+                  profileAvatar(appSettings.appTheme!),
+                  inputTextSection(
+                      appSettings.appTheme!, appSettings.localization),
                 ],
               ),
             ),
@@ -116,7 +133,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  void _showGallerySelection(BuildContext context) {
+  Future<void> _selectDate(BuildContext context, appSettings) async {
+    DateTime currentDate = DateTime.now();
+
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: currentDate,
+      firstDate: DateTime(2000),
+      locale: Locale(appSettings),
+      lastDate: DateTime(2030),
+    );
+
+    if (pickedDate != null && pickedDate != _selectedDate) {
+      setState(() {
+        _selectedDate = pickedDate;
+      });
+      // if (widget.onDateSelected != null) {
+      //   widget.onDateSelected!(_selectedDate!);
+      // }
+    }
+  }
+
+  void _showGallerySelection(BuildContext context, AppTheme appTheme) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.backgroundLight,
@@ -134,9 +172,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Choose",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Text(
+                tr(context).choose,
+                style: AppTextTheme.lightTextTheme?.bodyLarge
+                    ?.copyWith(color: AppColors.backgroundDark),
               ),
               const SizedBox(
                 height: Sizes.xl,
@@ -151,7 +190,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   HelpersUtils.navigatorState(context).pop();
                 },
                 title: Text(
-                  "Camera",
+                  tr(context).camera,
                   style: AppTextTheme.lightTextTheme.labelLarge,
                 ),
                 leading: SvgPicture.string(
@@ -168,7 +207,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   HelpersUtils.navigatorState(context).pop();
                 },
                 title: Text(
-                  "Gallery",
+                  tr(context).gallery,
                   style: AppTextTheme.lightTextTheme.labelLarge,
                 ),
                 leading: SvgPicture.string(
@@ -184,17 +223,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Column inputTextSection() {
+  Column inputTextSection(AppTheme appThemeRef, local) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(
           height: Sizes.lg,
         ),
+
         AppInput(
-          hintText: "Full Name",
+          hintText: tr(context).full_name,
           obscureText: false,
-          fillColor: true,
-          backgroundColor: AppColors.backgroundLight,
+          fillColor: false,
+          placeholder: tr(context).full_name,
           controller: _textEditingFullName,
           onChanged: (value) {
             ref
@@ -205,22 +246,93 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
 
         const SizedBox(
-          height: Sizes.lg,
+          height: Sizes.sm,
         ),
-        AppInput(
-          hintText: "Email",
-          fillColor: true,
-          backgroundColor: AppColors.backgroundLight,
-          obscureText: false,
-          controller: _textEditingEmail,
-          enabled: false,
+
+        // const Text('Gender'),
+        Text(
+          tr(context).select_gender,
+          style: appThemeRef == AppTheme.light
+              ? AppTextTheme.lightTextTheme.bodyLarge
+              : AppTextTheme.darkTextTheme.bodyLarge,
         ),
+        Row(
+          children: [
+            Radio<String>(
+              value: _selectedGender ?? "",
+              groupValue: 'Male',
+              onChanged: (String? value) {
+                setState(() {
+                  _selectedGender = 'Male';
+                });
+              },
+            ),
+            Text(
+              tr(context).male,
+              style: appThemeRef == AppTheme.light
+                  ? AppTextTheme.lightTextTheme.bodyMedium
+                  : AppTextTheme.darkTextTheme.bodyMedium,
+            ),
+            const SizedBox(width: 20),
+            Radio<String>(
+              value: _selectedGender ?? "",
+              groupValue: 'Female',
+              onChanged: (String? value) {
+                setState(() {
+                  _selectedGender = 'Female';
+                });
+              },
+            ),
+            Text(
+              tr(context).female,
+              style: appThemeRef == AppTheme.light
+                  ? AppTextTheme.lightTextTheme.bodyMedium
+                  : AppTextTheme.darkTextTheme.bodyMedium,
+            ),
+          ],
+        ),
+        const SizedBox(
+          height: Sizes.sm,
+        ),
+        Text(
+          tr(context).dob,
+          style: appThemeRef == AppTheme.light
+              ? AppTextTheme.lightTextTheme.bodyLarge
+              : AppTextTheme.darkTextTheme.bodyLarge,
+        ),
+        const SizedBox(
+          height: Sizes.sm,
+        ),
+        InkWell(
+          onTap: () {
+            _selectDate(context, local);
+          },
+          child: Container(
+            width: double.maxFinite,
+            padding: const EdgeInsets.all(Sizes.xl),
+            decoration: BoxDecoration(
+                border: Border.all(
+                    width: 1,
+                    color: appThemeRef == AppTheme.dark
+                        ? AppColors.backgroundLight
+                        : AppColors.backgroundDark),
+                borderRadius: BorderRadius.circular(Sizes.lg)),
+            child: Text(
+              _selectedDate != null
+                  ? '${FormatterUtils.formatDob(_selectedDate!)}'
+                  : 'Please select your date',
+              style: appThemeRef == AppTheme.light
+                  ? AppTextTheme.lightTextTheme.bodyLarge
+                  : AppTextTheme.darkTextTheme.bodyLarge,
+            ),
+          ),
+        )
         // Spacer()
       ],
     );
   }
 
-  Row profileAvatar() {
+  Row profileAvatar(AppTheme appTheme) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -296,7 +408,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ],
                         ),
                         child: IconButton(
-                          onPressed: () => _showGallerySelection(context),
+                          onPressed: () =>
+                              _showGallerySelection(context, appTheme),
                           icon: const Icon(
                             Icons.edit,
                             color: AppColors.primaryColor,
@@ -313,26 +426,59 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _handleSaveProfile() async {
+    DeviceUtils.hideKeyboard(context);
     ref.read(appLoadingStateProvider.notifier).setState(true);
     String email = ref.read(profileControllerProvider).email;
     String imageUrl = ref.read(profileControllerProvider).imageUrl;
+    String? gender = _selectedGender;
+    String? dob;
+    if (_selectedDate != null) {
+      dob = FormatterUtils.formatDob(_selectedDate!);
+    }
     if (_imageTem != null) {
       //Meaning user has image upload we store to firebase and get downurl and store to firestore
       imageUrl = await _uploadImageController.uploadFile(_imageTem) ?? "";
       // print(_imageTem);
     }
-
-    print(" Saving Image Url >>> ${imageUrl}");
-    ref
-        .read(profileControllerProvider.notifier)
-        .saveUserProfile(email, _textEditingFullName.text, imageUrl ?? "", ref);
+    ref.read(profileControllerProvider.notifier).saveUserProfile(
+        email, _textEditingFullName.text, imageUrl ?? "", ref,
+        dob: dob, gender: gender);
   }
 
   Future<void> _selectionBottomSheet(ImageSource imageSource) async {
     try {
       final image = await ImagePicker().pickImage(source: imageSource);
       if (image == null) return;
-      final imageTemp = File(image.path);
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: image.path,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 50,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: AppColors.primaryColor,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: false,
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+              CropAspectRatioPreset.ratio4x3,
+            ],
+          ),
+          IOSUiSettings(
+            title: 'Cropper',
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+              CropAspectRatioPreset.ratio4x3,
+            ],
+          ),
+        ],
+      );
+      final path = croppedFile!.path;
+      final imageTemp = File(path);
+
       setState(() {
         _imageTem = imageTemp;
       });
@@ -349,11 +495,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _initialBinding() {
+    DateFormat format = DateFormat("dd-MM-yyyy");
     _uploadImageController = UploadImageController(ref: ref);
     _textEditingFullName = TextEditingController();
     _textEditingEmail = TextEditingController();
     _textEditingFullName.text = ref.read(profileControllerProvider).fullName;
     _textEditingEmail.text = ref.read(profileControllerProvider).email;
+    _selectedGender = ref.read(profileControllerProvider).gender;
+    if (ref.read(profileControllerProvider).dob != "") {
+      _selectedDate =
+          format.parse(ref.read(profileControllerProvider).dob ?? "");
+    }
     _avatarImage = ref.read(profileControllerProvider).imageUrl;
   }
 }

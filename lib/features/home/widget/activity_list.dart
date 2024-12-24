@@ -5,6 +5,7 @@ import 'package:demo/common/widget/button.dart';
 import 'package:demo/common/widget/duration_card.dart';
 import 'package:demo/common/widget/error_fallback.dart';
 import 'package:demo/common/widget/tag_cad.dart';
+import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/features/home/controller/activity_controller.dart';
 import 'package:demo/features/home/model/activity_model.dart';
@@ -19,10 +20,12 @@ import 'package:flutter/material.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ActivityList extends ConsumerStatefulWidget {
   late bool showHeader;
-  ActivityList({super.key, this.showHeader = true});
+  late String? sortBy;
+  ActivityList({super.key, this.showHeader = true, this.sortBy = 'desc'});
 
   @override
   ConsumerState<ActivityList> createState() => _ActivityListState();
@@ -38,67 +41,76 @@ class _ActivityListState extends ConsumerState<ActivityList> {
   Widget build(BuildContext context) {
     final activitiesStream = ref.watch(
       activityControllerProvider(
-          FirebaseAuthService().currentUser?.uid ?? "", widget.showHeader),
+          FirebaseAuthService().currentUser?.uid ?? "", widget.showHeader, 0,
+          sortby: widget.sortBy),
     );
+    final appThemeRef = ref.watch(appSettingsControllerProvider).appTheme;
 
-    return Padding(
-        padding: const EdgeInsets.symmetric(vertical: Sizes.lg),
-        child: activitiesStream.when(
-          data: (data) {
-            final activities = data.docs;
-            if (activities.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (widget.showHeader == true) TouchableHeader(),
-                    Center(
-                      child: bodyNoFound(
-                          context,
-                          body:
-                              "You no recent activities yet, let\'s start now !!!",
-                          "No Activity"),
-                    )
-                  ],
-                ),
-              );
-            }
-            return ListView.builder(
-              shrinkWrap: true,
-              physics: widget.showHeader
-                  ? const NeverScrollableScrollPhysics()
-                  : const AlwaysScrollableScrollPhysics(),
-              itemCount: activities.length,
-              itemBuilder: (context, index) {
-                final mapRespose =
-                    activities[index].data() as Map<String, dynamic>;
-                final data = ActivityModel.fromJson(mapRespose);
-                return Column(
-                  children: [
-                    if (index == 0 && widget.showHeader) TouchableHeader(),
-                    AcitivtyTabItem(data)
-                  ],
-                );
-              },
+    var translations = AppLocalizations.of(context);
+    // ref.refresh(activityControllerProvider('user123', true));
+
+    return activitiesStream.when(
+      data: (data) {
+        final activities = data.docs;
+        if (activities.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (widget.showHeader == true)
+                  TouchableHeader(
+                      appThemeRef!,
+                      translations?.recent_activity ?? "Recent Activity",
+                      translations?.view_all),
+                Center(
+                  child: bodyNoFound(
+                      context,
+                      body:
+                          "You no recent activities yet, let\'s start now !!!",
+                      "No Activity"),
+                )
+              ],
+            ),
+          );
+        }
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: widget.showHeader
+              ? const NeverScrollableScrollPhysics()
+              : const AlwaysScrollableScrollPhysics(),
+          itemCount: activities.length,
+          itemBuilder: (context, index) {
+            final mapRespose = activities[index].data() as Map<String, dynamic>;
+            final data = ActivityModel.fromJson(mapRespose);
+            return Column(
+              children: [
+                if (index == 0 && widget.showHeader)
+                  TouchableHeader(
+                      appThemeRef!,
+                      translations?.recent_activity ?? "Recent Activity",
+                      translations?.view_all),
+                AcitivtyTabItem(data),
+              ],
             );
           },
-          error: (error, stackTrace) {
-            print(error.toString());
-            final appError =
-                AppException(title: "Oops", message: error.toString());
-            return errorFallback(appError, cb: () {
-              ref.invalidate(activityControllerProvider);
-            });
-          },
-          loading: () {
-            return appLoadingSpinner();
-          },
-        ));
+        );
+      },
+      error: (error, stackTrace) {
+        print(error.toString());
+        final appError = AppException(title: "Oops", message: error.toString());
+        return errorFallback(appError, cb: () {
+          ref.invalidate(activityControllerProvider);
+        });
+      },
+      loading: () {
+        return appLoadingSpinner();
+      },
+    );
   }
 
   Widget AcitivtyTabItem(ActivityModel activities) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Sizes.sm),
+      padding: const EdgeInsets.only(bottom: Sizes.md),
       child: Material(
         color: AppColors.secondaryColor,
         elevation: 0,
@@ -197,20 +209,25 @@ class _ActivityListState extends ConsumerState<ActivityList> {
     );
   }
 
-  Widget TouchableHeader() {
+  Widget TouchableHeader(
+      AppTheme appThemeRef, String recent_activity, String? view_all) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: Sizes.md),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Recent Activity',
-            style: AppTextTheme.lightTextTheme.bodyLarge
-                ?.copyWith(color: AppColors.textColor),
+            recent_activity,
+            style: appThemeRef == AppTheme.light
+                ? AppTextTheme.lightTextTheme.bodyLarge
+                    ?.copyWith(color: AppColors.textColor)
+                : AppTextTheme.darkTextTheme.bodyLarge
+                    ?.copyWith(color: AppColors.textDarkColor),
           ),
           ButtonApp(
+              height: 2,
               splashColor: AppColors.primaryColor,
-              label: 'View All',
+              label: view_all ?? 'View All',
               onPressed: () {
                 HelpersUtils.navigatorState(context)
                     .pushNamed(AppPage.ACTIVITIES);

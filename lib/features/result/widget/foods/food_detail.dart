@@ -10,11 +10,11 @@ Widget foodDetail(FoodModelResult food) {
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
       foodHeaderBox(food),
-      similarFoodBuilder(
-          header: 'Similar Foods', similars: food.similarRecommendations ?? []),
-      const SizedBox(
-        height: Sizes.xxl,
-      )
+      // similarFoodBuilder(
+      //     header: 'Similar Foods', similars: food.similarRecommendations ?? []),
+      // const SizedBox(
+      //   height: Sizes.xxl,
+      // )
     ],
   );
 }
@@ -63,7 +63,7 @@ Widget foodHeaderBox(FoodModelResult food) {
         height: Sizes.lg,
       ),
       Text(food.comment ?? "N/A",
-          textAlign: TextAlign.justify,
+          textAlign: TextAlign.left,
           style: AppTextTheme.lightTextTheme.titleMedium),
       const SizedBox(
         height: Sizes.xl,

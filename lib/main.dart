@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/core/riverpod/connectivity_state.dart';
 import 'package:demo/data/service/firebase_remote_config.dart';
+import 'package:demo/l10n/I10n.dart';
 import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/flavor/config.dart';
@@ -14,6 +16,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // import 'package:flutter_config/flutter_config.dart';
 void main() async {
@@ -83,16 +87,34 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Sizer(builder: (context, orientation, screenType) {
+      final appsettingState = ref.watch(appSettingsControllerProvider);
+
       return MaterialApp(
-        title: 'Flutter Production',
+        title: 'Flutter Dev',
+        locale: Locale(appsettingState.localization),
+        supportedLocales: L10n.all,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         debugShowCheckedModeBanner: false,
+        themeMode: appsettingState.appTheme == AppTheme.light
+            ? ThemeMode.light
+            : ThemeMode.dark,
+
         // routes: AppRoutes.getAppRoutes(),
         navigatorKey: navigatorKey,
         onGenerateRoute: (settings) =>
             GlobalConfig.instance.onGenerateRoute(settings),
-        darkTheme: SchemaData.darkThemeData,
-        theme: SchemaData.lightThemeData,
-        initialRoute: AppPage.FIRST,
+        darkTheme: SchemaData.darkThemeData(
+          Locale(appsettingState.localization),
+        ),
+        theme: SchemaData.lightThemeData(
+          Locale(appsettingState.localization),
+        ),
+        initialRoute: AppPage.NOTFOUND,
         // home: const MainScreen(),
       );
     });

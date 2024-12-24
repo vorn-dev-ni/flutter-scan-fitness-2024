@@ -1,15 +1,14 @@
 import 'package:app_settings/app_settings.dart';
 import 'package:demo/common/widget/button.dart';
 import 'package:demo/utils/constant/app_colors.dart';
-import 'package:demo/utils/constant/screen_text.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/constant/svg_asset.dart';
 import 'package:demo/utils/device/device_utils.dart';
-import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sizer/sizer.dart';
+import 'package:demo/utils/localization/translation_helper.dart';
 
 class NoInternet extends StatelessWidget {
   const NoInternet({super.key});
@@ -35,7 +34,7 @@ class NoInternet extends StatelessWidget {
                 height: Sizes.xl,
               ),
               Text(
-                ScreenText.nointernetScreen['title'],
+                tr(context).whoops,
                 style: AppTextTheme.lightTextTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold, color: AppColors.primaryColor),
               ),
@@ -44,7 +43,7 @@ class NoInternet extends StatelessWidget {
               ),
               Text(
                 textAlign: TextAlign.center,
-                ScreenText.nointernetScreen['desc'],
+                tr(context).slow_internet,
                 style: AppTextTheme.lightTextTheme.labelLarge
                     ?.copyWith(color: AppColors.primaryColor),
               ),
@@ -54,7 +53,7 @@ class NoInternet extends StatelessWidget {
               ButtonApp(
                   height: 2.h,
                   splashColor: const Color.fromARGB(255, 207, 225, 255),
-                  label: ScreenText.nointernetScreen['button'],
+                  label: tr(context).check_internet,
                   onPressed: _handleOpenSetting,
                   radius: Sizes.lg,
                   textStyle: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(

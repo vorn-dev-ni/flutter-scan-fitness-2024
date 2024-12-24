@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ForgetPassword extends ConsumerStatefulWidget {
   const ForgetPassword({super.key});
@@ -37,13 +38,12 @@ class _ForgetPasswordState extends ConsumerState<ForgetPassword> {
   @override
   Widget build(BuildContext context) {
     final appLoadingState = ref.watch(appLoadingStateProvider);
-
-    print("App Loading is ${appLoadingState}");
+    final translations = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBarCustom(
           bgColor: Colors.transparent,
-          text: 'Forget Password',
+          text: translations?.forget_password ?? 'Forget Password',
           isCenter: false,
           showheader: false),
       body: SafeArea(
@@ -61,7 +61,7 @@ class _ForgetPasswordState extends ConsumerState<ForgetPassword> {
                 const Spacer(),
                 Text.rich(TextSpan(children: [
                   TextSpan(
-                      text: "Enter your Email",
+                      text: translations?.enter_email ?? 'Enter your Email',
                       style: AppTextTheme.lightTextTheme.bodyMedium
                           ?.copyWith(fontWeight: FontWeight.w700)),
                 ])),
@@ -69,7 +69,8 @@ class _ForgetPasswordState extends ConsumerState<ForgetPassword> {
                   height: Sizes.lg,
                 ),
                 AppInput(
-                  hintText: "Email Address",
+                  maxLength: 50,
+                  hintText: translations?.email_address ?? "Email Address",
                   controller: _textEditingController,
                   onChanged: (value) => setState(() {
                     _email = value.trim();
@@ -86,7 +87,7 @@ class _ForgetPasswordState extends ConsumerState<ForgetPassword> {
                           height: Sizes.lg,
                           splashColor: const Color.fromRGBO(212, 218, 253, 1)
                               .withOpacity(0.1),
-                          label: "Confirm",
+                          label: translations?.confirm ?? "Confirm",
                           onPressed:
                               appLoadingState == true ? null : _validateEmail,
                           centerLabel: appLoadingState == true

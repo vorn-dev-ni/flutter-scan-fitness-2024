@@ -11,7 +11,7 @@ import 'package:sizer/sizer.dart';
 
 Widget bodyNoFound(BuildContext context, description,
     {String body =
-        'This screen doesnt exist or you dont have permission to view it',
+        'This screen doesnt exist or you don\'t have permission to view it',
     bool showButton = false}) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.center,

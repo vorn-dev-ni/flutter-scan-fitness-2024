@@ -1,14 +1,14 @@
 import 'dart:async';
-
+import 'dart:io';
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/button.dart';
 import 'package:demo/data/service/firebase_service.dart';
+import 'package:demo/data/service/health_connect.dart';
 import 'package:demo/features/authentication/controller/tabbar_controller.dart';
 import 'package:demo/features/other/app_info.dart';
 import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/image_asset.dart';
-import 'package:demo/utils/constant/screen_text.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/flavor/config.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
@@ -18,6 +18,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class StartingScreen extends ConsumerStatefulWidget {
   const StartingScreen({super.key});
@@ -28,31 +29,39 @@ class StartingScreen extends ConsumerStatefulWidget {
 
 class _StartingScreenState extends ConsumerState<StartingScreen> {
   final FirebaseAuthService _firebaseService = FirebaseAuthService();
-  late StreamSubscription<User?> _authSubscription;
+
+  late StreamSubscription<User?> _userSubscription;
+  late StreamSubscription<User?> _authStateSubscription;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
-    _authSubscription = _firebaseService.authStateChanges.listen((User? user) {
+    _requestHealthKit();
+    _userSubscription = _firebaseService.userStateChanges.listen((User? user) {
       _checkUserAuth(user);
+    });
+    _authStateSubscription =
+        _firebaseService.authStateChanges.listen((User? user) {
+      _checkAuthenticated(user);
     });
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    _authSubscription.cancel();
+    _userSubscription.cancel();
+    _authStateSubscription.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final translations = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.primaryLight,
       appBar: AppBarCustom(
-          bgColor: Colors.transparent,
+          bgColor: AppColors.primaryLight,
           text: 'FitScan KH ${AppConfig.appConfig.flavor.value}',
           isCenter: false,
           showheader: false),
@@ -61,7 +70,7 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
         padding: const EdgeInsets.all(Sizes.xl),
         child: SingleChildScrollView(
           child: SizedBox(
-            height: 90.h,
+            height: 100.h,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -86,7 +95,7 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
                       width: 75.w,
                       child: Text(
                         // maxLines: 1,
-                        ScreenText.MainScreen['letGetStarted'],
+                        translations?.intro_let_get_start ?? "",
                         style: AppTextTheme.lightTextTheme.displaySmall
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
@@ -95,7 +104,7 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
                       height: Sizes.md,
                     ),
                     Text(
-                      ScreenText.MainScreen['startingDetail'],
+                      translations?.intro_desc ?? "",
                       style: AppTextTheme.lightTextTheme.labelLarge,
                     ),
                   ],
@@ -108,7 +117,7 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
                     Expanded(
                       child: ButtonApp(
                           height: Sizes.lg,
-                          label: "Login",
+                          label: translations?.login ?? "",
                           textStyle: AppTextTheme.lightTextTheme.bodyMedium
                               ?.copyWith(
                                   color: AppColors.backgroundLight,
@@ -126,7 +135,7 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
                     Expanded(
                       child: ButtonApp(
                           height: Sizes.lg,
-                          label: "Sign Up",
+                          label: translations?.sign_up ?? "",
                           color: AppColors.backgroundLight,
                           textStyle: AppTextTheme.lightTextTheme.bodyMedium
                               ?.copyWith(
@@ -154,23 +163,48 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
     HelpersUtils.navigatorState(context).pushNamed(AppPage.AUTH.toString());
   }
 
+  Future syncUserToStorage(User user) async {
+    await LocalStorageUtils().setKeyString("fullname", user!.displayName!);
+    await LocalStorageUtils().setKeyString("email", user!.email!);
+    print("has sync to database success");
+  }
+
   Future _checkUserAuth(User? user) async {
-    // await _firebaseService.signOut();
+    print("Check user state");
     if (user != null) {
       if (user.emailVerified && ref.read(tabbarControllerProvider) == 2) {
-        _authSubscription.cancel();
+        await syncUserToStorage(user);
+        _userSubscription.cancel();
         // Navigate to the START screen if the user is verified
         if (mounted) {
+          // await user.reload();
           HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
               AppPage.START, (Route<dynamic> route) => false);
         }
       } else {
-        await user.reload();
+        if (ref.read(tabbarControllerProvider) == 2) {
+          await user.reload();
+        }
       }
     }
   }
 
   Future _reload() async {
     await FirebaseAuthService().getAuth?.currentUser?.reload();
+  }
+
+  Future _requestHealthKit() async {
+    debugPrint("Requesting health kit");
+    if (Platform.isAndroid) {
+      await FlutterHealthConnectService().authorize();
+    }
+  }
+
+  void _checkAuthenticated(User? user) {
+    if (user == null || !user!.emailVerified) {
+      debugPrint("User is not valid at all");
+      // HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
+      //     AppPage.FIRST, (Route<dynamic> route) => false);
+    }
   }
 }

@@ -89,6 +89,76 @@ class HelpersUtils {
     );
   }
 
+  static Future showAlertDialog(
+    BuildContext context, {
+    required String text,
+    required String desc,
+    key,
+    required String positiveText,
+    required String negativeText,
+    required Function onPresspositive,
+    Function? onPressNegative,
+  }) async {
+    return showDialog(
+      context: context,
+      useSafeArea: true,
+      // barrierColor: AppColors.backgroundLight,
+      barrierDismissible: false,
+
+      builder: (BuildContext context) {
+        return AlertDialog(
+          key: key,
+          backgroundColor: AppColors.backgroundLight,
+          title: Text(
+            text,
+            style: AppTextTheme.lightTextTheme.headlineSmall,
+          ),
+          content: Text(
+            desc,
+            style: AppTextTheme.lightTextTheme.labelLarge,
+          ),
+          actions: [
+            Expanded(
+              child: TextButton(
+                onPressed: () {
+                  onPresspositive();
+                  // HelpersUtils.deepLinkLauncher(url);
+                  // HelpersUtils.navigatorState(context).pop();
+                },
+                style: const ButtonStyle(
+                    backgroundColor:
+                        WidgetStatePropertyAll(AppColors.errorLight)),
+                child: Text(
+                  positiveText,
+                  style: AppTextTheme.lightTextTheme.labelLarge
+                      ?.copyWith(color: AppColors.errorColor),
+                ),
+              ),
+            ),
+            if (onPressNegative != null)
+              Expanded(
+                child: TextButton(
+                  onPressed: () {
+                    onPressNegative();
+                    // HelpersUtils.deepLinkLauncher(url);
+                    // HelpersUtils.navigatorState(context).pop();
+                  },
+                  style: const ButtonStyle(
+                      backgroundColor: WidgetStatePropertyAll(
+                          Color.fromARGB(255, 201, 222, 255))),
+                  child: Text(
+                    negativeText,
+                    style: AppTextTheme.lightTextTheme.labelLarge
+                        ?.copyWith(color: AppColors.primaryColor),
+                  ),
+                ),
+              )
+          ],
+        );
+      },
+    );
+  }
+
   static Future<File?> convertUrlToLocalFile(String url) async {
     try {
       final response = await HttpsClient().httpClients.get(

@@ -2,12 +2,16 @@ import 'dart:async';
 import 'dart:io';
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/button.dart';
+import 'package:demo/core/riverpod/app_provider.dart';
 import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/data/service/health_connect.dart';
+import 'package:demo/features/account/controller/profile_controller.dart';
+import 'package:demo/features/authentication/controller/auth_controller.dart';
 import 'package:demo/features/authentication/controller/tabbar_controller.dart';
 import 'package:demo/features/other/app_info.dart';
 import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/app_page.dart';
+import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/constant/image_asset.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/flavor/config.dart';
@@ -32,11 +36,14 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
 
   late StreamSubscription<User?> _userSubscription;
   late StreamSubscription<User?> _authStateSubscription;
+  late AuthController authController;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    authController =
+        AuthController(firebaseAuthService: FirebaseAuthService(), ref: ref);
     _requestHealthKit();
     _userSubscription = _firebaseService.userStateChanges.listen((User? user) {
       _checkUserAuth(user);
@@ -69,28 +76,28 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
           child: Padding(
         padding: const EdgeInsets.all(Sizes.xl),
         child: SingleChildScrollView(
-          child: SizedBox(
-            height: 100.h,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryColor,
-                      shape: BoxShape
-                          .circle, // Automatically applies a circular shape
-                    ),
-                    width: 70.w, // Ensure width and height are equal
-                    height: 30.h,
-                    child: Image.asset(ImageAsset.fitnessHealth),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                alignment: Alignment.centerRight,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: AppColors.primaryColor,
+                    shape: BoxShape
+                        .circle, // Automatically applies a circular shape
                   ),
+                  width: 70.w, // Ensure width and height are equal
+                  height: 30.h,
+                  child: Image.asset(ImageAsset.fitnessHealth),
                 ),
-                const Spacer(),
-                Column(
+              ),
+              SizedBox(
+                height: 55.h,
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const Spacer(),
                     SizedBox(
                       width: 75.w,
                       child: Text(
@@ -107,48 +114,51 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
                       translations?.intro_desc ?? "",
                       style: AppTextTheme.lightTextTheme.labelLarge,
                     ),
-                  ],
-                ),
-                const SizedBox(
-                  height: Sizes.xxxl,
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ButtonApp(
-                          height: Sizes.lg,
-                          label: translations?.login ?? "",
-                          textStyle: AppTextTheme.lightTextTheme.bodyMedium
-                              ?.copyWith(
-                                  color: AppColors.backgroundLight,
-                                  fontWeight: FontWeight.w600) as dynamic,
-                          splashColor: AppColors.primaryLight,
-                          onPressed: () => _navigationToAuth('login')),
+                    const SizedBox(
+                      height: Sizes.xxl,
                     ),
-                  ],
-                ),
-                const SizedBox(
-                  height: Sizes.lg,
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ButtonApp(
-                          height: Sizes.lg,
-                          label: translations?.sign_up ?? "",
-                          color: AppColors.backgroundLight,
-                          textStyle: AppTextTheme.lightTextTheme.bodyMedium
-                              ?.copyWith(
-                                  color: AppColors.backgroundDark,
-                                  fontWeight: FontWeight.w600) as dynamic,
-                          splashColor: AppColors.primaryLight,
-                          onPressed: () => _navigationToAuth('signup')),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ButtonApp(
+                              height: Sizes.lg,
+                              label: translations?.login ?? "",
+                              textStyle: AppTextTheme.lightTextTheme.bodyMedium
+                                  ?.copyWith(
+                                      color: AppColors.backgroundLight,
+                                      fontWeight: FontWeight.w600) as dynamic,
+                              splashColor: AppColors.primaryLight,
+                              onPressed: () => _navigationToAuth('login')),
+                        ),
+                      ],
                     ),
+                    const SizedBox(
+                      height: Sizes.lg,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ButtonApp(
+                              height: Sizes.lg,
+                              label: translations?.sign_up ?? "",
+                              color: AppColors.backgroundLight,
+                              textStyle: AppTextTheme.lightTextTheme.bodyMedium
+                                  ?.copyWith(
+                                      color: AppColors.backgroundDark,
+                                      fontWeight: FontWeight.w600) as dynamic,
+                              splashColor: AppColors.primaryLight,
+                              onPressed: () => _navigationToAuth('signup')),
+                        ),
+                      ],
+                    ),
+                    const AppInfo()
                   ],
                 ),
-                const AppInfo()
-              ],
-            ),
+              ),
+              const SizedBox(
+                height: Sizes.xxxl,
+              ),
+            ],
           ),
         ),
       )),
@@ -170,20 +180,42 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
   }
 
   Future _checkUserAuth(User? user) async {
-    print("Check user state");
     if (user != null) {
       if (user.emailVerified && ref.read(tabbarControllerProvider) == 2) {
-        await syncUserToStorage(user);
+        // await syncUserToStorage(user);/
         _userSubscription.cancel();
         // Navigate to the START screen if the user is verified
         if (mounted) {
-          // await user.reload();
+          ref.invalidate(profileControllerProvider);
+          await Future.delayed(const Duration(seconds: 1));
+
           HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
               AppPage.START, (Route<dynamic> route) => false);
         }
       } else {
+        print("Check user state ${user?.emailVerified}");
+
         if (ref.read(tabbarControllerProvider) == 2) {
           await user.reload();
+        } else {
+          try {
+            if (user.emailVerified) {
+              if (mounted) {
+                ref.invalidate(profileControllerProvider);
+                final isLoading = ref.read(socaiLoginLoadingStateProvider);
+
+                if (!isLoading) {
+                  HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
+                      AppPage.START, (Route<dynamic> route) => false);
+                }
+              }
+            }
+          } catch (e) {
+            if (mounted) {
+              HelpersUtils.showErrorSnackbar(
+                  context, e.toString(), e.toString(), StatusSnackbar.failed);
+            }
+          }
         }
       }
     }

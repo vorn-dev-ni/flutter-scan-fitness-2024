@@ -2,6 +2,7 @@ import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/app_input.dart';
 import 'package:demo/common/widget/button.dart';
 import 'package:demo/core/riverpod/app_provider.dart';
+import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/features/authentication/controller/auth_controller.dart';
 import 'package:demo/utils/constant/app_colors.dart';
@@ -39,10 +40,13 @@ class _ForgetPasswordState extends ConsumerState<ForgetPassword> {
   Widget build(BuildContext context) {
     final appLoadingState = ref.watch(appLoadingStateProvider);
     final translations = AppLocalizations.of(context);
-
+    final appTheme = ref.watch(appSettingsControllerProvider).appTheme;
     return Scaffold(
       appBar: AppBarCustom(
-          bgColor: Colors.transparent,
+          bgColor: AppColors.primaryDark,
+          foregroundColor: appTheme == AppTheme.dark
+              ? AppColors.backgroundLight
+              : AppColors.backgroundLight,
           text: translations?.forget_password ?? 'Forget Password',
           isCenter: false,
           showheader: false),
@@ -105,7 +109,9 @@ class _ForgetPasswordState extends ConsumerState<ForgetPassword> {
                               ?.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white) as dynamic,
-                          color: AppColors.primaryColor,
+                          color: appTheme == AppTheme.light
+                              ? AppColors.primaryLight
+                              : AppColors.primaryDark,
                           textColor: Colors.white,
                           elevation: 0),
                     )

@@ -78,13 +78,12 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final profileState = ref.watch(profileControllerProvider);
     final translations = AppLocalizations.of(context);
     final appThemeRef = ref.watch(appSettingsControllerProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ProfileTile(profileState, appThemeRef?.appTheme),
+        ProfileTile(appThemeRef?.appTheme),
         AccountTab(
             translations: translations,
             appThemeRef: appThemeRef!.appTheme,
@@ -98,8 +97,20 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
             header: translations?.privacy ?? 'Privacy',
             desc: translations?.app_policy ?? 'App policy and privacy setting',
             listSettings: listPrivacySettings.toList()),
+        TextButton(
+            onPressed: () {
+              HelpersUtils.navigatorState(context).pushNamed(AppPage.FORGET);
+            },
+            child: Text(
+                textAlign: TextAlign.right,
+                "${translations?.forget_password} ?" ?? "Forget password ?",
+                style: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: appThemeRef.appTheme == AppTheme.light
+                        ? AppColors.textColor
+                        : AppColors.backgroundLight))),
         const SizedBox(
-          height: Sizes.lg,
+          height: Sizes.md,
         ),
         ButtonApp(
             height: Sizes.lg,
@@ -227,7 +238,10 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     );
   }
 
-  Widget ProfileTile(ProfileState profileState, AppTheme? appThemeRef) {
+  Widget ProfileTile(AppTheme? appThemeRef) {
+    final profileState = ref.watch(profileControllerProvider);
+    final userEmailName =
+        ref.watch(profileControllerProvider.notifier).getEmailAndDisplayName();
     return Material(
       type: MaterialType.transparency,
       child: ListTile(
@@ -237,55 +251,67 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
         // splashColor: AppColors.primaryColor.withOpacity(0.1),
         contentPadding: const EdgeInsets.all(0),
         leading: Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.blue, // Border color
-              width: 2.0, // Border width
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.blue, // Border color
+                width: 2.0, // Border width
+              ),
+              borderRadius:
+                  BorderRadius.circular(Sizes.xxxl + 20), // Same as ClipRRect
             ),
-            borderRadius:
-                BorderRadius.circular(Sizes.xxxl + 20), // Same as ClipRRect
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(Sizes.xxxl + 20),
-            clipBehavior: Clip.hardEdge,
-            child: profileState.imageUrl.isNotEmpty
-                ? FadeInImage.assetNetwork(
-                    fit: BoxFit.cover,
-                    fadeInCurve: Curves.linear,
-                    fadeOutCurve: Curves.bounceOut,
-                    height: 50,
-                    width: 50,
-                    imageErrorBuilder: (context, error, stackTrace) {
-                      return Image.asset(
-                        ImageAsset.placeHolderImage,
-                        fit: BoxFit.cover,
-                        height: 50,
-                        width: 50,
-                      );
-                    },
-                    // imageCacheHeight: 200,
-                    // imageCacheWidth: 200,
-                    fadeInDuration: const Duration(milliseconds: 500),
-                    placeholder: ImageAsset.placeHolderImage,
-                    image: profileState.imageUrl)
-                : Image.asset(
-                    ImageAsset.defaultAvatar,
-                    fit: BoxFit.cover,
-                    height: 50,
-                    width: 50,
-                  ),
-          ),
-        ),
+            child: profileState.when(
+              data: (data) {
+                final profile = data;
+
+                print('Profile state is ${profile}');
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(Sizes.xxxl + 20),
+                  clipBehavior: Clip.hardEdge,
+                  child: profile.imageUrl.isNotEmpty
+                      ? FadeInImage.assetNetwork(
+                          fit: BoxFit.cover,
+                          fadeInCurve: Curves.linear,
+                          fadeOutCurve: Curves.bounceOut,
+                          height: 50,
+                          width: 50,
+                          imageErrorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              ImageAsset.placeHolderImage,
+                              fit: BoxFit.cover,
+                              height: 50,
+                              width: 50,
+                            );
+                          },
+                          // imageCacheHeight: 200,
+                          // imageCacheWidth: 200,
+                          fadeInDuration: const Duration(milliseconds: 500),
+                          placeholder: ImageAsset.placeHolderImage,
+                          image: profile.imageUrl)
+                      : Image.asset(
+                          ImageAsset.defaultAvatar,
+                          fit: BoxFit.cover,
+                          height: 50,
+                          width: 50,
+                        ),
+                );
+              },
+              error: (error, stackTrace) {
+                return Text('Error');
+              },
+              loading: () {
+                return const CircularProgressIndicator();
+              },
+            )),
         title: Text(
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          profileState.fullName,
+          userEmailName.fullName,
           style: appThemeRef == AppTheme.light
               ? AppTextTheme.lightTextTheme.bodyLarge
               : AppTextTheme.darkTextTheme.bodyLarge,
         ),
         subtitle: Text(
-          profileState.email,
+          userEmailName.email,
           style: appThemeRef == AppTheme.light
               ? AppTextTheme.lightTextTheme.bodySmall
               : AppTextTheme.darkTextTheme.bodySmall,
@@ -320,10 +346,14 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   Future _handleLogout() async {
     // HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
     //     AppPage.FIRST, (Route<dynamic> route) => false);
+
     await FirebaseFirestore.instance.terminate();
 
     await authController.logoutUser();
-    HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
-        AppPage.FIRST, (Route<dynamic> route) => false);
+    if (mounted) {
+      ref.invalidate(profileControllerProvider);
+      HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
+          AppPage.FIRST, (Route<dynamic> route) => false);
+    }
   }
 }

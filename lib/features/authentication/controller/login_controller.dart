@@ -22,13 +22,13 @@ class LoginController extends _$LoginController {
 
   bool? checkValidation(BuildContext context) {
     if (state.email.isEmpty || state.password.isEmpty) {
-      ScaffoldMessengerState().clearSnackBars();
       HelpersUtils.showErrorSnackbar(
           context,
           "Validation Error",
           duration: 2000,
           "Missing field please double check",
           StatusSnackbar.failed);
+      ScaffoldMessengerState().clearSnackBars();
       return false;
     }
 

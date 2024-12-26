@@ -1,4 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:math';
+
 import 'package:demo/core/riverpod/app_provider.dart';
 import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/data/service/firestore_service.dart';
@@ -7,6 +9,7 @@ import 'package:demo/features/authentication/controller/login_controller.dart';
 import 'package:demo/features/authentication/controller/register_controller.dart';
 import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/enums.dart';
+import 'package:demo/utils/constant/firebase_auth.dart';
 import 'package:demo/utils/exception/app_exception.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/local_storage/local_storage_utils.dart';
@@ -24,9 +27,15 @@ class AuthController {
     required this.ref,
   });
 
-  Future<void> _updateUserProfile(User user, String fullName) async {
+  Future<void> _updateUserProfile(
+    User user,
+    String fullName, {
+    String? imageUrl,
+  }) async {
     try {
       await user.updateProfile(displayName: fullName);
+      await FirestoreService(firebaseAuthService: firebaseAuthService)
+          .updateUser(user?.email ?? "", fullName, imageUrl);
       // await user.reload();
     } catch (e) {
       throw FirebaseCredentialException(
@@ -44,6 +53,53 @@ class AuthController {
           title: "Failed to send email verification",
           message: "There was an error sending the email verification."
               "There was an error sending the email verification.");
+    }
+  }
+
+  Future loginWithGoogle() async {
+    try {
+      ref.read(socaiLoginLoadingStateProvider.notifier).setState(true);
+      UserCredential userCredential =
+          await firebaseAuthService.signInWithGoogle();
+
+      debugPrint(
+          "AUth state is ${userCredential.user?.providerData[0]?.photoURL}");
+
+      String imageUrl = userCredential.user?.providerData[0]?.photoURL ?? "";
+
+      bool isExisted =
+          await FirestoreService(firebaseAuthService: firebaseAuthService)
+              .isEmailExisted(userCredential.user?.email ?? "");
+      await firebaseAuthService.reloadUser();
+
+      if (!isExisted) {
+        //Meaning user is first time register with google
+        await firebaseAuthService.syncUsertoFirestore(
+            userCredential.user?.displayName ?? "",
+            userCredential.user?.email ?? "");
+        ref.invalidate(profileControllerProvider);
+      }
+      await syncToStorage(userCredential.user!, imageUrl);
+
+      ref.read(socaiLoginLoadingStateProvider.notifier).setState(false);
+    } catch (e) {
+      ref.read(socaiLoginLoadingStateProvider.notifier).setState(false);
+      rethrow;
+    }
+  }
+
+  Future syncToStorage(User userCredential, String? imageUrl) async {
+    try {
+      if (userCredential?.uid != null) {
+        final data =
+            await FirestoreService(firebaseAuthService: firebaseAuthService)
+                .getUserAvatar(userCredential!.uid) as Map<String, dynamic>;
+        print("User credential ${data}");
+        await _updateUserProfile(userCredential, userCredential.displayName!,
+            imageUrl: imageUrl);
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -70,13 +126,20 @@ class AuthController {
         print("User has successfully completed the setup");
       }
     } catch (e) {
-      if (e is AppException) {
-        HelpersUtils.showErrorSnackbar(
-            ref.context, e.title, e.message, StatusSnackbar.failed);
-      } else {
-        HelpersUtils.showErrorSnackbar(ref.context, "Server Error",
-            e.toString() as dynamic, StatusSnackbar.failed);
+      AppException appException = AppException(title: 'Oops', message: '');
+      if (e is FirebaseAuthException) {
+        String message = FirebaseAuthMessage.getMessage(e.code);
+        appException = AppException(title: "Register Failed", message: message);
       }
+      if (e is AppException) {
+        appException = AppException(title: e.title, message: e.message);
+      } else {
+        appException =
+            AppException(title: "Oops", message: 'Something went wrong');
+      }
+      ScaffoldMessenger.of(ref.context).removeCurrentSnackBar();
+      HelpersUtils.showErrorSnackbar(ref.context, appException.title,
+          appException.message, StatusSnackbar.failed);
       ref.read(appLoadingStateProvider.notifier).setState(false);
     }
   }
@@ -91,9 +154,25 @@ class AuthController {
         ref.read(appLoadingStateProvider.notifier).setState(false);
       });
     } catch (e) {
-      HelpersUtils.showErrorSnackbar(ref.context, "Something went wrong",
-          e.toString(), StatusSnackbar.failed);
+      // print(e);
+      ScaffoldMessenger.of(ref.context).removeCurrentSnackBar();
       ref.read(appLoadingStateProvider.notifier).setState(false);
+      if (e is FirebaseAuthException) {
+        String message = FirebaseAuthMessage.getMessage(e.code);
+        HelpersUtils.showErrorSnackbar(
+            ref.context,
+            "Something went wrong",
+            duration: 4000,
+            e?.message ?? "",
+            StatusSnackbar.failed);
+        return;
+      }
+      HelpersUtils.showErrorSnackbar(
+          ref.context,
+          "Something went wrong",
+          duration: 4000,
+          e.toString(),
+          StatusSnackbar.failed);
 
       // ref.read(appLoadingStateProvider.notifier).setState(false);
     }
@@ -126,21 +205,28 @@ class AuthController {
       if (user != null) {
         await _updateUserProfile(user, user.displayName!);
         await firebaseAuthService.currentUser?.reload();
-        final data =
-            await FirestoreService(firebaseAuthService: firebaseAuthService)
-                .getUserAvatar(user.uid) as Map<String, dynamic>;
-        await LocalStorageUtils().setKeyString("gender", data['gender'] ?? "");
-        await LocalStorageUtils().setKeyString("dob", data['dob'] ?? "");
-        await LocalStorageUtils()
-            .setKeyString("fullname", user.displayName ?? "");
-        await LocalStorageUtils().setKeyString("email", user.email ?? "");
-        await LocalStorageUtils()
-            .setKeyString("avatarImage", data['avatarImage'] ?? "");
+        await syncToStorage(user!, '');
       }
     } catch (e) {
-      HelpersUtils.showErrorSnackbar(
-          ref.context, "Firebase Error", e.toString(), StatusSnackbar.failed);
       ref.read(appLoadingStateProvider.notifier).setState(false);
+      ScaffoldMessenger.of(ref.context).removeCurrentSnackBar();
+      if (e is FirebaseAuthException) {
+        String message = FirebaseAuthMessage.getMessage(e.code);
+        HelpersUtils.showErrorSnackbar(
+            duration: 4000,
+            ref.context,
+            "Login Failed !!!",
+            message,
+            StatusSnackbar.failed);
+        rethrow;
+      }
+
+      HelpersUtils.showErrorSnackbar(
+          duration: 4000,
+          ref.context,
+          "Firebase Error",
+          e.toString(),
+          StatusSnackbar.failed);
 
       rethrow;
     }
@@ -157,6 +243,7 @@ class AuthController {
       }
 
       await firebaseAuthService.signOut();
+      await firebaseAuthService.signOutWithGoogle();
       await firebaseAuthService.reloadUser();
     } catch (e) {
       HelpersUtils.showErrorSnackbar(

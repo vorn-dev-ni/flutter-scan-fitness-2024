@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:demo/core/riverpod/app_setting_controller.dart';
+import 'package:demo/data/service/firebase_service.dart';
+import 'package:demo/data/service/firestore_service.dart';
 import 'package:demo/utils/formatters/formatter_utils.dart';
 import 'package:demo/utils/localization/translation_helper.dart';
 import 'package:demo/common/widget/app_bar_custom.dart';
@@ -17,6 +19,8 @@ import 'package:demo/utils/constant/svg_asset.dart';
 import 'package:demo/utils/device/device_utils.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,10 +38,10 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  late TextEditingController _textEditingFullName;
-  late TextEditingController _textEditingEmail;
+  final TextEditingController _textEditingFullName = TextEditingController();
+  final TextEditingController _textEditingEmail = TextEditingController();
   late UploadImageController _uploadImageController;
-  late String _avatarImage;
+  String? _avatarImage;
   DateTime? _selectedDate;
   String? _selectedGender;
   File? _imageTem = null;
@@ -91,7 +95,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 3,
-                                color: AppColors.primaryLight,
+                                color: AppColors.backgroundLight,
                               ),
                             )
                           : null,
@@ -242,6 +246,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 .read(userStateControllerProvider.notifier)
                 .updateFullName(value);
           },
+          maxLength: 50,
           keyboardType: TextInputType.text,
         ),
 
@@ -379,7 +384,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 fadeInDuration:
                                     const Duration(milliseconds: 500),
                                 placeholder: ImageAsset.placeHolderImage,
-                                image: _avatarImage)
+                                image: _avatarImage ?? "")
                             : Image.file(
                                 _imageTem!,
                                 fit: BoxFit.cover,
@@ -428,8 +433,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _handleSaveProfile() async {
     DeviceUtils.hideKeyboard(context);
     ref.read(appLoadingStateProvider.notifier).setState(true);
-    String email = ref.read(profileControllerProvider).email;
-    String imageUrl = ref.read(profileControllerProvider).imageUrl;
+    String email = ref
+        .read(profileControllerProvider.notifier)
+        .getEmailAndDisplayName()
+        .email;
+    final data =
+        await FirestoreService(firebaseAuthService: FirebaseAuthService())
+                .getUserAvatar(FirebaseAuth.instance.currentUser?.uid ?? "")
+            as Map<String, dynamic>;
+    String imageUrl = data['avatarImage'] ?? "";
     String? gender = _selectedGender;
     String? dob;
     if (_selectedDate != null) {
@@ -440,6 +452,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       imageUrl = await _uploadImageController.uploadFile(_imageTem) ?? "";
       // print(_imageTem);
     }
+
     ref.read(profileControllerProvider.notifier).saveUserProfile(
         email, _textEditingFullName.text, imageUrl ?? "", ref,
         dob: dob, gender: gender);
@@ -494,18 +507,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
-  void _initialBinding() {
-    DateFormat format = DateFormat("dd-MM-yyyy");
-    _uploadImageController = UploadImageController(ref: ref);
-    _textEditingFullName = TextEditingController();
-    _textEditingEmail = TextEditingController();
-    _textEditingFullName.text = ref.read(profileControllerProvider).fullName;
-    _textEditingEmail.text = ref.read(profileControllerProvider).email;
-    _selectedGender = ref.read(profileControllerProvider).gender;
-    if (ref.read(profileControllerProvider).dob != "") {
-      _selectedDate =
-          format.parse(ref.read(profileControllerProvider).dob ?? "");
-    }
-    _avatarImage = ref.read(profileControllerProvider).imageUrl;
+  Future _initialBinding() async {
+    final profileState = await ref.read(profileControllerProvider.future);
+
+    setState(() {
+      DateFormat format = DateFormat("dd-MM-yyyy");
+      _uploadImageController = UploadImageController(ref: ref);
+      // _textEditingFullName = TextEditingController();
+      // _textEditingEmail = TextEditingController();
+      _textEditingFullName.text = profileState.fullName;
+      _textEditingEmail.text = profileState.email;
+      _selectedGender = profileState.gender;
+      if (profileState.dob != "") {
+        _selectedDate = format.parse(profileState.dob ?? "");
+      }
+      _avatarImage = profileState?.imageUrl;
+
+      print(profileState.imageUrl);
+    });
   }
 }

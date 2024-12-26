@@ -1,4 +1,6 @@
 import 'package:demo/common/widget/app_bar_custom.dart';
+import 'package:demo/common/widget/backdrop.dart';
+import 'package:demo/core/riverpod/app_provider.dart';
 import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/features/authentication/controller/tabbar_controller.dart';
 import 'package:demo/features/authentication/widget/login.dart';
@@ -26,6 +28,7 @@ class _AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
     final tabBarIndex = ref.watch(tabbarControllerProvider);
     final translations = AppLocalizations.of(context);
     final appTheme = ref.watch(appSettingsControllerProvider).appTheme;
+    final socialLoading = ref.watch(socaiLoginLoadingStateProvider);
 
     return GestureDetector(
       onTap: () {
@@ -67,11 +70,16 @@ class _AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
               ),
               isCenter: false,
               showheader: false),
-          body: const SafeArea(
-            child: TabBarView(
+          body: SafeArea(
+            child: Stack(
               children: [
-                LoginScreen(),
-                RegisterScreen(),
+                const TabBarView(
+                  children: [
+                    LoginScreen(),
+                    RegisterScreen(),
+                  ],
+                ),
+                if (socialLoading == true) backDropComponent(),
               ],
             ),
           ),

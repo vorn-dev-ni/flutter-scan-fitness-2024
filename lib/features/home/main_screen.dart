@@ -136,9 +136,6 @@ class _MainScreenState extends ConsumerState<MainScreen>
   Future _updatePermission() async {
     String title = 'Oops !!!';
     String message = '';
-
-    debugPrint("RUNRUN RUNURNR");
-
     bool status_health = await _flutterHealthConnectService.checkPermission();
     var status_activity = await Permission.activityRecognition.status;
     var status_location = await Permission.location.status;
@@ -221,11 +218,10 @@ class _MainScreenState extends ConsumerState<MainScreen>
   @override
   Widget build(BuildContext context) {
     final int selectedIndex = ref.watch(navigationStateProvider);
-    final profileState = ref.watch(profileControllerProvider);
     final appState = ref.watch(appSettingsControllerProvider);
 
     return Scaffold(
-      appBar: _appBar(selectedIndex, profileState),
+      appBar: _appBar(selectedIndex),
       body: _widgetBody(selectedIndex, renderScreen),
       // floatingActionButton: FloatingActionButton(
       //   onPressed: () {
@@ -266,13 +262,16 @@ class _MainScreenState extends ConsumerState<MainScreen>
     }
   }
 
-  PreferredSizeWidget _appBar(int selectedIndex, ProfileState profile_state) {
+  PreferredSizeWidget _appBar(int selectedIndex) {
+    final profileState =
+        ref.watch(profileControllerProvider.notifier).getEmailAndDisplayName();
+
     return AppBarCustom(
         bgColor: AppColors.primaryDark,
         foregroundColor: AppColors.backgroundLight,
-        text: getAppBarConfig(selectedIndex, profile_state).text,
-        showheader: getAppBarConfig(selectedIndex, profile_state).showHeader,
-        isCenter: getAppBarConfig(selectedIndex, profile_state).isCenter);
+        text: getAppBarConfig(selectedIndex, profileState).text,
+        showheader: getAppBarConfig(selectedIndex, profileState).showHeader,
+        isCenter: getAppBarConfig(selectedIndex, profileState).isCenter);
   }
 
   SafeArea _widgetBody(int selectedIndex, renderScreen) {

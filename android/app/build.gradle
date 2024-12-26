@@ -98,6 +98,11 @@ android {
 
 }
 
+dependencies {
+    implementation "androidx.health.connect:connect-client:1.1.0-alpha08"
+}
+
+
 flutter {
     source = "../.."
 }

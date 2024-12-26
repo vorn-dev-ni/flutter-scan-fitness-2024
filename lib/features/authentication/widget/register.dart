@@ -59,14 +59,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               appHeader(translations, appTheme!),
               inputArea(translations, appTheme!),
-              registerSection(registerState, appStateloading, translations)
+              registerSection(
+                  registerState, appStateloading, translations, appTheme)
             ]),
           )),
     );
   }
 
   Column registerSection(RegisterState register_state, bool appStateloading,
-      AppLocalizations? translations) {
+      AppLocalizations? translations, AppTheme appTheme) {
     return Column(
       children: [
         const SizedBox(
@@ -101,6 +102,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ],
         ),
         const SizedBox(
+          height: Sizes.lg + 20,
+        ),
+        Text(
+          textAlign: TextAlign.right,
+          "Continue With",
+          style: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: appTheme == AppTheme.light
+                  ? AppColors.textColor
+                  : AppColors.textDarkColor),
+        ),
+        const SizedBox(
           height: Sizes.lg,
         ),
         if (FirebaseRemoteConfigService()
@@ -113,23 +126,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     height: Sizes.lg,
                     splashColor: const Color.fromARGB(255, 236, 239, 229)
                         .withOpacity(0.1),
-                    label: ScreenText.registerScreen['loginApple'],
+                    label: 'Login with Facebook',
                     onPressed: () {},
-                    iconButton: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: Sizes.sm),
-                      child: SvgPicture.string(
-                        SvgAsset.appleSvg,
-                        width: 2.5.w,
-                        height: 2.5.h,
-                        colorFilter: const ColorFilter.mode(
-                            Colors.white, BlendMode.srcIn),
-                      ),
+                    iconButton: SvgPicture.string(
+                      SvgAsset.facebookSvg,
+                      width: 3.w,
+                      height: 3.h,
                     ),
                     radius: Sizes.lg,
                     textStyle: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
                         color: AppColors.backgroundLight,
                         fontWeight: FontWeight.w600) as dynamic,
-                    color: AppColors.neutralBlack,
+                    color: AppColors.primaryColor,
                     textColor: Colors.white,
                     elevation: 0),
               )
@@ -146,18 +154,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               Expanded(
                 child: ButtonApp(
                     height: Sizes.lg,
-                    iconButton: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: Sizes.sm),
-                      child: SvgPicture.string(
-                        SvgAsset.googleSvg,
-                        width: 2.5.w,
-                        height: 2.5.h,
-                      ),
+                    iconButton: SvgPicture.string(
+                      SvgAsset.googleSvg,
+                      width: 2.5.w,
+                      height: 2.5.h,
                     ),
                     splashColor: const Color.fromARGB(255, 171, 188, 255)
                         .withOpacity(0.1),
                     label: ScreenText.registerScreen['loginGoogle'],
-                    onPressed: () {},
+                    onPressed: () async {
+                      try {
+                        await authController.loginWithGoogle();
+                      } catch (e) {
+                        if (mounted) {
+                          HelpersUtils.showErrorSnackbar(context, 'Oops!!!',
+                              e.toString(), StatusSnackbar.failed);
+                        }
+                      }
+                    },
                     radius: Sizes.lg,
                     textStyle: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
                         color: AppColors.neutralBlack,

@@ -90,16 +90,16 @@ class _SuccessAuthState extends ConsumerState<SuccessAuth> {
                           'An Email has been sent to your gmail ',
                       textAlign: TextAlign.center,
                       style: appThemeRef == AppTheme.light
-                          ? AppTextTheme.lightTextTheme.bodyLarge
-                          : AppTextTheme.darkTextTheme.bodyLarge,
+                          ? AppTextTheme.lightTextTheme.bodyMedium
+                          : AppTextTheme.darkTextTheme.bodyMedium,
                     ),
                     Text(
                       translations?.verify_email_desc_short ??
                           'Please verify it before you login',
                       textAlign: TextAlign.center,
                       style: appThemeRef == AppTheme.light
-                          ? AppTextTheme.lightTextTheme.bodyLarge
-                          : AppTextTheme.darkTextTheme.bodyLarge,
+                          ? AppTextTheme.lightTextTheme.bodyMedium
+                          : AppTextTheme.darkTextTheme.bodyMedium,
                     ),
                     const SizedBox(
                       height: Sizes.buttonHeightLg,

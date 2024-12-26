@@ -12,3 +12,15 @@ class AppLoadingState extends _$AppLoadingState {
     state = value;
   }
 }
+
+@riverpod
+class SocaiLoginLoadingState extends _$SocaiLoginLoadingState {
+  @override
+  bool build() {
+    return false;
+  }
+
+  void setState(bool value) {
+    state = value;
+  }
+}

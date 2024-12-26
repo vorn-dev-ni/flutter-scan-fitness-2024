@@ -6,7 +6,6 @@ import 'package:demo/data/service/firestore_service.dart';
 import 'package:demo/features/account/model/profile_state.dart';
 import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
-import 'package:demo/utils/local_storage/local_storage_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'profile_controller.g.dart';
@@ -17,37 +16,52 @@ class ProfileController extends _$ProfileController {
   late FirestoreService _firestoreService;
 
   @override
-  ProfileState build() {
+  FutureOr<ProfileState> build() async {
     _firebaseAuthService = FirebaseAuthService();
     _firestoreService =
         FirestoreService(firebaseAuthService: _firebaseAuthService);
-    return bindingData();
+    return await bindingData();
   }
 
-  bindingData() {
-    final displayEmail = LocalStorageUtils().getKey("email") ?? "";
-    final displayName = LocalStorageUtils().getKey("fullname") ?? "";
-    final avatarImage = LocalStorageUtils().getKey("avatarImage") ?? "";
-    final gender = LocalStorageUtils().getKey('gender') ?? "";
-    final dob = LocalStorageUtils().getKey('dob') ?? "";
-    print(
-        "User state is ${displayName} ${displayEmail} ${avatarImage} ${gender} ${dob}");
+  // Future<ProfileState> getAsyncDataUser() async {
+  //   final data = await _firestoreService.getUserAvatar(
+  //       _firebaseAuthService.currentUser!.uid) as Map<String, dynamic>;
+  //   return ProfileState(
+  //       imageUrl: data['avatarImage'],
+  //       dob: data['dob'],
+  //       gender: data['gender']);
+  // }
+
+  Future<ProfileState> bindingData() async {
+    print('Current user is ${_firebaseAuthService.currentUser}');
+    final displayEmail = _firebaseAuthService.currentUser?.email ?? "";
+    final displayName = _firebaseAuthService.currentUser?.displayName ?? "";
+    final data = await _firestoreService.getUserAvatar(
+        _firebaseAuthService.currentUser!.uid) as Map<String, dynamic>;
+    // print(
+    //     "User state is ${displayName} ${displayEmail} ${avatarImage} ${gender} ${dob}");
     return ProfileState(
-        email: displayEmail,
-        fullName: displayName,
-        imageUrl: avatarImage,
-        dob: dob,
-        gender: gender);
+        email: displayEmail ?? "",
+        fullName: displayName ?? "",
+        imageUrl: data['avatarImage'] ?? "",
+        dob: data['dob'] ?? "",
+        gender: data['gender'] ?? "");
   }
 
-  void syncProfileState(String email, String fullName, String? imageUrl,
-      {String? gender, String? dob}) {
-    state = state.copyWith(
-        fullName: fullName,
-        email: email,
-        imageUrl: imageUrl,
-        dob: dob,
-        gender: gender);
+  // void syncProfileState(String email, String fullName, String? imageUrl,
+  //     {String? gender, String? dob}) {
+  //   state = state.copyWith(
+  //       fullName: fullName,
+  //       email: email,
+  //       imageUrl: imageUrl,
+  //       dob: dob,
+  //       gender: gender);
+  // }
+
+  ProfileState getEmailAndDisplayName() {
+    final displayEmail = _firebaseAuthService.currentUser?.email ?? "";
+    final displayName = _firebaseAuthService.currentUser?.displayName ?? "";
+    return ProfileState(email: displayEmail, fullName: displayName);
   }
 
   Future saveUserProfile(
@@ -57,18 +71,7 @@ class ProfileController extends _$ProfileController {
       if (fullName.isNotEmpty && email.isNotEmpty) {
         await _firestoreService.updateUser(email, fullName, imageUrl,
             dob: dob, gender: gender);
-        syncProfileState(email, fullName, imageUrl, dob: dob, gender: gender);
-        await LocalStorageUtils().setKeyString('fullname', fullName);
-        await LocalStorageUtils().setKeyString('email', email);
-        if (dob!.isNotEmpty) {
-          await LocalStorageUtils().setKeyString('dob', dob);
-        }
-        if (gender!.isNotEmpty) {
-          await LocalStorageUtils().setKeyString('gender', gender);
-        }
-        if (imageUrl != null || imageUrl != "") {
-          await LocalStorageUtils().setKeyString('avatarImage', imageUrl!);
-        }
+        contextref.invalidate(profileControllerProvider);
         HelpersUtils.showErrorSnackbar(
             duration: 2000,
             contextref.context,
@@ -80,7 +83,7 @@ class ProfileController extends _$ProfileController {
             duration: 2000,
             contextref.context,
             "Validation Failed !!!",
-            "Please provide valid email",
+            "Please correct your information must not be blank !!!",
             StatusSnackbar.failed);
       }
     } catch (e) {

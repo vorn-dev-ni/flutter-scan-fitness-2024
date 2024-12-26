@@ -36,7 +36,6 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
         ),
         SelectionBox(
           onPress: () {
-            // _handleScanGym(context)
             showBottomSheet(context, ActivityTag.gym);
           },
           backgroundColor: const Color(0xffF0F0FF),
@@ -67,7 +66,6 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
         ),
         SelectionBox(
           onPress: () {
-            // _handleScanFoods(context);
             showBottomSheet(context, ActivityTag.food);
           },
           backgroundColor: const Color(0xffFFF9F0),
@@ -80,10 +78,12 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
                 tr(context).food_calories,
                 style: AppTextTheme.lightTextTheme.bodyLarge,
               ),
+
               Text(
                 tr(context).food_calories_info,
                 style: AppTextTheme.lightTextTheme.bodySmall,
               ),
+
               SvgPicture.string(
                 SvgAsset.foodCaloriesSvg,
                 width: 18.w,
@@ -92,6 +92,9 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
               ), // SvgPicture.asset(
             ],
           ),
+        ),
+        const SizedBox(
+          height: Sizes.lg,
         ),
       ],
     );

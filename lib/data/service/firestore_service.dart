@@ -147,10 +147,31 @@ class FirestoreService {
   Future<Map<String, dynamic>?> getUserAvatar(String docId) async {
     CollectionReference users = _firestore.collection('users');
     try {
+      print("Doc id ${docId}");
       DocumentSnapshot docSnapshot = await users.doc(docId).get();
       if (docSnapshot.exists) {
         final data = docSnapshot.data() as Map<String, dynamic>;
         return data;
+      } else {
+        print("No document found for the given docId.");
+        return null;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error retrieving avatar URL: $e");
+      }
+      rethrow;
+    }
+  }
+
+  Future<QueryDocumentSnapshot<Object?>?> getUserInfoByEmail(
+      String email) async {
+    print(email);
+    CollectionReference users = _firestore.collection('users');
+    try {
+      final docSnapshot = await users.where('email', isEqualTo: email).get();
+      if (docSnapshot.docs.isNotEmpty) {
+        return docSnapshot.docs.first;
       } else {
         print("No document found for the given docId.");
         return null;
@@ -241,7 +262,7 @@ class FirestoreService {
     }
   }
 
-  Future<AuthModel> getEmail(String uid) async {
+  Future<bool> isEmailExisted(String email) async {
     final FirebaseAuth? auth = firebaseAuthService?.getAuth;
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -249,18 +270,15 @@ class FirestoreService {
       try {
         String userId = auth.currentUser!.uid;
 
-        DocumentSnapshot snapshot =
-            await _firestore.collection('users').doc(uid).get();
+        final data = await _firestore
+            .collection('users')
+            .where('email', isEqualTo: email)
+            .get();
 
-        if (snapshot.exists) {
-          String email = snapshot['email'];
-          String fullname = snapshot['fullName'];
-
-          print('User email: $email, Fullname: $fullname');
-
-          return AuthModel(fullname: fullname, email: email);
+        if (data.docs.isNotEmpty) {
+          return true;
         } else {
-          throw Exception("User not found in Firestore.");
+          return false;
         }
       } on FirebaseException catch (e) {
         // Handle Firestore specific errors

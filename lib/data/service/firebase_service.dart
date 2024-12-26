@@ -1,8 +1,8 @@
 import 'package:demo/data/service/firestore_service.dart';
 import 'package:demo/utils/firebase/firebase.dart';
-import 'package:demo/utils/local_storage/local_storage_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -25,6 +25,40 @@ class FirebaseAuthService {
       }
 
       rethrow; // Handle specific exceptions in your UI layer
+    }
+  }
+
+  Future<UserCredential> signInWithGoogle() async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    if (googleUser == null) {
+      throw Exception('Google Sign-In was canceled');
+    }
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+
+    // Once signed in, return the UserCredential
+    UserCredential userCredential =
+        await _auth.signInWithCredential(credential);
+
+    await reloadUser();
+    return userCredential;
+  }
+
+  Future signOutWithGoogle() async {
+    try {
+      await GoogleSignIn().signOut();
+
+      return true;
+    } on Exception catch (_) {
+      rethrow;
     }
   }
 

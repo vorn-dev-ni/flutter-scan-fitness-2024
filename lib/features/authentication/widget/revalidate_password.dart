@@ -1,6 +1,7 @@
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/button.dart';
 import 'package:demo/core/riverpod/app_provider.dart';
+import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/features/authentication/controller/auth_controller.dart';
 import 'package:demo/features/authentication/controller/tabbar_controller.dart';
@@ -51,11 +52,14 @@ class _RevalidatePasswordSuccessState
     final appLoadingState = ref.watch(appLoadingStateProvider);
     final translations = AppLocalizations.of(context);
 
+    final appTheme = ref.watch(appSettingsControllerProvider).appTheme;
+
     return Scaffold(
         appBar: AppBarCustom(
             bgColor: Colors.transparent,
             text: translations?.check_email ?? 'Check Email',
             isCenter: true,
+            foregroundColor: AppColors.backgroundLight,
             showheader: false),
         body: SafeArea(
             child: Padding(
@@ -114,7 +118,7 @@ class _RevalidatePasswordSuccessState
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 3,
-                                  color: AppColors.primaryLight,
+                                  color: AppColors.backgroundLight,
                                 ),
                               )
                             : null,

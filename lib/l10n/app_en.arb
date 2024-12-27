@@ -94,7 +94,12 @@
     "dark":"Dark Theme",
     "light":"Light Theme",
       "sort_asc":"Sort by date Ascending",
-  "sort_desc":"Sort by date Descending"
+  "sort_desc":"Sort by date Descending",
+  "continue_with":"Continue With",
+  "google":"Login with Google",
+  "facebook":"Login with Facebook",
+    "no_activity":"No Activity",
+  "no_recent":"Your recent activities scan will show here, let's start now !!!"
  
 
 }

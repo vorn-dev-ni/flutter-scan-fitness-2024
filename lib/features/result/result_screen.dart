@@ -132,7 +132,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         compressQuality: 50,
         uiSettings: [
           AndroidUiSettings(
-            toolbarTitle: 'Cropper',
+            toolbarTitle: 'Edit',
             toolbarColor: AppColors.primaryColor,
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.square,
@@ -144,7 +144,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             ],
           ),
           IOSUiSettings(
-            title: 'Cropper',
+            title: 'Edit',
             aspectRatioPresets: [
               CropAspectRatioPreset.original,
               CropAspectRatioPreset.square,

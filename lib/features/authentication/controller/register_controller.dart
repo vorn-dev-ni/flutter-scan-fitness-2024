@@ -29,26 +29,35 @@ class RegisterController extends _$RegisterController {
   }
 
   bool? checkValidation(BuildContext context) {
+    ScaffoldMessengerState().removeCurrentSnackBar();
     if (state.email.isEmpty ||
         state.confirmPassword.isEmpty ||
         state.password.isEmpty ||
         state.fullName.isEmpty) {
-      ScaffoldMessengerState().clearSnackBars();
       HelpersUtils.showErrorSnackbar(
           context,
-          "Validation Error",
-          duration: 2000,
+          "Validation failed !!!",
+          duration: 5000,
           "Missing field please double check",
+          StatusSnackbar.failed);
+      return false;
+    }
+    if (state.fullName.length <= 4) {
+      // HelpersUtils.navigatorState(context).pop();
+      HelpersUtils.showErrorSnackbar(
+          context,
+          "Validation failed !!!",
+          duration: 5000,
+          "Your Full name should be more then 5 characters",
           StatusSnackbar.failed);
       return false;
     }
     if (state.confirmPassword != state.password) {
       // HelpersUtils.navigatorState(context).pop();
-      ScaffoldMessengerState().clearSnackBars();
       HelpersUtils.showErrorSnackbar(
           context,
-          "Mismatch Password",
-          duration: 2000,
+          "Mismatch Password !!!",
+          duration: 5000,
           "Double check your password",
           StatusSnackbar.failed);
       return false;

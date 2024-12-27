@@ -27,7 +27,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
   late DatePickerController datePickerController;
   double targetValue = 0;
   List<DateTime> futureDates = List.generate(
-    100, // Show the next 30 days
+    100,
     (index) => DateTime.now().add(Duration(days: index + 1)),
   );
   DateTime now = DateTime.now();
@@ -107,8 +107,8 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                     return const Text('');
                   },
                   data: (data) {
-                    final result = data.data() as Map<String, dynamic>;
-
+                    final result = data.data() as Map<String, dynamic>? ?? {};
+                    debugPrint("Result ${result}");
                     return Column(
                       children: [
                         UserActivityState(
@@ -116,14 +116,16 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                             datePeriod: selectionDate,
                             date: FormatterUtils.formatDob(selectionDate,
                                 prefix: 'EEE, dd MMM'),
-                            targetGoal: result['steps'],
+                            targetGoal: result['steps'] ?? "0",
                             unit: "step",
-                            value: result['steps'],
+                            value: result['steps'] ?? 0,
                             onEdit: () {
                               _showBottomTargetSheet(
                                 context,
                                 'step',
-                                result['steps'].toString() ?? "",
+                                result['steps'] != null
+                                    ? result['steps'].toString()
+                                    : "0",
                               );
                             }),
                         UserActivityState(
@@ -131,29 +133,33 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                             datePeriod: selectionDate,
                             date: FormatterUtils.formatDob(selectionDate,
                                 prefix: 'EEE, dd MMM'),
-                            targetGoal: result['calories'],
-                            value: result['calories'],
+                            targetGoal: result['calories'] ?? "0.0",
+                            value: result['calories'] ?? 0.0,
                             unit: "kcal",
                             onEdit: () {
                               _showBottomTargetSheet(
                                 context,
                                 'calories',
-                                result['calories'].toString() ?? "",
+                                result['calories'] != null
+                                    ? result['calories'].toString()
+                                    : "0",
                               );
                             }),
                         UserActivityState(
-                            value: result['sleeps'],
+                            value: result['sleeps'] ?? "0",
                             healthType: "Sleep",
                             datePeriod: selectionDate,
                             unit: 'hour',
                             date: FormatterUtils.formatDob(selectionDate,
                                 prefix: 'EEE, dd MMM'),
-                            targetGoal: result['sleeps'],
+                            targetGoal: result['sleeps'] ?? "0",
                             onEdit: () {
                               _showBottomTargetSheet(
                                 context,
                                 'sleep',
-                                result['sleeps'].toString(),
+                                result['sleeps'] != null
+                                    ? result['sleeps'].toString()
+                                    : "0",
                               );
                             }),
                       ],
@@ -252,11 +258,13 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                       healthData.when(
                         data: (data) {
                           String targetUnit = getTargetUnit(healthType, data!);
+                          final valueTarget =
+                              getValueUnits(healthType, data).toString();
+                          double? valueProgress = double.parse(valueTarget) /
+                              double.parse(value.toString());
 
-                          double valueProgress = double.parse(
-                                  getValueUnits(healthType, data).toString()) /
-                              double.parse(value ?? "0");
-
+                          // String? targetUnit = "";
+                          // double valueProgress = 1.0;
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -420,8 +428,12 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
     }
   }
 
-  String getValueUnits(String? healthType, UserHealth userHealth) {
-    debugPrint('Health type ${healthType}');
+  String getValueUnits(String? healthType, UserHealth? userHealth) {
+    debugPrint('Health type $healthType');
+
+    if (userHealth == null) {
+      return "0";
+    }
     if (healthType == 'Steps') {
       return userHealth.steps ?? "0";
     }
@@ -435,12 +447,15 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
     return "";
   }
 
-  String getTargetUnit(String? healthType, UserHealth userHealth) {
-    debugPrint('Health type ${healthType}');
+  String getTargetUnit(String? healthType, UserHealth? userHealth) {
+    // debugPrint('Health type ${healthType}');
+    if (userHealth == null) {
+      return "";
+    }
     if (healthType == 'Steps') {
       return int.parse(userHealth.steps.toString()) > 1
-          ? "${userHealth.steps} steps"
-          : "${userHealth.steps} step" ?? "0";
+          ? "${userHealth.steps ?? 0} steps"
+          : "${userHealth.steps ?? 0} step";
     }
     if (healthType == 'Active Calories') {
       // return userHealth.caloriesBurn ?? "0";

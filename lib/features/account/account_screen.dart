@@ -6,6 +6,7 @@ import 'package:demo/features/account/controller/profile_controller.dart';
 import 'package:demo/features/account/model/profile_state.dart';
 import 'package:demo/features/account/model/tab_setting.dart';
 import 'package:demo/features/authentication/controller/auth_controller.dart';
+import 'package:demo/features/home/controller/user_target_controller.dart';
 import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/enums.dart';
@@ -240,7 +241,8 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
 
   Widget ProfileTile(AppTheme? appThemeRef) {
     final profileState = ref.watch(profileControllerProvider);
-    final userEmailName =
+
+    final displayName =
         ref.watch(profileControllerProvider.notifier).getEmailAndDisplayName();
     return Material(
       type: MaterialType.transparency,
@@ -263,7 +265,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               data: (data) {
                 final profile = data;
 
-                print('Profile state is ${profile}');
+                print('Profile state is ${profile.imageUrl}');
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(Sizes.xxxl + 20),
                   clipBehavior: Clip.hardEdge,
@@ -305,13 +307,17 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
         title: Text(
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          userEmailName.fullName,
+          displayName.fullName,
           style: appThemeRef == AppTheme.light
               ? AppTextTheme.lightTextTheme.bodyLarge
               : AppTextTheme.darkTextTheme.bodyLarge,
         ),
         subtitle: Text(
-          userEmailName.email,
+          profileState.whenOrNull(
+                data: (data) => data.email,
+                error: (error, stackTrace) => null,
+              ) ??
+              "",
           style: appThemeRef == AppTheme.light
               ? AppTextTheme.lightTextTheme.bodySmall
               : AppTextTheme.darkTextTheme.bodySmall,
@@ -352,6 +358,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     await authController.logoutUser();
     if (mounted) {
       ref.invalidate(profileControllerProvider);
+      ref.invalidate(userTargetControllerProvider);
       HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
           AppPage.FIRST, (Route<dynamic> route) => false);
     }

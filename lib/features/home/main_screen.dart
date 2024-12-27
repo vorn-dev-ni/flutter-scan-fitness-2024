@@ -37,6 +37,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
   DateTime today = HelpersUtils.getToday();
   final GlobalKey _alertKeyAndroid = GlobalKey();
   final GlobalKey _alertKeyAndroidIOS = GlobalKey();
+  late ScrollController scrollController;
 
   late List<BottomNavigationBarItem> navItems = [];
   late List<ScreenApp> renderScreen = [];
@@ -50,7 +51,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
+    scrollController = ScrollController();
     _flutterHealthConnectService = FlutterHealthConnectService();
     _updatePermission();
     bindingUsername();
@@ -130,6 +131,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    scrollController.dispose();
     super.dispose();
   }
 
@@ -243,19 +245,16 @@ class _MainScreenState extends ConsumerState<MainScreen>
     switch (selectedIndex) {
       case 0:
         return AppBarConfig(
-            text: "${titleBar} ${profile_state.fullName}",
+            text:
+                "${tr(context).auth_welcome} ${profile_state.fullName.length > 5 ? "${profile_state.fullName.substring(0, 5)}..." : profile_state.fullName}",
             isCenter: false,
             showHeader: true);
       case 1:
         return AppBarConfig(
-            text: tr(context).scan ?? "Scan",
-            isCenter: true,
-            showHeader: false);
+            text: tr(context).scan, isCenter: true, showHeader: false);
       case 2:
         return AppBarConfig(
-            text: tr(context).profile ?? "Profile",
-            isCenter: false,
-            showHeader: false);
+            text: tr(context).profile, isCenter: false, showHeader: false);
       default:
         return const AppBarConfig(
             text: "", isCenter: false, showHeader: false); // Default values
@@ -279,12 +278,14 @@ class _MainScreenState extends ConsumerState<MainScreen>
         child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: Sizes.xl - 2),
       child: SingleChildScrollView(
+          controller: scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           child: navigationScreen(selectedIndex, context)),
     ));
   }
 
   void _onTap(int p1) {
+    scrollController.jumpTo(0);
     ref.read(navigationStateProvider.notifier).changeIndex(p1);
   }
 }

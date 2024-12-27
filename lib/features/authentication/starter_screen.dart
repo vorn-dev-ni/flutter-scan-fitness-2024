@@ -35,22 +35,18 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
   final FirebaseAuthService _firebaseService = FirebaseAuthService();
 
   late StreamSubscription<User?> _userSubscription;
-  late StreamSubscription<User?> _authStateSubscription;
   late AuthController authController;
-
+  late ScrollController scrollController;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    scrollController = ScrollController();
     authController =
         AuthController(firebaseAuthService: FirebaseAuthService(), ref: ref);
     _requestHealthKit();
     _userSubscription = _firebaseService.userStateChanges.listen((User? user) {
       _checkUserAuth(user);
-    });
-    _authStateSubscription =
-        _firebaseService.authStateChanges.listen((User? user) {
-      _checkAuthenticated(user);
     });
   }
 
@@ -58,7 +54,6 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
   void dispose() {
     // TODO: implement dispose
     _userSubscription.cancel();
-    _authStateSubscription.cancel();
     super.dispose();
   }
 
@@ -76,6 +71,7 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
           child: Padding(
         padding: const EdgeInsets.all(Sizes.xl),
         child: SingleChildScrollView(
+          controller: scrollController,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -181,40 +177,44 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
 
   Future _checkUserAuth(User? user) async {
     if (user != null) {
-      if (user.emailVerified && ref.read(tabbarControllerProvider) == 2) {
+      if (user.emailVerified) {
+        print(
+            "has sync to database success ${user.providerData[0].providerId}");
+
         // await syncUserToStorage(user);/
-        _userSubscription.cancel();
+        await LocalStorageUtils().setKeyString('email', user.email ?? "");
+
         // Navigate to the START screen if the user is verified
         if (mounted) {
           ref.invalidate(profileControllerProvider);
+          await FirebaseAuthService().syncUsertoFirestore(
+              user.displayName ?? "",
+              user?.email ?? "",
+              user.providerData[0].providerId);
           await Future.delayed(const Duration(seconds: 1));
-
+          _userSubscription.cancel();
           HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
               AppPage.START, (Route<dynamic> route) => false);
         }
       } else {
-        print("Check user state ${user?.emailVerified}");
-
-        if (ref.read(tabbarControllerProvider) == 2) {
-          await user.reload();
-        } else {
-          try {
-            if (user.emailVerified) {
-              if (mounted) {
-                ref.invalidate(profileControllerProvider);
-                final isLoading = ref.read(socaiLoginLoadingStateProvider);
-
-                if (!isLoading) {
-                  HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
-                      AppPage.START, (Route<dynamic> route) => false);
-                }
+        try {
+          if (user.emailVerified ||
+              user.providerData[0]?.providerId != 'password') {
+            if (mounted) {
+              final isLoading = ref.read(socaiLoginLoadingStateProvider);
+              // ref.invalidate(profileControllerProvider);
+              debugPrint("Check user state ${user}");
+              if (!isLoading) {
+                debugPrint("Navigating now");
+                HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
+                    AppPage.START, (Route<dynamic> route) => false);
               }
             }
-          } catch (e) {
-            if (mounted) {
-              HelpersUtils.showErrorSnackbar(
-                  context, e.toString(), e.toString(), StatusSnackbar.failed);
-            }
+          }
+        } catch (e) {
+          if (mounted) {
+            HelpersUtils.showErrorSnackbar(
+                context, e.toString(), e.toString(), StatusSnackbar.failed);
           }
         }
       }
@@ -232,11 +232,12 @@ class _StartingScreenState extends ConsumerState<StartingScreen> {
     }
   }
 
-  void _checkAuthenticated(User? user) {
-    if (user == null || !user!.emailVerified) {
-      debugPrint("User is not valid at all");
-      // HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
-      //     AppPage.FIRST, (Route<dynamic> route) => false);
-    }
-  }
+  // void _checkAuthenticated(User? user) {
+  //   if (user != null && user!.emailVerified) {
+  //     // debugPrint("User is not valid at all");
+  //     debugPrint("Navigating now");
+  //     HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
+  //         AppPage.START, (Route<dynamic> route) => false);
+  //   }
+  // }
 }

@@ -6,6 +6,7 @@ import 'package:demo/data/service/firestore_service.dart';
 import 'package:demo/features/account/model/profile_state.dart';
 import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'profile_controller.g.dart';
@@ -23,26 +24,21 @@ class ProfileController extends _$ProfileController {
     return await bindingData();
   }
 
-  // Future<ProfileState> getAsyncDataUser() async {
-  //   final data = await _firestoreService.getUserAvatar(
-  //       _firebaseAuthService.currentUser!.uid) as Map<String, dynamic>;
-  //   return ProfileState(
-  //       imageUrl: data['avatarImage'],
-  //       dob: data['dob'],
-  //       gender: data['gender']);
-  // }
-
   Future<ProfileState> bindingData() async {
-    print('Current user is ${_firebaseAuthService.currentUser}');
-    final displayEmail = _firebaseAuthService.currentUser?.email ?? "";
+    debugPrint('Current user is ${_firebaseAuthService.currentUser}');
+
     final displayName = _firebaseAuthService.currentUser?.displayName ?? "";
     final data = await _firestoreService.getUserAvatar(
         _firebaseAuthService.currentUser!.uid) as Map<String, dynamic>;
+    final displayEmail =
+        _firebaseAuthService.currentUser?.email ?? data['email'];
+
+    debugPrint('User email is ${displayEmail}');
     // print(
     //     "User state is ${displayName} ${displayEmail} ${avatarImage} ${gender} ${dob}");
     return ProfileState(
-        email: displayEmail ?? "",
-        fullName: displayName ?? "",
+        email: displayEmail,
+        fullName: displayName,
         imageUrl: data['avatarImage'] ?? "",
         dob: data['dob'] ?? "",
         gender: data['gender'] ?? "");
@@ -59,9 +55,8 @@ class ProfileController extends _$ProfileController {
   // }
 
   ProfileState getEmailAndDisplayName() {
-    final displayEmail = _firebaseAuthService.currentUser?.email ?? "";
-    final displayName = _firebaseAuthService.currentUser?.displayName ?? "";
-    return ProfileState(email: displayEmail, fullName: displayName);
+    final displayEmail = _firebaseAuthService.currentUser?.displayName ?? "";
+    return ProfileState(fullName: displayEmail);
   }
 
   Future saveUserProfile(

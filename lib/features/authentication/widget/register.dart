@@ -5,6 +5,7 @@ import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/data/service/firebase_remote_config.dart';
 import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/features/authentication/controller/auth_controller.dart';
+import 'package:demo/features/authentication/controller/login_controller.dart';
 import 'package:demo/features/authentication/controller/register_controller.dart';
 import 'package:demo/features/authentication/model/register_state.dart';
 import 'package:demo/utils/constant/app_colors.dart';
@@ -82,15 +83,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       const Color.fromARGB(255, 75, 100, 240).withOpacity(0.1),
                   label: translations?.sign_up ?? "Sign up",
                   onPressed: appStateloading ? null : _handleRegister,
-                  centerLabel: appStateloading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 3,
-                          ),
-                        )
-                      : null,
+                  // centerLabel: appStateloading
+                  //     ? const SizedBox(
+                  //         height: 20,
+                  //         width: 20,
+                  //         child: CircularProgressIndicator(
+                  //           strokeWidth: 3,
+                  //         ),
+                  //       )
+                  //     : null,
                   radius: Sizes.lg,
                   textStyle: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
@@ -106,7 +107,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ),
         Text(
           textAlign: TextAlign.right,
-          "Continue With",
+          translations?.continue_with ?? "",
           style: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: appTheme == AppTheme.light
@@ -127,7 +128,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     splashColor: const Color.fromARGB(255, 236, 239, 229)
                         .withOpacity(0.1),
                     label: 'Login with Facebook',
-                    onPressed: () {},
+                    onPressed: _loginFacebook,
                     iconButton: SvgPicture.string(
                       SvgAsset.facebookSvg,
                       width: 3.w,
@@ -161,17 +162,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     splashColor: const Color.fromARGB(255, 171, 188, 255)
                         .withOpacity(0.1),
-                    label: ScreenText.registerScreen['loginGoogle'],
-                    onPressed: () async {
-                      try {
-                        await authController.loginWithGoogle();
-                      } catch (e) {
-                        if (mounted) {
-                          HelpersUtils.showErrorSnackbar(context, 'Oops!!!',
-                              e.toString(), StatusSnackbar.failed);
-                        }
-                      }
-                    },
+                    label: translations?.facebook ?? "",
+                    onPressed: _loginGoogle,
                     radius: Sizes.lg,
                     textStyle: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
                         color: AppColors.neutralBlack,
@@ -301,11 +293,39 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
+  Future _loginFacebook() async {
+    try {
+      await authController.loginWithFacebook();
+    } catch (e) {
+      if (mounted) {
+        HelpersUtils.showErrorSnackbar(
+            duration: 10000,
+            context,
+            'Oops!!!',
+            e.toString(),
+            StatusSnackbar.failed);
+      }
+    }
+  }
+
+  Future _loginGoogle() async {
+    try {
+      await authController.loginWithGoogle();
+    } catch (e) {
+      if (mounted) {
+        HelpersUtils.showErrorSnackbar(
+            context, 'Oops!!!', e.toString(), StatusSnackbar.failed);
+      }
+    }
+    // print('Primary Button Pressed');
+  }
+
   Future _handleRegister() async {
     bool? isValid =
         ref.read(registerControllerProvider.notifier).checkValidation(context);
     if (isValid == true) {
       await authController.createUser();
+      ref.invalidate(registerControllerProvider);
     }
   }
 }

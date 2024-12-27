@@ -90,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
         Text(
           textAlign: TextAlign.right,
-          "Continue With",
+          translations?.continue_with ?? "",
           style: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: appTheme == AppTheme.light
@@ -110,7 +110,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     height: Sizes.lg,
                     splashColor: const Color.fromARGB(255, 236, 239, 229)
                         .withOpacity(0.1),
-                    label: 'Login with Facebook',
+                    label: translations?.facebook ?? "",
                     onPressed: _loginFacebook,
                     iconButton: SvgPicture.string(
                       SvgAsset.facebookSvg,
@@ -145,18 +145,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     splashColor: const Color.fromARGB(255, 171, 188, 255)
                         .withOpacity(0.1),
-                    label: ScreenText.LoginScreen['loginGoogle'],
-                    onPressed: () async {
-                      try {
-                        await authController.loginWithGoogle();
-                      } catch (e) {
-                        if (mounted) {
-                          HelpersUtils.showErrorSnackbar(context, 'Oops!!!',
-                              e.toString(), StatusSnackbar.failed);
-                        }
-                      }
-                      // print('Primary Button Pressed');
-                    },
+                    label: translations?.google ?? "",
+                    onPressed: _loginGoogle,
                     radius: Sizes.lg,
                     textStyle: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
                         color: AppColors.neutralBlack,
@@ -217,15 +207,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const Color.fromARGB(255, 75, 100, 240).withOpacity(0.1),
                   label: translations?.login ?? "Login",
                   onPressed: isLoading == false ? _handleLogin : null,
-                  centerLabel: isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 3,
-                          ),
-                        )
-                      : null,
+                  // centerLabel: isLoading
+                  //     ? const SizedBox(
+                  //         height: 20,
+                  //         width: 20,
+                  //         child: CircularProgressIndicator(
+                  //           strokeWidth: 3,
+                  //         ),
+                  //       )
+                  //     : null,
                   radius: Sizes.lg,
                   textStyle: AppTextTheme.lightTextTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
@@ -293,10 +283,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ref.read(appLoadingStateProvider.notifier).setState(true);
 
       await authController.loginUser(context);
+      ref.invalidate(loginControllerProvider);
       ref.invalidate(tabbarControllerProvider);
       ref.invalidate(profileControllerProvider);
-      HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
-          AppPage.FIRST, (Route<dynamic> route) => false);
+      // HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
+      //     AppPage.FIRST, (Route<dynamic> route) => false);
     }
   }
 
@@ -313,5 +304,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             StatusSnackbar.failed);
       }
     }
+  }
+
+  Future _loginGoogle() async {
+    try {
+      await authController.loginWithGoogle();
+    } catch (e) {
+      if (mounted) {
+        HelpersUtils.showErrorSnackbar(
+            context, 'Oops!!!', e.toString(), StatusSnackbar.failed);
+      }
+    }
+    // print('Primary Button Pressed');
   }
 }

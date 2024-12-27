@@ -52,6 +52,7 @@ class FirebaseAuthService {
       final OAuthCredential credential =
           FacebookAuthProvider.credential(loginResult.accessToken!.tokenString);
       // Once signed in, return the UserCredential
+
       return await FirebaseAuth.instance.signInWithCredential(credential);
     } else {
       throw Exception('User has cancelled');

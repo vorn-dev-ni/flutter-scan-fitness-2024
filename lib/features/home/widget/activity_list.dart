@@ -21,6 +21,7 @@ import 'package:demo/utils/constant/sizes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:demo/utils/localization/translation_helper.dart';
 
 class ActivityList extends ConsumerStatefulWidget {
   late bool showHeader;
@@ -64,10 +65,11 @@ class _ActivityListState extends ConsumerState<ActivityList> {
                       translations?.view_all),
                 Center(
                   child: bodyNoFound(
-                      context,
-                      body:
-                          "You no recent activities yet, let\'s start now !!!",
-                      "No Activity"),
+                    context,
+                    appTheme: appThemeRef,
+                    body: tr(context).no_recent,
+                    tr(context).recent_activity,
+                  ),
                 )
               ],
             ),

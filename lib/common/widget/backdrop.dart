@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 Widget backDropComponent() {
   return Positioned.fill(
+    top: 0,
+    left: 0,
+    right: 0,
     child: GestureDetector(
       onTap: () {},
       child: Container(

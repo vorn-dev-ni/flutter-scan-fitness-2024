@@ -69,7 +69,6 @@ class GlobalConfig {
     // print('App Routes ${AppRoutes.mainStacks.toString()}');
 
     final email = LocalStorageUtils().getKey('email');
-    final fullname = LocalStorageUtils().getKey('fullname');
 
     if (kDebugMode) {
       print('>>> On initial route call setting ${settings.name} ${email}');
@@ -98,7 +97,7 @@ class GlobalConfig {
       );
     }
 
-    if (settings.name == "Welcome" && email != null && fullname != null) {
+    if (settings.name == "Welcome" && email != null) {
       return MaterialPageRoute(
         builder: (context) => const MainScreen(),
         settings: settings,

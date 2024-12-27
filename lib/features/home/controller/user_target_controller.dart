@@ -28,8 +28,15 @@ class UserTargetController extends _$UserTargetController {
     }
     ref.read(appLoadingStateProvider.notifier).setState(false);
 
-    yield* _firebaseFirestore.getUserWorkoutGoal(
+    final worksout = _firebaseFirestore.getUserWorkoutGoal(
         _firebaseFirestore.firebaseAuthService!.currentUser!.uid!);
+
+    // ignore: unrelated_type_equality_checks
+    if (worksout.isEmpty == true) {
+      yield* const Stream.empty();
+    }
+
+    yield* worksout;
   }
 
   Future<void> updateTarget(String type, String value, WidgetRef ref) async {

@@ -37,7 +37,7 @@ class ButtonApp extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: centerLabel != null ? null : onPressed,
         clipBehavior: Clip.hardEdge,
         style: ElevationTheme.elevationButtonLight.style?.copyWith(
             elevation: WidgetStateProperty.resolveWith((states) {

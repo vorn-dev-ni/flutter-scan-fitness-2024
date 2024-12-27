@@ -20,7 +20,6 @@ import 'package:demo/utils/device/device_utils.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -433,10 +432,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _handleSaveProfile() async {
     DeviceUtils.hideKeyboard(context);
     ref.read(appLoadingStateProvider.notifier).setState(true);
-    String email = ref
-        .read(profileControllerProvider.notifier)
-        .getEmailAndDisplayName()
-        .email;
+    final profileState = await ref.read(profileControllerProvider.future);
+
     final data =
         await FirestoreService(firebaseAuthService: FirebaseAuthService())
                 .getUserAvatar(FirebaseAuth.instance.currentUser?.uid ?? "")
@@ -448,13 +445,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       dob = FormatterUtils.formatDob(_selectedDate!);
     }
     if (_imageTem != null) {
+      debugPrint("True ${_imageTem}");
       //Meaning user has image upload we store to firebase and get downurl and store to firestore
       imageUrl = await _uploadImageController.uploadFile(_imageTem) ?? "";
       // print(_imageTem);
     }
 
     ref.read(profileControllerProvider.notifier).saveUserProfile(
-        email, _textEditingFullName.text, imageUrl ?? "", ref,
+        profileState.email, _textEditingFullName.text, imageUrl ?? "", ref,
         dob: dob, gender: gender);
   }
 
@@ -468,7 +466,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         compressQuality: 50,
         uiSettings: [
           AndroidUiSettings(
-            toolbarTitle: 'Cropper',
+            toolbarTitle: 'Edit',
             toolbarColor: AppColors.primaryColor,
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.square,
@@ -480,7 +478,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ),
           IOSUiSettings(
-            title: 'Cropper',
+            title: 'Edit',
             aspectRatioPresets: [
               CropAspectRatioPreset.original,
               CropAspectRatioPreset.square,
@@ -498,23 +496,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       // ref.read(imageControllerProvider.notifier).updateFile(imageTemp);
     } on PlatformException catch (e) {
       print('Failed to pick image: $e');
-      HelpersUtils.showErrorSnackbar(
-          duration: 2000,
-          context,
-          "Failed",
-          "${e.message}",
-          StatusSnackbar.failed);
+      if (mounted) {
+        HelpersUtils.showErrorSnackbar(
+            duration: 2000,
+            context,
+            "Failed",
+            "${e.message}",
+            StatusSnackbar.failed);
+      }
     }
   }
 
   Future _initialBinding() async {
     final profileState = await ref.read(profileControllerProvider.future);
-
     setState(() {
       DateFormat format = DateFormat("dd-MM-yyyy");
       _uploadImageController = UploadImageController(ref: ref);
-      // _textEditingFullName = TextEditingController();
-      // _textEditingEmail = TextEditingController();
       _textEditingFullName.text = profileState.fullName;
       _textEditingEmail.text = profileState.email;
       _selectedGender = profileState.gender;
@@ -522,7 +519,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         _selectedDate = format.parse(profileState.dob ?? "");
       }
       _avatarImage = profileState?.imageUrl;
-
       print(profileState.imageUrl);
     });
   }

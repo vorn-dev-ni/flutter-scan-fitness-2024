@@ -67,9 +67,12 @@ class FirestoreService {
         if (_isDisposed) {
           return null;
         }
-        await _firestore.collection('users').doc(userId).set(
-            {'fullName': fullName, 'email': email, 'provider': provider},
-            SetOptions(merge: true));
+        await _firestore.collection('users').doc(userId).set({
+          'fullName': fullName,
+          'email': email,
+          'provider': provider,
+          'avatarImage': ""
+        }, SetOptions(merge: true));
         return AuthModel(fullname: fullName, email: email);
       } on FirebaseException catch (e) {
         throw handleFirebaseErrorResponse(e);
@@ -251,7 +254,7 @@ class FirestoreService {
       print("Update successful for type: $type with value: $value");
 
       if (docId.isNotEmpty && docId != "") {
-        await users.doc("VeUtIDdNqsMVGknkbeBeBQhcT7S2").update(payload);
+        await users.doc(docId).set(payload, SetOptions(merge: true));
         print("Update successful for type: $type with value: $value");
         print("Update success fully");
       }

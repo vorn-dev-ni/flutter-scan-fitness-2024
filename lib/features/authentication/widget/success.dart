@@ -2,14 +2,18 @@ import 'dart:async';
 
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/button.dart';
+import 'package:demo/core/riverpod/app_provider.dart';
 import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/data/service/firebase_service.dart';
+import 'package:demo/features/account/controller/profile_controller.dart';
+import 'package:demo/features/authentication/controller/auth_controller.dart';
 import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/constant/image_asset.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
+import 'package:demo/utils/local_storage/local_storage_utils.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +36,7 @@ class _SuccessAuthState extends ConsumerState<SuccessAuth> {
     // TODO: implement initState
 
     super.initState();
-    _authSubscription = _firebaseService.authStateChanges.listen((User? user) {
+    _authSubscription = _firebaseService.userStateChanges.listen((User? user) {
       _checkUserAuth(user);
     });
   }
@@ -47,12 +51,16 @@ class _SuccessAuthState extends ConsumerState<SuccessAuth> {
   Widget build(BuildContext context) {
     final translations = AppLocalizations.of(context);
     final appThemeRef = ref.watch(appSettingsControllerProvider).appTheme;
+    final isLoading = ref.read(appLoadingStateProvider);
 
     return Scaffold(
         appBar: AppBarCustom(
             bgColor: Colors.transparent,
             text: translations?.check_email ?? 'Verify Email ',
             isCenter: true,
+            foregroundColor: appThemeRef == AppTheme.light
+                ? AppColors.backgroundLight
+                : AppColors.primaryDark,
             showheader: false),
         body: SafeArea(
             child: Padding(
@@ -110,6 +118,16 @@ class _SuccessAuthState extends ConsumerState<SuccessAuth> {
                             .withOpacity(0.1),
                         label: translations?.resent_email ?? 'Resend Email',
                         onPressed: () => _resendEmail(translations),
+                        centerLabel: isLoading == true
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  color: AppColors.backgroundLight,
+                                ),
+                              )
+                            : null,
                         radius: Sizes.lg,
                         textStyle: AppTextTheme.lightTextTheme.bodyMedium
                             ?.copyWith(
@@ -126,11 +144,19 @@ class _SuccessAuthState extends ConsumerState<SuccessAuth> {
 
   Future _checkUserAuth(User? user) async {
     // await _firebaseService.signOut();
+
     if (user != null) {
       if (user.emailVerified) {
-        _authSubscription.cancel();
+        debugPrint("RUN RUN RUN ${user.displayName}");
         // Navigate to the START screen if the user is verified
         if (mounted) {
+          await FirebaseAuthService().syncUsertoFirestore(
+              user.displayName ?? "", user.email ?? "", 'one-time');
+          await LocalStorageUtils().setKeyString('email', user.email ?? "");
+          await user.updateDisplayName(user.displayName);
+          await user.reload();
+          ref.invalidate(profileControllerProvider);
+          _authSubscription.cancel();
           HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
               AppPage.START, ModalRoute.withName(AppPage.START));
         }
@@ -142,7 +168,9 @@ class _SuccessAuthState extends ConsumerState<SuccessAuth> {
 
   Future _resendEmail(AppLocalizations? translate) async {
     try {
+      ref.read(appLoadingStateProvider.notifier).setState(true);
       await _firebaseService.currentUser?.sendEmailVerification();
+      ref.read(appLoadingStateProvider.notifier).setState(false);
       HelpersUtils.showErrorSnackbar(
           duration: 1000,
           context,
@@ -150,6 +178,8 @@ class _SuccessAuthState extends ConsumerState<SuccessAuth> {
           translate?.success_email_desc ?? "Please check your email again",
           StatusSnackbar.success);
     } catch (e) {
+      ref.read(appLoadingStateProvider.notifier).setState(false);
+
       HelpersUtils.showErrorSnackbar(
           duration: 40000,
           context,

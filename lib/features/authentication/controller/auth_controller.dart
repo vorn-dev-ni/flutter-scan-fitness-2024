@@ -34,8 +34,10 @@ class AuthController {
   }) async {
     try {
       await user.updateProfile(displayName: fullName);
+
       await FirestoreService(firebaseAuthService: firebaseAuthService)
           .updateUser(user?.email ?? "", fullName, imageUrl);
+      LocalStorageUtils().setKeyString('email', user.email ?? "");
       // await user.reload();
     } catch (e) {
       throw FirebaseCredentialException(
@@ -62,8 +64,36 @@ class AuthController {
       await FacebookAuth.instance.logOut();
       UserCredential? userCredential =
           await firebaseAuthService.signInWithFacebook();
-      debugPrint("loginWithFacebook state is ${userCredential}");
+
+      print(
+          'usser email is ${userCredential?.user?.emailVerified} ${userCredential?.user}');
+      // if (userCredential?.user?.emailVerified == false) {
+      // Facebook production will use this
+      //   var acs = ActionCodeSettings(
+      //       // URL you want to redirect back to. The domain (www.example.com) for this
+      //       // URL must be whitelisted in the Firebase Console.
+      //       url: 'https://www.example.com/',
+      //       // This must be true
+      //       handleCodeInApp: true,
+      //       iOSBundleId: 'com.example.demo',
+      //       androidPackageName: 'com.example.demo',
+      //       // installIfNotAvailable
+      //       androidInstallApp: true,
+      //       // minimumVersion
+      //       androidMinimumVersion: '12');
+      //   await FirebaseAuth.instance.sendSignInLinkToEmail(
+      //     email: userCredential?.user?.providerData[0].email ?? "",
+      //     actionCodeSettings: acs,
+      //   );
+      //   HelpersUtils.navigatorState(ref.context).pushNamedAndRemoveUntil(
+      //       AppPage.EMAIL_VERIFY, (Route<dynamic> route) => false);
+      // }
+
       await syncAuthentication(userCredential, socialprovider: 'facebook');
+      debugPrint("loginWithFacebook state is ${userCredential}");
+
+      ref.read(socaiLoginLoadingStateProvider.notifier).setState(false);
+
       return null;
     } catch (e) {
       ref.read(socaiLoginLoadingStateProvider.notifier).setState(false);
@@ -80,17 +110,23 @@ class AuthController {
               firebaseAuthService: firebaseAuthService)
           .isEmailExisted(
               userCredential.user?.email ?? "", socialprovider ?? "one-time");
-      await firebaseAuthService.reloadUser();
-      String imageUrl = userCredential.user?.providerData[0]?.photoURL ?? "";
 
+      String imageUrl = userCredential.user?.providerData[0].photoURL ?? "";
+
+      String email = userCredential.user?.providerData[0].email ??
+          FormatterUtils.generateRandomEmail();
+      await LocalStorageUtils().setKeyString('email', email);
       if (!isExisted) {
         await firebaseAuthService.syncUsertoFirestore(
             userCredential.user?.displayName ?? "",
-            userCredential.user?.email ?? FormatterUtils.generateRandomEmail(),
+            email,
             socialprovider ?? "one-time");
-        ref.invalidate(profileControllerProvider);
       }
-      await syncToStorage(userCredential.user!, imageUrl);
+
+      await updateFirestoreUser(userCredential.user!, imageUrl);
+      await firebaseAuthService.reloadUser();
+
+      ref.invalidate(profileControllerProvider);
     }
   }
 
@@ -110,15 +146,16 @@ class AuthController {
     }
   }
 
-  Future syncToStorage(User userCredential, String? imageUrl) async {
+  Future updateFirestoreUser(User userCredential, String? imageUrl) async {
     try {
       if (userCredential?.uid != null) {
         final data =
             await FirestoreService(firebaseAuthService: firebaseAuthService)
                 .getUserAvatar(userCredential!.uid) as Map<String, dynamic>;
         print("User credential ${data}");
+
         await _updateUserProfile(userCredential, userCredential.displayName!,
-            imageUrl: imageUrl);
+            imageUrl: imageUrl ?? data['avatarImage']);
       }
     } catch (e) {
       rethrow;
@@ -133,15 +170,8 @@ class AuthController {
       final UserCredential? userCredential = await firebaseAuthService
           .createUser(email: userInfo.email, password: userInfo.password);
       if (userCredential?.user != null) {
+        await userCredential?.user?.updateDisplayName(userInfo.fullName);
         await userCredential?.user?.sendEmailVerification();
-
-        await _updateUserProfile(userCredential!.user!, userInfo.fullName);
-        await firebaseAuthService.currentUser?.reload();
-        if (userCredential.user != null) {
-          await firebaseAuthService.syncUsertoFirestore(
-              userInfo.fullName ?? "", userInfo.email, "one-time");
-          ref.invalidate(profileControllerProvider);
-        }
 
         ref.read(appLoadingStateProvider.notifier).setState(false);
         await navigateToScreenSuccess(userInfo.fullName, userInfo.email);
@@ -224,11 +254,6 @@ class AuthController {
         throw AppException(
             title: "Unauthorized", message: 'Please verify your email ');
       }
-      if (user != null) {
-        await _updateUserProfile(user, user.displayName!);
-        await firebaseAuthService.currentUser?.reload();
-        await syncToStorage(user!, '');
-      }
     } catch (e) {
       ref.read(appLoadingStateProvider.notifier).setState(false);
       ScaffoldMessenger.of(ref.context).removeCurrentSnackBar();
@@ -242,7 +267,7 @@ class AuthController {
             StatusSnackbar.failed);
         rethrow;
       }
-
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
       HelpersUtils.showErrorSnackbar(
           duration: 4000,
           ref.context,

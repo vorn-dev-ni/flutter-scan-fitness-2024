@@ -22,21 +22,41 @@ class AuthenticationScreen extends ConsumerStatefulWidget {
       _AuthenticationScreenState();
 }
 
-class _AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
+class _AuthenticationScreenState extends ConsumerState<AuthenticationScreen>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+  @override
+  void initState() {
+    // TODO: implement initState
+
+    super.initState();
+    final tabBarIndex = ref.read(tabbarControllerProvider);
+
+    _tabController =
+        TabController(initialIndex: tabBarIndex, vsync: this, length: 2);
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _tabController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final tabBarIndex = ref.watch(tabbarControllerProvider);
     final translations = AppLocalizations.of(context);
     final appTheme = ref.watch(appSettingsControllerProvider).appTheme;
     final socialLoading = ref.watch(socaiLoginLoadingStateProvider);
-
+    final appLoading = ref.watch(appLoadingStateProvider);
     return GestureDetector(
       onTap: () {
         DeviceUtils.hideKeyboard(context);
       },
       child: DefaultTabController(
         length: 2,
-        initialIndex: tabBarIndex,
+        // initialIndex: 1,
+        initialIndex: _tabController.index,
         child: Scaffold(
           appBar: AppBarCustom(
               bgColor: appTheme == AppTheme.light
@@ -46,11 +66,21 @@ class _AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
               tabbar: TabBar(
                 dividerHeight: 0,
                 labelPadding: const EdgeInsets.all(20),
-                indicatorColor: appTheme == AppTheme.light
-                    ? AppColors.primaryColor
-                    : AppColors.backgroundLight,
+                indicatorColor: !socialLoading && !appLoading
+                    ? (appTheme == AppTheme.light
+                        ? AppColors.primaryColor
+                        : AppColors.backgroundLight)
+                    : Colors.transparent,
                 indicatorSize: TabBarIndicatorSize.tab,
-                indicatorWeight: Sizes.xs,
+                isScrollable: false,
+                physics: const NeverScrollableScrollPhysics(),
+                onTap: (value) {
+                  if (socialLoading || appLoading) {
+                    return;
+                  }
+                  _tabController.index = value;
+                },
+                indicatorWeight: 2,
                 tabs: [
                   Text(
                     translations?.login ?? "Login",
@@ -73,13 +103,15 @@ class _AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
           body: SafeArea(
             child: Stack(
               children: [
-                const TabBarView(
-                  children: [
+                TabBarView(
+                  controller: _tabController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: const [
                     LoginScreen(),
                     RegisterScreen(),
                   ],
                 ),
-                if (socialLoading == true) backDropComponent(),
+                if (socialLoading || appLoading) backDropComponent(),
               ],
             ),
           ),

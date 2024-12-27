@@ -111,7 +111,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
         compressQuality: 50,
         uiSettings: [
           AndroidUiSettings(
-            toolbarTitle: 'Cropper',
+            toolbarTitle: 'Edit',
             toolbarColor: AppColors.primaryColor,
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.square,
@@ -123,7 +123,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
             ],
           ),
           IOSUiSettings(
-            title: 'Cropper',
+            title: 'Edit',
             aspectRatioPresets: [
               CropAspectRatioPreset.original,
               CropAspectRatioPreset.square,

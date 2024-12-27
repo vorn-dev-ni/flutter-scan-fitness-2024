@@ -100,7 +100,7 @@ class _ForgetPasswordState extends ConsumerState<ForgetPassword> {
                                   width: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 3,
-                                    color: AppColors.primaryLight,
+                                    color: AppColors.backgroundLight,
                                   ),
                                 )
                               : null,

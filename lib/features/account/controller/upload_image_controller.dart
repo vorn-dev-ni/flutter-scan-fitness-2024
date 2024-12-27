@@ -18,10 +18,6 @@ class UploadImageController {
 
   Future<String?> uploadFile(File? file) async {
     try {
-      bool? isExisted =
-          await FirestoreService(firebaseAuthService: FirebaseAuthService())
-              .checkUserImage();
-
       String? downloadUrl =
           await FirebaseStorageService.uploadImageAndGetDownloadFile(file);
       print("Downloaded Url is ${downloadUrl}");

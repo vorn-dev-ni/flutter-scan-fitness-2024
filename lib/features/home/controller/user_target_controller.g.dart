@@ -7,7 +7,7 @@ part of 'user_target_controller.dart';
 // **************************************************************************
 
 String _$userTargetControllerHash() =>
-    r'835b20fa1095f332a72a231e1a70074185340279';
+    r'b6975c8ec499be2c8386abc07d3b9a194c981d69';
 
 /// See also [UserTargetController].
 @ProviderFor(UserTargetController)

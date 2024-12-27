@@ -1,6 +1,7 @@
 import 'package:demo/common/widget/button.dart';
 import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/app_page.dart';
+import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/constant/svg_asset.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
@@ -12,6 +13,7 @@ import 'package:sizer/sizer.dart';
 Widget bodyNoFound(BuildContext context, description,
     {String body =
         'This screen doesnt exist or you don\'t have permission to view it',
+    AppTheme? appTheme,
     bool showButton = false}) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.center,
@@ -28,8 +30,10 @@ Widget bodyNoFound(BuildContext context, description,
       Text(
         description,
         textAlign: TextAlign.center,
-        style: AppTextTheme.lightTextTheme.headlineSmall
-            ?.copyWith(fontWeight: FontWeight.w500),
+        style: appTheme == AppTheme.light
+            ? AppTextTheme.lightTextTheme.headlineSmall
+                ?.copyWith(fontWeight: FontWeight.w500)
+            : AppTextTheme.darkTextTheme.headlineSmall,
       ),
       const SizedBox(
         height: Sizes.lg,
@@ -37,7 +41,9 @@ Widget bodyNoFound(BuildContext context, description,
       Text(
         textAlign: TextAlign.center,
         body,
-        style: AppTextTheme.lightTextTheme.bodySmall,
+        style: appTheme == AppTheme.light
+            ? AppTextTheme.lightTextTheme.bodySmall
+            : AppTextTheme.darkTextTheme.bodySmall,
       ),
       const SizedBox(
         height: Sizes.xxl,

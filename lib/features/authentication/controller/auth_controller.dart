@@ -1,6 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:math';
-
 import 'package:demo/core/riverpod/app_provider.dart';
 import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/data/service/firestore_service.dart';
@@ -11,11 +9,13 @@ import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/constant/firebase_auth.dart';
 import 'package:demo/utils/exception/app_exception.dart';
+import 'package:demo/utils/formatters/formatter_utils.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
 import 'package:demo/utils/local_storage/local_storage_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AuthController {
@@ -56,6 +56,44 @@ class AuthController {
     }
   }
 
+  Future<UserCredential?> loginWithFacebook() async {
+    ref.read(socaiLoginLoadingStateProvider.notifier).setState(true);
+    try {
+      await FacebookAuth.instance.logOut();
+      UserCredential? userCredential =
+          await firebaseAuthService.signInWithFacebook();
+      debugPrint("loginWithFacebook state is ${userCredential}");
+      await syncAuthentication(userCredential, socialprovider: 'facebook');
+      return null;
+    } catch (e) {
+      ref.read(socaiLoginLoadingStateProvider.notifier).setState(false);
+      HelpersUtils.showErrorSnackbar(
+          ref.context, "Oop!", e.toString(), StatusSnackbar.failed);
+      rethrow;
+    }
+  }
+
+  Future syncAuthentication(UserCredential? userCredential,
+      {String? socialprovider}) async {
+    if (userCredential != null) {
+      bool isExisted = await FirestoreService(
+              firebaseAuthService: firebaseAuthService)
+          .isEmailExisted(
+              userCredential.user?.email ?? "", socialprovider ?? "one-time");
+      await firebaseAuthService.reloadUser();
+      String imageUrl = userCredential.user?.providerData[0]?.photoURL ?? "";
+
+      if (!isExisted) {
+        await firebaseAuthService.syncUsertoFirestore(
+            userCredential.user?.displayName ?? "",
+            userCredential.user?.email ?? FormatterUtils.generateRandomEmail(),
+            socialprovider ?? "one-time");
+        ref.invalidate(profileControllerProvider);
+      }
+      await syncToStorage(userCredential.user!, imageUrl);
+    }
+  }
+
   Future loginWithGoogle() async {
     try {
       ref.read(socaiLoginLoadingStateProvider.notifier).setState(true);
@@ -63,24 +101,8 @@ class AuthController {
           await firebaseAuthService.signInWithGoogle();
 
       debugPrint(
-          "AUth state is ${userCredential.user?.providerData[0]?.photoURL}");
-
-      String imageUrl = userCredential.user?.providerData[0]?.photoURL ?? "";
-
-      bool isExisted =
-          await FirestoreService(firebaseAuthService: firebaseAuthService)
-              .isEmailExisted(userCredential.user?.email ?? "");
-      await firebaseAuthService.reloadUser();
-
-      if (!isExisted) {
-        //Meaning user is first time register with google
-        await firebaseAuthService.syncUsertoFirestore(
-            userCredential.user?.displayName ?? "",
-            userCredential.user?.email ?? "");
-        ref.invalidate(profileControllerProvider);
-      }
-      await syncToStorage(userCredential.user!, imageUrl);
-
+          "loginWithGoogle state is ${userCredential.user?.providerData[0]?.photoURL}");
+      await syncAuthentication(userCredential, socialprovider: 'google');
       ref.read(socaiLoginLoadingStateProvider.notifier).setState(false);
     } catch (e) {
       ref.read(socaiLoginLoadingStateProvider.notifier).setState(false);
@@ -117,7 +139,7 @@ class AuthController {
         await firebaseAuthService.currentUser?.reload();
         if (userCredential.user != null) {
           await firebaseAuthService.syncUsertoFirestore(
-              userInfo.fullName ?? "", userInfo.email);
+              userInfo.fullName ?? "", userInfo.email, "one-time");
           ref.invalidate(profileControllerProvider);
         }
 
@@ -232,6 +254,10 @@ class AuthController {
     }
   }
 
+  Future logoutWithFacebook() async {
+    await firebaseAuthService.logoutWithFacebook();
+  }
+
   Future<void> logoutUser() async {
     try {
       // FirebaseAuth firebaseAuth = FirebaseAuth.instance;
@@ -243,6 +269,7 @@ class AuthController {
       }
 
       await firebaseAuthService.signOut();
+      await firebaseAuthService.logoutWithFacebook();
       await firebaseAuthService.signOutWithGoogle();
       await firebaseAuthService.reloadUser();
     } catch (e) {

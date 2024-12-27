@@ -1,5 +1,6 @@
+import 'dart:math';
+
 import 'package:intl/intl.dart';
-import 'package:timeago/timeago.dart';
 
 class FormatterUtils {
   FormatterUtils._();
@@ -10,6 +11,19 @@ class FormatterUtils {
           RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
           (Match match) => '${match.group(1)},',
         );
+  }
+
+  static String generateRandomEmail() {
+    final random = Random();
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
+    final randomString =
+        List.generate(8, (index) => chars[random.nextInt(chars.length)]).join();
+
+    final email = '$randomString$timestamp@fitness.com';
+
+    return email;
   }
 
   static String removeJsonString(String input) {

@@ -1,6 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:demo/common/model/user_model.dart';
 import 'package:demo/data/service/firebase_service.dart';
@@ -37,11 +36,11 @@ class FirestoreService {
       ;
     }
     if (sortBy == 'desc') {
-      debugPrint("Called ${sortBy}");
+      debugPrint("Called $sortBy");
       return queryDoc.orderBy("created_at", descending: true).snapshots();
     }
 
-    debugPrint("Called ${sortBy}");
+    debugPrint("Called $sortBy");
     return queryDoc.orderBy("created_at", descending: false).snapshots();
   }
 
@@ -58,7 +57,8 @@ class FirestoreService {
     return await response.get();
   }
 
-  Future<AuthModel?> addUserToFirestore(String fullName, String email) async {
+  Future<AuthModel?> addUserToFirestore(
+      String fullName, String email, String provider) async {
     final FirebaseAuth? auth = firebaseAuthService?.getAuth;
 
     if (auth != null) {
@@ -67,10 +67,9 @@ class FirestoreService {
         if (_isDisposed) {
           return null;
         }
-        await _firestore.collection('users').doc(userId).set({
-          'fullName': fullName,
-          'email': email,
-        }, SetOptions(merge: true));
+        await _firestore.collection('users').doc(userId).set(
+            {'fullName': fullName, 'email': email, 'provider': provider},
+            SetOptions(merge: true));
         return AuthModel(fullname: fullName, email: email);
       } on FirebaseException catch (e) {
         throw handleFirebaseErrorResponse(e);
@@ -137,9 +136,11 @@ class FirestoreService {
     for (QueryDocumentSnapshot doc in querySnapshot.docs) {
       try {
         await doc.reference.delete();
-        kDebugMode ? print("Document ${doc.id} deleted") : null;
+        kDebugMode ? debugPrint("Document ${doc.id} deleted") : null;
       } catch (e) {
-        kDebugMode ? print("Failed to delete document ${doc.id}: $e") : null;
+        kDebugMode
+            ? debugPrint("Failed to delete document ${doc.id}: $e")
+            : null;
       }
     }
   }
@@ -147,7 +148,7 @@ class FirestoreService {
   Future<Map<String, dynamic>?> getUserAvatar(String docId) async {
     CollectionReference users = _firestore.collection('users');
     try {
-      print("Doc id ${docId}");
+      debugPrint("Doc id ${docId}");
       DocumentSnapshot docSnapshot = await users.doc(docId).get();
       if (docSnapshot.exists) {
         final data = docSnapshot.data() as Map<String, dynamic>;
@@ -199,7 +200,7 @@ class FirestoreService {
       {String? gender, String? dob}) async {
     CollectionReference users = _firestore.collection('users');
 
-    print("Update user receive ${imageUrl}");
+    debugPrint("Update user receive $imageUrl");
     try {
       String docId = firebaseAuthService.currentUser?.uid ?? "";
       print("Update user id ${docId}");
@@ -262,17 +263,16 @@ class FirestoreService {
     }
   }
 
-  Future<bool> isEmailExisted(String email) async {
+  Future<bool> isEmailExisted(String email, String socialProvider) async {
     final FirebaseAuth? auth = firebaseAuthService?.getAuth;
-    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     if (auth != null) {
       try {
-        String userId = auth.currentUser!.uid;
-
-        final data = await _firestore
+        final data = await firestore
             .collection('users')
             .where('email', isEqualTo: email)
+            .where('social_provider', isEqualTo: socialProvider)
             .get();
 
         if (data.docs.isNotEmpty) {

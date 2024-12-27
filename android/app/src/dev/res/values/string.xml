@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FitScan KH</string>
+    <string name="facebook_app_id">1304615800958655</string>
+    <string name="fb_login_protocol_scheme">fb1304615800958655</string>
+    <string name="facebook_client_token">618ecba85ccb6fbcabfc7c261b272bd8</string>
+</resources>

@@ -83,7 +83,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Column loginSection(BuildContext context, LoginState loginState,
       AppLocalizations? translations, AppTheme appTheme) {
-    final appStateloading = ref.watch(appLoadingStateProvider);
     return Column(
       children: [
         const SizedBox(
@@ -112,7 +111,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     splashColor: const Color.fromARGB(255, 236, 239, 229)
                         .withOpacity(0.1),
                     label: 'Login with Facebook',
-                    onPressed: () {},
+                    onPressed: _loginFacebook,
                     iconButton: SvgPicture.string(
                       SvgAsset.facebookSvg,
                       width: 3.w,
@@ -298,6 +297,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ref.invalidate(profileControllerProvider);
       HelpersUtils.navigatorState(context).pushNamedAndRemoveUntil(
           AppPage.FIRST, (Route<dynamic> route) => false);
+    }
+  }
+
+  Future _loginFacebook() async {
+    try {
+      await authController.loginWithFacebook();
+    } catch (e) {
+      if (mounted) {
+        HelpersUtils.showErrorSnackbar(
+            duration: 10000,
+            context,
+            'Oops!!!',
+            e.toString(),
+            StatusSnackbar.failed);
+      }
     }
   }
 }

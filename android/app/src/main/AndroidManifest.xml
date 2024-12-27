@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.demo">
+
+  
     <!-- Permissions for general data -->
+    
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission
@@ -39,10 +42,14 @@
         android:name="android.permission.VIBRATE"/>
     <uses-permission
         android:name="android.permission.WAKE_LOCK"/>
+
+
     <!-- Queries for specific intents (Placed correctly under <manifest> and not <application>) -->
     <queries>
+
         <package
             android:name="com.google.android.apps.healthdata"/>
+         <provider android:authorities="com.facebook.katana.provider.PlatformProvider" />
         <intent>
             <action
                 android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
@@ -87,9 +94,27 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true">
+        	<meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+   	<meta-data android:name="com.facebook.sdk.ClientToken" android:value="@string/facebook_client_token"/>
         <meta-data
             android:name="com.google.android.webview.WebView"
             android:value="true"/>
+
+    <activity android:name="com.facebook.FacebookActivity"
+        android:configChanges=
+                "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+        android:label="@string/app_name" />
+    <activity
+        android:name="com.facebook.CustomTabActivity"
+        android:exported="true">
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="@string/fb_login_protocol_scheme" />
+        </intent-filter>
+    </activity>
+
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:theme="@style/Ucrop.CropTheme"/>

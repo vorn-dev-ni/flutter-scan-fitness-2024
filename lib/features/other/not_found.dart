@@ -13,8 +13,10 @@ class NotFoundScreen extends StatelessWidget {
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(Sizes.xxxl),
-            child:
-                bodyNoFound(context, description, body: "", showButton: false),
+            child: bodyNoFound(context, description,
+                body:
+                    "This screen doesnt exist or you don't have permission to view it",
+                showButton: false),
           ),
         ),
       ),

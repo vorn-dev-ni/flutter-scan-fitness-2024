@@ -5,16 +5,17 @@ class FoodModelResult {
   String? comment;
   List<NutritionFacts>? nutritionFacts;
   bool? isHealthy;
-  List<SimilarRecommendations>? similarRecommendations;
+  // List<SimilarRecommendations>? similarRecommendations;
 
-  FoodModelResult(
-      {this.rating,
-      this.title,
-      this.feature,
-      this.comment,
-      this.nutritionFacts,
-      this.isHealthy,
-      this.similarRecommendations});
+  FoodModelResult({
+    this.rating,
+    this.title,
+    this.feature,
+    this.comment,
+    this.nutritionFacts,
+    this.isHealthy,
+    // this.similarRecommendations
+  });
 
   FoodModelResult.fromJson(Map<String, dynamic> json) {
     rating = json['rating'];
@@ -28,12 +29,12 @@ class FoodModelResult {
       });
     }
     isHealthy = json['isHealthy'];
-    if (json['similar_recommendations'] != null) {
-      similarRecommendations = <SimilarRecommendations>[];
-      json['similar_recommendations'].forEach((v) {
-        similarRecommendations!.add(new SimilarRecommendations.fromJson(v));
-      });
-    }
+    // if (json['similar_recommendations'] != null) {
+    //   similarRecommendations = <SimilarRecommendations>[];
+    //   json['similar_recommendations'].forEach((v) {
+    //     similarRecommendations!.add(new SimilarRecommendations.fromJson(v));
+    //   });
+    // }
   }
 
   Map<String, dynamic> toJson() {
@@ -47,10 +48,10 @@ class FoodModelResult {
           this.nutritionFacts!.map((v) => v.toJson()).toList();
     }
     data['isHealthy'] = this.isHealthy;
-    if (this.similarRecommendations != null) {
-      data['similar_recommendations'] =
-          this.similarRecommendations!.map((v) => v.toJson()).toList();
-    }
+    // if (this.similarRecommendations != null) {
+    //   data['similar_recommendations'] =
+    //       this.similarRecommendations!.map((v) => v.toJson()).toList();
+    // }
     return data;
   }
 }

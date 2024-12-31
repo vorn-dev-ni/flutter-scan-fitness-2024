@@ -31,4 +31,12 @@ class AppPage {
   //Profile
 
   static const PROFILE = 'Profile';
+  static const TERMS = 'term_condiiton';
+  static const NOTIFICATION = 'notification';
+  static const LANG = 'language';
+  static const APPEARENCE = 'appearence';
+
+  static const STEPS = 'steps';
+  static const SLEEPS = 'sleep';
+  static const CALORIES = 'calories';
 }

@@ -89,12 +89,15 @@ Widget foodScore({required FoodModelResult? food, required File file}) {
                       padding: const EdgeInsets.all(Sizes.xs - 2),
                       child: SvgPicture.string(
                         food?.isHealthy == true
-                            ? SvgAsset.thumbnailUp
+                            ? SvgAsset.heartSvg
                             : SvgAsset.thumbnailDown,
                         width: 50,
                         height: 50,
-                        colorFilter: const ColorFilter.mode(
-                            AppColors.primaryColor, BlendMode.srcIn),
+                        colorFilter: ColorFilter.mode(
+                            food?.isHealthy == true
+                                ? AppColors.errorColor
+                                : AppColors.primaryColor,
+                            BlendMode.srcIn),
                       ),
                     ),
                   ),

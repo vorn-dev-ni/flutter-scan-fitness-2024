@@ -88,62 +88,77 @@ class AppTextTheme {
             displayLarge: const TextStyle(
                 fontSize: 57,
                 fontWeight: FontWeight.w400,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
             displayMedium: const TextStyle(
                 fontSize: 45,
                 fontWeight: FontWeight.w400,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
             displaySmall: const TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.w400,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
             headlineLarge: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.w400,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
             headlineMedium: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w400,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
             headlineSmall: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w400,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
             titleLarge: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
             titleMedium: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
             titleSmall: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
             bodyLarge: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
             bodyMedium: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
             bodySmall: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
             labelLarge: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
             labelMedium: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
             labelSmall: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'DMSans'),
+                fontFamily: 'DMSans',
+                color: AppColors.textDarkColor),
           );
 }

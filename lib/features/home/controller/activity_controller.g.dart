@@ -7,7 +7,7 @@ part of 'activity_controller.dart';
 // **************************************************************************
 
 String _$activityControllerHash() =>
-    r'f28914e5b725de85f1fb325eade2949d2056cc9e';
+    r'dc4fb6712a0b3b6f5429a84d30e67286490fbb9d';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -34,11 +34,15 @@ abstract class _$ActivityController
     extends BuildlessStreamNotifier<QuerySnapshot> {
   late final String userId;
   late final bool isLimit;
+  late final int limit;
+  late final String? sortby;
 
   Stream<QuerySnapshot> build(
     String userId,
     bool isLimit,
-  );
+    int limit, {
+    String? sortby,
+  });
 }
 
 /// See also [ActivityController].
@@ -54,10 +58,14 @@ class ActivityControllerFamily extends Family<AsyncValue<QuerySnapshot>> {
   ActivityControllerProvider call(
     String userId,
     bool isLimit,
-  ) {
+    int limit, {
+    String? sortby,
+  }) {
     return ActivityControllerProvider(
       userId,
       isLimit,
+      limit,
+      sortby: sortby,
     );
   }
 
@@ -68,6 +76,8 @@ class ActivityControllerFamily extends Family<AsyncValue<QuerySnapshot>> {
     return call(
       provider.userId,
       provider.isLimit,
+      provider.limit,
+      sortby: provider.sortby,
     );
   }
 
@@ -93,10 +103,14 @@ class ActivityControllerProvider
   ActivityControllerProvider(
     String userId,
     bool isLimit,
-  ) : this._internal(
+    int limit, {
+    String? sortby,
+  }) : this._internal(
           () => ActivityController()
             ..userId = userId
-            ..isLimit = isLimit,
+            ..isLimit = isLimit
+            ..limit = limit
+            ..sortby = sortby,
           from: activityControllerProvider,
           name: r'activityControllerProvider',
           debugGetCreateSourceHash:
@@ -108,6 +122,8 @@ class ActivityControllerProvider
               ActivityControllerFamily._allTransitiveDependencies,
           userId: userId,
           isLimit: isLimit,
+          limit: limit,
+          sortby: sortby,
         );
 
   ActivityControllerProvider._internal(
@@ -119,10 +135,14 @@ class ActivityControllerProvider
     required super.from,
     required this.userId,
     required this.isLimit,
+    required this.limit,
+    required this.sortby,
   }) : super.internal();
 
   final String userId;
   final bool isLimit;
+  final int limit;
+  final String? sortby;
 
   @override
   Stream<QuerySnapshot> runNotifierBuild(
@@ -131,6 +151,8 @@ class ActivityControllerProvider
     return notifier.build(
       userId,
       isLimit,
+      limit,
+      sortby: sortby,
     );
   }
 
@@ -141,7 +163,9 @@ class ActivityControllerProvider
       override: ActivityControllerProvider._internal(
         () => create()
           ..userId = userId
-          ..isLimit = isLimit,
+          ..isLimit = isLimit
+          ..limit = limit
+          ..sortby = sortby,
         from: from,
         name: null,
         dependencies: null,
@@ -149,6 +173,8 @@ class ActivityControllerProvider
         debugGetCreateSourceHash: null,
         userId: userId,
         isLimit: isLimit,
+        limit: limit,
+        sortby: sortby,
       ),
     );
   }
@@ -163,7 +189,9 @@ class ActivityControllerProvider
   bool operator ==(Object other) {
     return other is ActivityControllerProvider &&
         other.userId == userId &&
-        other.isLimit == isLimit;
+        other.isLimit == isLimit &&
+        other.limit == limit &&
+        other.sortby == sortby;
   }
 
   @override
@@ -171,6 +199,8 @@ class ActivityControllerProvider
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
     hash = _SystemHash.combine(hash, userId.hashCode);
     hash = _SystemHash.combine(hash, isLimit.hashCode);
+    hash = _SystemHash.combine(hash, limit.hashCode);
+    hash = _SystemHash.combine(hash, sortby.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -184,6 +214,12 @@ mixin ActivityControllerRef on StreamNotifierProviderRef<QuerySnapshot> {
 
   /// The parameter `isLimit` of this provider.
   bool get isLimit;
+
+  /// The parameter `limit` of this provider.
+  int get limit;
+
+  /// The parameter `sortby` of this provider.
+  String? get sortby;
 }
 
 class _ActivityControllerProviderElement
@@ -195,6 +231,10 @@ class _ActivityControllerProviderElement
   String get userId => (origin as ActivityControllerProvider).userId;
   @override
   bool get isLimit => (origin as ActivityControllerProvider).isLimit;
+  @override
+  int get limit => (origin as ActivityControllerProvider).limit;
+  @override
+  String? get sortby => (origin as ActivityControllerProvider).sortby;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -1,11 +1,11 @@
 import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/button.dart';
 import 'package:demo/core/riverpod/app_provider.dart';
+import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/features/authentication/controller/auth_controller.dart';
 import 'package:demo/features/authentication/controller/tabbar_controller.dart';
 import 'package:demo/utils/constant/app_colors.dart';
-import 'package:demo/utils/constant/app_page.dart';
 import 'package:demo/utils/constant/image_asset.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
@@ -13,6 +13,7 @@ import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RevalidatePasswordSuccess extends ConsumerStatefulWidget {
   const RevalidatePasswordSuccess({super.key});
@@ -49,11 +50,16 @@ class _RevalidatePasswordSuccessState
   @override
   Widget build(BuildContext context) {
     final appLoadingState = ref.watch(appLoadingStateProvider);
+    final translations = AppLocalizations.of(context);
+
+    final appTheme = ref.watch(appSettingsControllerProvider).appTheme;
+
     return Scaffold(
         appBar: AppBarCustom(
             bgColor: Colors.transparent,
-            text: 'Check Email',
+            text: translations?.check_email ?? 'Check Email',
             isCenter: true,
+            foregroundColor: AppColors.backgroundLight,
             showheader: false),
         body: SafeArea(
             child: Padding(
@@ -92,7 +98,8 @@ class _RevalidatePasswordSuccessState
                       style: AppTextTheme.lightTextTheme.bodyLarge,
                     ),
                     Text(
-                      'Please change your new password with the following email',
+                      translations?.please_change_pw ??
+                          'Please change your new password with the following email',
                       textAlign: TextAlign.center,
                       style: AppTextTheme.lightTextTheme.bodyLarge,
                     ),
@@ -102,7 +109,7 @@ class _RevalidatePasswordSuccessState
                     ButtonApp(
                         height: 2.h,
                         splashColor: AppColors.primaryLight,
-                        label: 'Resent Email',
+                        label: translations?.resent_email ?? 'Resent Email',
                         onPressed:
                             appLoadingState == true ? null : _resendEmail,
                         centerLabel: appLoadingState == true
@@ -111,7 +118,7 @@ class _RevalidatePasswordSuccessState
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 3,
-                                  color: AppColors.primaryLight,
+                                  color: AppColors.backgroundLight,
                                 ),
                               )
                             : null,
@@ -129,7 +136,7 @@ class _RevalidatePasswordSuccessState
                     ButtonApp(
                         height: 2.h,
                         splashColor: AppColors.primaryColor.withOpacity(0.1),
-                        label: 'Back to login',
+                        label: translations?.back_to_login ?? 'Back to login',
                         onPressed: () {
                           ref.invalidate(tabbarControllerProvider);
                           HelpersUtils.navigatorState(context)

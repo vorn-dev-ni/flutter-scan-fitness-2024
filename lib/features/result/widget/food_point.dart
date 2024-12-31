@@ -1,5 +1,4 @@
 import 'package:demo/features/result/model/food_model.dart';
-import 'package:demo/utils/constant/app_colors.dart';
 import 'package:demo/utils/constant/sizes.dart';
 import 'package:demo/utils/theme/text/text_theme.dart';
 import 'package:flutter/material.dart';
@@ -12,14 +11,14 @@ Widget foodPoints(NutritionFacts nutrition_fact) {
         return const Color.fromARGB(255, 240, 144, 0);
       case 'fat':
         return const Color(0xffDD2F2F);
-      case 'protein':
+      case 'proteins':
         return const Color.fromARGB(255, 141, 185, 246);
       case 'sugar':
         return const Color(0xff9BDCFD);
-      case 'carbohydrate':
-        return const Color.fromARGB(255, 164, 220, 148);
+      case 'carbohydrates':
+        return const Color.fromARGB(255, 28, 124, 86);
       default:
-        return AppColors.primaryColor;
+        return const Color.fromARGB(255, 32, 107, 161);
     }
   }
 
@@ -36,11 +35,11 @@ Widget foodPoints(NutritionFacts nutrition_fact) {
     title: Text(
       nutrition_fact.title!.startsWith('Carbohydrate')
           ? "Carbs"
-          : nutrition_fact.title ?? " ",
+          : nutrition_fact.title ?? "N/A",
       style: AppTextTheme.lightTextTheme.labelLarge,
     ),
     subtitle: Text(
-      nutrition_fact.value?.toString() ?? "",
+      nutrition_fact.value?.toString() ?? "N/A",
       style: AppTextTheme.lightTextTheme.bodySmall,
     ),
   );

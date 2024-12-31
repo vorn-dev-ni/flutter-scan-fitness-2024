@@ -1,6 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:demo/common/model/user_model.dart';
 import 'package:demo/data/service/firebase_service.dart';
@@ -22,7 +21,12 @@ class FirestoreService {
     _isDisposed = true;
   }
 
-  Stream<QuerySnapshot> getAllByUserId(String collectionName, {int limit = 0}) {
+  Stream<QuerySnapshot> getAllByUserId(String collectionName,
+      {int limit = 0, String? sortBy}) {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return const Stream<QuerySnapshot<Object?>>.empty();
+    }
     Query queryDoc = _firestore
         .collection(collectionName)
         .where("userId", isEqualTo: firebaseAuthService.currentUser?.uid);
@@ -31,11 +35,20 @@ class FirestoreService {
       queryDoc = queryDoc.limit(limit);
       ;
     }
+    if (sortBy == 'desc') {
+      debugPrint("Called $sortBy");
+      return queryDoc.orderBy("created_at", descending: true).snapshots();
+    }
 
-    return queryDoc.orderBy("created_at", descending: true).snapshots();
+    debugPrint("Called $sortBy");
+    return queryDoc.orderBy("created_at", descending: false).snapshots();
   }
 
   Future addDocument(String collection, Map<String, dynamic> values) async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return const Stream<QuerySnapshot<Object?>>.empty();
+    }
     if (_isDisposed == true) {
       return;
     }
@@ -44,8 +57,10 @@ class FirestoreService {
     return await response.get();
   }
 
-  Future<AuthModel?> addUserToFirestore(String fullName, String email) async {
+  Future<AuthModel?> addUserToFirestore(
+      String fullName, String email, String provider) async {
     final FirebaseAuth? auth = firebaseAuthService?.getAuth;
+
     if (auth != null) {
       try {
         String userId = auth.currentUser!.uid;
@@ -55,6 +70,8 @@ class FirestoreService {
         await _firestore.collection('users').doc(userId).set({
           'fullName': fullName,
           'email': email,
+          'provider': provider,
+          'avatarImage': ""
         }, SetOptions(merge: true));
         return AuthModel(fullname: fullName, email: email);
       } on FirebaseException catch (e) {
@@ -122,21 +139,23 @@ class FirestoreService {
     for (QueryDocumentSnapshot doc in querySnapshot.docs) {
       try {
         await doc.reference.delete();
-        kDebugMode ? print("Document ${doc.id} deleted") : null;
+        kDebugMode ? debugPrint("Document ${doc.id} deleted") : null;
       } catch (e) {
-        kDebugMode ? print("Failed to delete document ${doc.id}: $e") : null;
+        kDebugMode
+            ? debugPrint("Failed to delete document ${doc.id}: $e")
+            : null;
       }
     }
   }
 
-  Future<String?> getUserAvatar(String docId) async {
+  Future<Map<String, dynamic>?> getUserAvatar(String docId) async {
     CollectionReference users = _firestore.collection('users');
     try {
+      debugPrint("Doc id ${docId}");
       DocumentSnapshot docSnapshot = await users.doc(docId).get();
       if (docSnapshot.exists) {
         final data = docSnapshot.data() as Map<String, dynamic>;
-
-        return data['avatarImage'] as String?;
+        return data;
       } else {
         print("No document found for the given docId.");
         return null;
@@ -149,19 +168,53 @@ class FirestoreService {
     }
   }
 
-  Future<void> updateUser(
-      String email, String fullName, String? imageUrl) async {
+  Future<QueryDocumentSnapshot<Object?>?> getUserInfoByEmail(
+      String email) async {
+    print(email);
+    CollectionReference users = _firestore.collection('users');
+    try {
+      final docSnapshot = await users.where('email', isEqualTo: email).get();
+      if (docSnapshot.docs.isNotEmpty) {
+        return docSnapshot.docs.first;
+      } else {
+        print("No document found for the given docId.");
+        return null;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error retrieving avatar URL: $e");
+      }
+      rethrow;
+    }
+  }
+
+  Stream<DocumentSnapshot> getUserWorkoutGoal(String docId) {
+    try {
+      return _firestore.collection('goals').doc(docId).snapshots();
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error retrieving workout goal: $e");
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> updateUser(String email, String fullName, String? imageUrl,
+      {String? gender, String? dob}) async {
     CollectionReference users = _firestore.collection('users');
 
-    print("Update user receive ${imageUrl}");
+    debugPrint("Update user receive $imageUrl");
     try {
       String docId = firebaseAuthService.currentUser?.uid ?? "";
       print("Update user id ${docId}");
 
       if (docId.isNotEmpty && docId != "") {
-        await users
-            .doc(docId)
-            .update({'fullName': fullName, 'avatarImage': imageUrl});
+        await users.doc(docId).update({
+          'fullName': fullName,
+          'avatarImage': imageUrl,
+          'dob': dob,
+          'gender': gender
+        });
         await firebaseAuthService.currentUser
             ?.updateProfile(displayName: fullName);
         print("Update success fully");
@@ -174,26 +227,61 @@ class FirestoreService {
     }
   }
 
-  Future<AuthModel> getEmail(String uid) async {
+  Future<void> updateUserTarget(
+      {required String type, required String value}) async {
+    CollectionReference users = _firestore.collection('goals');
+
+    try {
+      String docId = firebaseAuthService.currentUser?.uid ?? "";
+      print("Update user id ${docId}");
+      Map<String, dynamic> payload = {};
+      if (type == 'Steps') {
+        payload = {
+          'steps': value,
+        };
+      }
+      if (type == 'Active Calories') {
+        payload = {
+          'calories': value,
+        };
+      }
+
+      if (type == 'Sleep') {
+        payload = {
+          'sleeps': value,
+        };
+      }
+      print("Update successful for type: $type with value: $value");
+
+      if (docId.isNotEmpty && docId != "") {
+        await users.doc(docId).set(payload, SetOptions(merge: true));
+        print("Update successful for type: $type with value: $value");
+        print("Update success fully");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+      rethrow;
+    }
+  }
+
+  Future<bool> isEmailExisted(String email, String socialProvider) async {
     final FirebaseAuth? auth = firebaseAuthService?.getAuth;
-    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     if (auth != null) {
       try {
-        String userId = auth.currentUser!.uid;
+        final data = await firestore
+            .collection('users')
+            .where('email', isEqualTo: email)
+            .where('social_provider', isEqualTo: socialProvider)
+            .get();
 
-        DocumentSnapshot snapshot =
-            await _firestore.collection('users').doc(uid).get();
-
-        if (snapshot.exists) {
-          String email = snapshot['email'];
-          String fullname = snapshot['fullName'];
-
-          print('User email: $email, Fullname: $fullname');
-
-          return AuthModel(fullname: fullname, email: email);
+        if (data.docs.isNotEmpty) {
+          return true;
         } else {
-          throw Exception("User not found in Firestore.");
+          return false;
         }
       } on FirebaseException catch (e) {
         // Handle Firestore specific errors

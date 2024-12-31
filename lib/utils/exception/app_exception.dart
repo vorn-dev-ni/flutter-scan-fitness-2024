@@ -9,6 +9,15 @@ class AppException implements Exception {
 
   @override
   String toString() => 'AppException(title: $title, message: $message)';
+
+  AppException copyWith({
+    String? message,
+  }) {
+    return AppException(
+      title: title ?? this.title,
+      message: message ?? this.message,
+    );
+  }
 }
 
 class BadRequestException extends AppException {

@@ -35,7 +35,7 @@ class DeviceUtils {
   }
 
   static Future<void> setToPortraitModeOnly() async {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   }
 
   static Future<PackageInfo> getAppInfoPackage() async {

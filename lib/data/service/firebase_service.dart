@@ -1,15 +1,17 @@
 import 'package:demo/data/service/firestore_service.dart';
 import 'package:demo/utils/firebase/firebase.dart';
-import 'package:demo/utils/local_storage/local_storage_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   User? get currentUser => _auth.currentUser;
   FirebaseAuth? get getAuth => _auth;
-  Stream<User?> get authStateChanges => _auth.userChanges();
+  Stream<User?> get userStateChanges => _auth.userChanges();
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   Future<User?> signInWithEmailAndPassword(
       {required String email, required String password}) async {
@@ -27,15 +29,79 @@ class FirebaseAuthService {
     }
   }
 
-  Future syncUsertoFirestore(String fullName, String email) async {
-    print("Receive ${fullName} ${email}");
+  Future logoutWithFacebook() async {
+    try {
+      await FacebookAuth.instance.logOut();
+      debugPrint('User logged out from Facebook');
+    } catch (e) {
+      debugPrint('Error logging out from Facebook: $e');
+    }
+  }
+
+  Future<UserCredential?> signInWithFacebook() async {
+    await logoutWithFacebook();
+    final facebookProvider = FacebookAuthProvider();
+    // Set custom OAuth parameters if needed
+    facebookProvider.setCustomParameters({"consent": "select_account"});
+
+    final LoginResult loginResult = await FacebookAuth.instance.login();
+
+    debugPrint("Login result is ${loginResult.message}");
+    if (loginResult.status == LoginStatus.success) {
+      // Create a credential from the access token
+      final OAuthCredential credential =
+          FacebookAuthProvider.credential(loginResult.accessToken!.tokenString);
+      // Once signed in, return the UserCredential
+
+      return await FirebaseAuth.instance.signInWithCredential(credential);
+    } else {
+      throw Exception('User has cancelled');
+    }
+
+    return null;
+  }
+
+  Future<UserCredential> signInWithGoogle() async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    if (googleUser == null) {
+      throw Exception('Google Sign-In was canceled');
+    }
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+
+    // Once signed in, return the UserCredential
+    UserCredential userCredential =
+        await _auth.signInWithCredential(credential);
+
+    await reloadUser();
+    return userCredential;
+  }
+
+  Future signOutWithGoogle() async {
+    try {
+      await GoogleSignIn().signOut();
+
+      return true;
+    } on Exception catch (_) {
+      rethrow;
+    }
+  }
+
+  Future syncUsertoFirestore(
+      String fullName, String email, String provider) async {
+    debugPrint("Receive ${fullName} ${email} ${provider}");
     FirestoreService firestoreService =
         FirestoreService(firebaseAuthService: this);
-    await LocalStorageUtils().setKeyString("fullname", fullName);
-    await LocalStorageUtils().setKeyString("email", email);
-    print("has sync to database success");
 
-    await firestoreService.addUserToFirestore(fullName, email);
+    await firestoreService.addUserToFirestore(fullName, email, provider);
   }
 
   Future reloadUser() async {

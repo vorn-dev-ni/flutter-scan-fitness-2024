@@ -6,7 +6,7 @@ import 'package:demo/data/service/firestore_service.dart';
 import 'package:demo/features/account/model/profile_state.dart';
 import 'package:demo/utils/constant/enums.dart';
 import 'package:demo/utils/helpers/helpers_utils.dart';
-import 'package:demo/utils/local_storage/local_storage_utils.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'profile_controller.g.dart';
@@ -17,39 +17,56 @@ class ProfileController extends _$ProfileController {
   late FirestoreService _firestoreService;
 
   @override
-  ProfileState build() {
+  FutureOr<ProfileState> build() async {
     _firebaseAuthService = FirebaseAuthService();
     _firestoreService =
         FirestoreService(firebaseAuthService: _firebaseAuthService);
-    return bindingData();
+    return await bindingData();
   }
 
-  bindingData() {
-    final displayEmail = LocalStorageUtils().getKey("email") ?? "";
-    final displayName = LocalStorageUtils().getKey("fullname") ?? "";
-    final avatarImage = LocalStorageUtils().getKey("avatarImage") ?? "";
+  Future<ProfileState> bindingData() async {
+    debugPrint('Current user is ${_firebaseAuthService.currentUser}');
 
-    print("User state is ${displayName} ${displayEmail} ${avatarImage}");
+    final displayName = _firebaseAuthService.currentUser?.displayName ?? "";
+    final data = await _firestoreService.getUserAvatar(
+        _firebaseAuthService.currentUser!.uid) as Map<String, dynamic>;
+    final displayEmail =
+        _firebaseAuthService.currentUser?.email ?? data['email'];
+
+    debugPrint('User email is ${displayEmail}');
+    // print(
+    //     "User state is ${displayName} ${displayEmail} ${avatarImage} ${gender} ${dob}");
     return ProfileState(
-        email: displayEmail, fullName: displayName, imageUrl: avatarImage);
+        email: displayEmail,
+        fullName: displayName,
+        imageUrl: data['avatarImage'] ?? "",
+        dob: data['dob'] ?? "",
+        gender: data['gender'] ?? "");
   }
 
-  void syncProfileState(String email, String fullName, String? imageUrl) {
-    state =
-        state.copyWith(fullName: fullName, email: email, imageUrl: imageUrl);
+  // void syncProfileState(String email, String fullName, String? imageUrl,
+  //     {String? gender, String? dob}) {
+  //   state = state.copyWith(
+  //       fullName: fullName,
+  //       email: email,
+  //       imageUrl: imageUrl,
+  //       dob: dob,
+  //       gender: gender);
+  // }
+
+  ProfileState getEmailAndDisplayName() {
+    final displayEmail = _firebaseAuthService.currentUser?.displayName ?? "";
+    return ProfileState(fullName: displayEmail);
   }
 
-  Future saveUserProfile(String email, String fullName, String? imageUrl,
-      WidgetRef contextref) async {
+  Future saveUserProfile(
+      String email, String fullName, String? imageUrl, WidgetRef contextref,
+      {String? gender, String? dob}) async {
     try {
       if (fullName.isNotEmpty && email.isNotEmpty) {
-        await _firestoreService.updateUser(email, fullName, imageUrl);
-        syncProfileState(email, fullName, imageUrl);
-        await LocalStorageUtils().setKeyString('fullname', fullName);
-        await LocalStorageUtils().setKeyString('email', email);
-        if (imageUrl != null || imageUrl != "") {
-          await LocalStorageUtils().setKeyString('avatarImage', imageUrl!);
-        }
+        await _firestoreService.updateUser(email, fullName, imageUrl,
+            dob: dob, gender: gender);
+        contextref.invalidate(profileControllerProvider);
         HelpersUtils.showErrorSnackbar(
             duration: 2000,
             contextref.context,
@@ -61,7 +78,7 @@ class ProfileController extends _$ProfileController {
             duration: 2000,
             contextref.context,
             "Validation Failed !!!",
-            "Please provide valid email",
+            "Please correct your information must not be blank !!!",
             StatusSnackbar.failed);
       }
     } catch (e) {

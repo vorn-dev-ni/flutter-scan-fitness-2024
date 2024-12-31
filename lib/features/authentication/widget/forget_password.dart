@@ -2,6 +2,7 @@ import 'package:demo/common/widget/app_bar_custom.dart';
 import 'package:demo/common/widget/app_input.dart';
 import 'package:demo/common/widget/button.dart';
 import 'package:demo/core/riverpod/app_provider.dart';
+import 'package:demo/core/riverpod/app_setting_controller.dart';
 import 'package:demo/data/service/firebase_service.dart';
 import 'package:demo/features/authentication/controller/auth_controller.dart';
 import 'package:demo/utils/constant/app_colors.dart';
@@ -14,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ForgetPassword extends ConsumerStatefulWidget {
   const ForgetPassword({super.key});
@@ -37,13 +39,15 @@ class _ForgetPasswordState extends ConsumerState<ForgetPassword> {
   @override
   Widget build(BuildContext context) {
     final appLoadingState = ref.watch(appLoadingStateProvider);
-
-    print("App Loading is ${appLoadingState}");
-
+    final translations = AppLocalizations.of(context);
+    final appTheme = ref.watch(appSettingsControllerProvider).appTheme;
     return Scaffold(
       appBar: AppBarCustom(
-          bgColor: Colors.transparent,
-          text: 'Forget Password',
+          bgColor: AppColors.primaryDark,
+          foregroundColor: appTheme == AppTheme.dark
+              ? AppColors.backgroundLight
+              : AppColors.backgroundLight,
+          text: translations?.forget_password ?? 'Forget Password',
           isCenter: false,
           showheader: false),
       body: SafeArea(
@@ -61,7 +65,7 @@ class _ForgetPasswordState extends ConsumerState<ForgetPassword> {
                 const Spacer(),
                 Text.rich(TextSpan(children: [
                   TextSpan(
-                      text: "Enter your Email",
+                      text: translations?.enter_email ?? 'Enter your Email',
                       style: AppTextTheme.lightTextTheme.bodyMedium
                           ?.copyWith(fontWeight: FontWeight.w700)),
                 ])),
@@ -69,7 +73,8 @@ class _ForgetPasswordState extends ConsumerState<ForgetPassword> {
                   height: Sizes.lg,
                 ),
                 AppInput(
-                  hintText: "Email Address",
+                  maxLength: 50,
+                  hintText: translations?.email_address ?? "Email Address",
                   controller: _textEditingController,
                   onChanged: (value) => setState(() {
                     _email = value.trim();
@@ -86,7 +91,7 @@ class _ForgetPasswordState extends ConsumerState<ForgetPassword> {
                           height: Sizes.lg,
                           splashColor: const Color.fromRGBO(212, 218, 253, 1)
                               .withOpacity(0.1),
-                          label: "Confirm",
+                          label: translations?.confirm ?? "Confirm",
                           onPressed:
                               appLoadingState == true ? null : _validateEmail,
                           centerLabel: appLoadingState == true
@@ -95,7 +100,7 @@ class _ForgetPasswordState extends ConsumerState<ForgetPassword> {
                                   width: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 3,
-                                    color: AppColors.primaryLight,
+                                    color: AppColors.backgroundLight,
                                   ),
                                 )
                               : null,
@@ -104,7 +109,9 @@ class _ForgetPasswordState extends ConsumerState<ForgetPassword> {
                               ?.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white) as dynamic,
-                          color: AppColors.primaryColor,
+                          color: appTheme == AppTheme.light
+                              ? AppColors.primaryLight
+                              : AppColors.primaryDark,
                           textColor: Colors.white,
                           elevation: 0),
                     )
